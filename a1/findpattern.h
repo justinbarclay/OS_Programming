@@ -2,7 +2,7 @@
 #define MEM_RO 1
 
 struct patmatch {
-    unsigned int location;  
+    unsigned int location;
     unsigned char mode; /*  MEM_RW or MEM_RO*/
 };
 

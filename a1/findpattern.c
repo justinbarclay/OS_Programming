@@ -6,7 +6,9 @@
  * CCIDs: bligh & jbarclay
  * *****************************************************************
  * Notes: this section should be removed
- * - findpattern() cannot send any output to stdout */
+ * - findpattern() cannot send any output to stdout 
+ * - Must impliment a way to print the patmatch struct
+ *   */
 
 unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
         struct patmatch *locations, unsigned int loclength){
