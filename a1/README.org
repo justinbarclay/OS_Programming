@@ -1,0 +1,27 @@
+* Notes
+- Sub-directory tests where three example driver programs and any supporting
+  files for those tests are stored
+- Driver programs perform initialization and invoke findpattern() print the
+  results in human readable form 
+    + Then they perform some operation which results in a change of the address space contents, and then
+    findpattern() is called again and its results printed in human-readable form
+- Three drivers is for you to attempt three different ways
+  to introduce or change the location(s) and mode(s) of the pattern. You
+  must not prompt for user interaction in order to perform these changes.))
+- Must have Tests.txt as readme for tests
+- Need 2 makefiles
+    + make tests at the top level invokes
+    recursively the Makefile of the tests subdirectory, compiles and runs
+    the tests, producing their combined human readable output to a file
+    test_results.txt in the tests subdirectory
+    + Dependencies are expected
+    to exist that will require the re-generation of the test_results.txt
+    should the test drivers and any supporting files change
+** Human Readable Format
+- Report value from findpattern
+- Symbolic form of mode
+- Additional clarification is acceptable
+- We are interested in non-overlapping occurrences of the pattern. For (a
+  grossly simplified) example, assume the pattern is ababa and the memory contents
+  are  abababababa. The result would then be two matches only, one starting at the
+  first location and the second starting at the seventh location)
