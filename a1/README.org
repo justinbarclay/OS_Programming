@@ -25,3 +25,24 @@
   grossly simplified) example, assume the pattern is ababa and the memory contents
   are  abababababa. The result would then be two matches only, one starting at the
   first location and the second starting at the seventh location)
+* Notes about scanning the address space
+- /proc/self/maps contains information about the address space of various
+  processes
+- Each row follows the same format:
+    address permissions offset device inode pathname
+    + *address* - This is the starting and ending address of the region in the process's address space
+    + *permissions* - This describes how pages in the region can be accessed. 
+    + *offset* - If the region was mapped from a file (using mmap), this is the offset in the file 
+    where the mapping begins. If the memory was not mapped from a file, it's just 0.
+    + *device* - If the region was mapped from a file, this is the major and minor device number (in hex) where the file lives.
+    + *inode* - If the region was mapped from a file, this is the file number.
+    + *pathname* - If the region was mapped from a file, this is the name of the
+    file. This field is blank for anonymous mapped regions. There are also
+    special regions with names like [heap], [stack], or [vdso]. [vdso] stands for
+    virtual dynamic shared object. It's used by system calls to switch to
+    kernel mode
+- Can also pull info from your own elf file
+- I think we need to do it with the elf file 
+    + read elf 5
+** Helpful links
+    http://stackoverflow.com/questions/28098285/scan-memory-of-calling-process

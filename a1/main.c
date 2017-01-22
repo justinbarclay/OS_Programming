@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "findpattern.h"
+#include <string.h>
+#include <elf.h>
 
 /*  Macros */
 
@@ -31,11 +33,15 @@ int main(int argc, char *argv[]){
     unsigned int patlength;
     struct patmatch *locations;
     unsigned int loclength;
+    
+    //Variable initializtions
+    pattern = (unsigned char *) (malloc(sizeof(char)));
+    memcpy(pattern, "a", sizeof(unsigned char));
 
     //Calling findpattern
-    pattern_occurrances = findpattern(pattern, patlength, locations, loclength);
-
-    printf("Hello world\n");
+    //pattern_occurrances = findpattern(pattern, patlength, locations, loclength);
+    
+    printf("%u", pattern);
     return 0;
 }
 /*  Function Bodies */
