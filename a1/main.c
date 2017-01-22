@@ -24,7 +24,7 @@ void print_byte_array(unsigned char *pattern, unsigned int patlength,\
 /*  Main */
 
 int main(int argc, char *argv[]){
-    
+
     //Variable declarations to be fed into findpattern()
     int pattern_occurrances = 0;
     unsigned char *pattern;
@@ -34,13 +34,14 @@ int main(int argc, char *argv[]){
 
     //Calling findpattern
     pattern_occurrances = findpattern(pattern, patlength, locations, loclength);
-    
+
+    printf("Hello world\n");
     return 0;
 }
 /*  Function Bodies */
 void print_byte_array(unsigned char *pattern, unsigned int patlength,\
         struct patmatch *locations, unsigned int loclength){
-    
+
     //For debugging purposes
     printf("Printing byte array for pattern matching\n");
     printf("pattern: %s\n", pattern);
