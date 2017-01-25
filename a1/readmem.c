@@ -5,24 +5,28 @@ jmp_buf env;
 #define SEGFAULT 2
 
 void handleSegFault(int num){
-    longjmp(env, SEGFAULT);
+    
+    siglongjmp(env, SEGFAULT);
+    return;
 }
 
 void setup(){
     // Set the signal handler
     struct sigaction act;
+
     act.sa_handler = handleSegFault;
     sigemptyset(&act.sa_mask);
     act.sa_flags = 0;
     
 
-    sigaction(SIGSEGV, &act, 0);
+    sigaction(SIGSEGV, &act, NULL);
 }
 
 char* nextPage(char* currentByte){
+    
     // Find the pagesize for the system
     int pagesize = getpagesize();
-
+    printf("Pagesize: %i\n", pagesize);
     // find the distance from the next page by finding the the position in the current page
     // and subtracting that form page size
     long distance = pagesize - ((long)currentByte % pagesize);
@@ -32,14 +36,19 @@ char* nextPage(char* currentByte){
 }
 
 bool canRead(char* currentByte){
-    setup();
+    // Set the signal handler
+    
+    
+    char test;
     // A function that reads a position of memory 
     // Setting i to one, but I think setjmp on creation returns a 1 unless given a positive integer from long jump
     bool canRead = false;
+    setup();
+    //Use sigsetjmp to save the mask
+    int i = sigsetjmp(env,1);
     
-    int i = setjmp(env);
     if(i == 0){
-        char test = *currentByte;
+        test = *currentByte;
         canRead =true;
     } else if(i == SEGFAULT) {
         canRead = false;
@@ -51,7 +60,9 @@ bool canWrite(char* currentByte){
     int i =1;
     bool canWrite = true;
     setup();
-    i = setjmp(env);
+    //Use sigsetjmp to save the mask
+    i = sigsetjmp(env, 1);
+   
     if(i == 1){
         // Tests to see if they bytes are writeable
         char save = *currentByte;
@@ -69,13 +80,15 @@ bool canWrite(char* currentByte){
 
 
 int main(){
-    char *test = 0x0;
+    char *test =(void *) 0x1000;
     char test2 = 'h';
+    
     while(true){
 
-
+        printf("address %p\n", (void *)test);
         bool read = canRead(test);
-        printf("address %ld\n", (long) test);       
+        
+        test++;
         if(read){
             printf("Can read: %i \n", read);
             printf("Can read: %i \n", canRead(&test2));
@@ -87,7 +100,7 @@ int main(){
         /* } */
         /* printf("Can write: %i \n", canWrite(test)); */
         /* printf("Can write: %i \n", canWrite(&test2)); */
-        test++;
+        
     }
     exit(0);
 }
