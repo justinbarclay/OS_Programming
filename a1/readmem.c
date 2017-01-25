@@ -10,10 +10,16 @@ void handleSegFault(int num){
 
 void setup(){
     // Set the signal handler
-    signal(SIGSEGV, handleSegFault);
+    struct sigaction act;
+    act.sa_handler = handleSegFault;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = 0;
+    
+
+    sigaction(SIGSEGV, &act, 0);
 }
 
-long nextPage(char* currentByte){
+char* nextPage(char* currentByte){
     // Find the pagesize for the system
     int pagesize = getpagesize();
 
@@ -22,7 +28,7 @@ long nextPage(char* currentByte){
     long distance = pagesize - ((long)currentByte % pagesize);
 
     // Move pointer to beginning of page
-    return (long) currentByte + distance;
+    return currentByte + distance;
 }
 
 bool canRead(char* currentByte){
@@ -62,26 +68,26 @@ bool canWrite(char* currentByte){
 }
 
 
-/* int main(){ */
-/*     char *test = 0x0; */
-/*     char test2 = 'h'; */
-/*     long i = 0x0; */
-/*     while(true){ */
-/*         test = (char *) i; */
-/*         printf("address %ld\n", i); */
-/*         bool read = canRead(test); */
-/*         if(read){ */
-/*             printf("Can read: %i \n", read); */
-/*             printf("Can read: %i \n", canRead(&test2)); */
-/*         } else { */
-/*             i = nextPage((char *) i); */
-/*         } */
-/*         /\* else { *\/ */
-/*         /\*     printf("Can not read %ld \n", i); *\/ */
-/*         /\* } *\/ */
-/*         i++; */
-/*         /\* printf("Can write: %i \n", canWrite(test)); *\/ */
-/*         /\* printf("Can write: %i \n", canWrite(&test2)); *\/ */
-/*     } */
-/*     exit(0); */
-/* } */
+int main(){
+    char *test = 0x0;
+    char test2 = 'h';
+    while(true){
+
+
+        bool read = canRead(test);
+        printf("address %ld\n", (long) test);       
+        if(read){
+            printf("Can read: %i \n", read);
+            printf("Can read: %i \n", canRead(&test2));
+        } else {
+            test = nextPage(test);
+        }
+        /* else { */
+        /*     printf("Can not read %ld \n", i); */
+        /* } */
+        /* printf("Can write: %i \n", canWrite(test)); */
+        /* printf("Can write: %i \n", canWrite(&test2)); */
+        test++;
+    }
+    exit(0);
+}

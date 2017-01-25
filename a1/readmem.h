@@ -4,7 +4,7 @@
 #include <setjmp.h>
 #include <signal.h>
 
-long nextPage(char* currentByte);
+char* nextPage(char* currentByte);
 
 bool canRead(char* currentByte);
 
