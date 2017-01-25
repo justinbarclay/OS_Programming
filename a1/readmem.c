@@ -10,7 +10,7 @@ void handleSegFault(int num){
     return;
 }
 
-void setup(){
+void setupSignalHandler(){
     // Set the signal handler
     struct sigaction act;
 
@@ -26,7 +26,6 @@ char* nextPage(char* currentByte){
     
     // Find the pagesize for the system
     int pagesize = getpagesize();
-    printf("Pagesize: %i\n", pagesize);
     // find the distance from the next page by finding the the position in the current page
     // and subtracting that form page size
     long distance = pagesize - ((long)currentByte % pagesize);
@@ -43,14 +42,18 @@ bool canRead(char* currentByte){
     // A function that reads a position of memory 
     // Setting i to one, but I think setjmp on creation returns a 1 unless given a positive integer from long jump
     bool canRead = false;
-    setup();
+    
+    setupSignalHandler();
     //Use sigsetjmp to save the mask
     int i = sigsetjmp(env,1);
     
     if(i == 0){
         test = *currentByte;
+        // Set canRead true if we don't segfault
         canRead =true;
     } else if(i == SEGFAULT) {
+
+        //othewise ensure it's set to false, probably can cut this out
         canRead = false;
     } 
     return canRead;
@@ -59,7 +62,7 @@ bool canRead(char* currentByte){
 bool canWrite(char* currentByte){
     int i =1;
     bool canWrite = true;
-    setup();
+    setupSignalHandler();
     //Use sigsetjmp to save the mask
     i = sigsetjmp(env, 1);
    
@@ -92,14 +95,19 @@ int main(){
         if(read){
             printf("Can read: %i \n", read);
             printf("Can read: %i \n", canRead(&test2));
+
+            bool write = canWrite(test);
+            if(write){
+                printf("Can write: %i \n", write);
+                printf("Can write: %i \n", canWrite(&test2));
+                
+            }
         } else {
             test = nextPage(test);
         }
         /* else { */
         /*     printf("Can not read %ld \n", i); */
         /* } */
-        /* printf("Can write: %i \n", canWrite(test)); */
-        /* printf("Can write: %i \n", canWrite(&test2)); */
         
     }
     exit(0);
