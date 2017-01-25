@@ -1,4 +1,5 @@
 #include "readmem.h"
+#include <stdlib.h>
 jmp_buf env;
 
 #define SEGFAULT 2
@@ -12,30 +13,30 @@ void setup(){
     signal(SIGSEGV, handleSegFault);
 }
 
-char* nextPage(char* currentByte){
+long nextPage(char* currentByte){
     // Find the pagesize for the system
-    unsigned int pagesize = getpagesize();
+    int pagesize = getpagesize();
 
     // find the distance from the next page by finding the the position in the current page
     // and subtracting that form page size
-    int distance = pagesize - ((unsigned int) currentByte % pagesize);
+    long distance = pagesize - ((long)currentByte % pagesize);
 
     // Move pointer to beginning of page
-    return currentByte + distance;
+    return (long) currentByte + distance;
 }
 
 bool canRead(char* currentByte){
+    setup();
     // A function that reads a position of memory 
     // Setting i to one, but I think setjmp on creation returns a 1 unless given a positive integer from long jump
-    int i =1;
-    bool canRead = true;
+    bool canRead = false;
     
-    i = setjmp(env);
-
-    if(i == 1){
+    int i = setjmp(env);
+    if(i == 0){
         char test = *currentByte;
+        canRead =true;
     } else if(i == SEGFAULT) {
-        canRead = false;      
+        canRead = false;
     } 
     return canRead;
 }
@@ -43,7 +44,7 @@ bool canRead(char* currentByte){
 bool canWrite(char* currentByte){
     int i =1;
     bool canWrite = true;
-    
+    setup();
     i = setjmp(env);
     if(i == 1){
         // Tests to see if they bytes are writeable
@@ -61,11 +62,26 @@ bool canWrite(char* currentByte){
 }
 
 
-int main(){
-    char* test;
-    *test = 'a';
-    const char test2 = 'h';
-
-    printf("Can read: %i \n", canRead(test));
-    printf("Can read: %i \n", canRead(&test2));
-}
+/* int main(){ */
+/*     char *test = 0x0; */
+/*     char test2 = 'h'; */
+/*     long i = 0x0; */
+/*     while(true){ */
+/*         test = (char *) i; */
+/*         printf("address %ld\n", i); */
+/*         bool read = canRead(test); */
+/*         if(read){ */
+/*             printf("Can read: %i \n", read); */
+/*             printf("Can read: %i \n", canRead(&test2)); */
+/*         } else { */
+/*             i = nextPage((char *) i); */
+/*         } */
+/*         /\* else { *\/ */
+/*         /\*     printf("Can not read %ld \n", i); *\/ */
+/*         /\* } *\/ */
+/*         i++; */
+/*         /\* printf("Can write: %i \n", canWrite(test)); *\/ */
+/*         /\* printf("Can write: %i \n", canWrite(&test2)); *\/ */
+/*     } */
+/*     exit(0); */
+/* } */
