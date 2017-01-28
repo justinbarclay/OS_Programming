@@ -1,4 +1,5 @@
 #include "findpattern.h"
+#include <stdlib.h>
 /*******************************************************************
  * CMPUT 379 Assignment 1
  * Due:
@@ -20,14 +21,22 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
     bool write;
     
     while(currentAddress < 0xffffffff){
+        
         read = canRead(currentAddress);
         write = canWrite(currentAddress);
         currentAddress++;
+        
         if(read){
-            // do stuff
+            // If the address can be read
+            
+            // Create a patmatch struct
+            struct patmatch *match;
+            match = malloc(sizeof(struct patmatch));
+
             if(write){
-            //do stuff
+            // And the address can be written to 
             }
+            // The address can only be read
         } else {
             //if can't read go to next page
             currentAddress = nextPage(currentAddress);
