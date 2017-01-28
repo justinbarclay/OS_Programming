@@ -1,4 +1,6 @@
 #include "findpattern.h"
+#include <string.h>
+#define _GNU_SOURCE
 /*******************************************************************
  * CMPUT 379 Assignment 1
  * Due:
@@ -57,9 +59,14 @@ int find_match_in_range(struct memory_range range, unsigned char *pattern, \
         unsigned int patlength, struct patmatch *locations){
     /*  When called, searches through the range of memory given, and returns any matches into the 
      *  locations array. Returns the number of matches found*/ 
-    void *mem;
+    int mem; 
     int matches_found = 0;
-    mem = memmem(range.start_address, (range.stop_address- range.start_address), pattern, patlength);
+   
+    mem = memmem(range.start_address, (range.stop_address - range.start_address), pattern, patlength);
+
+    while(mem != NULL){
+        
+    }
     
 
     return matches_found;
