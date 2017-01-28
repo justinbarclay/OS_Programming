@@ -19,5 +19,6 @@ struct memory_range{
 unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
         struct patmatch *locations, unsigned int loclength);
 
-void find_match_in_range(struct memory_range range, unsigned char *pattern, unsigned int patlength);
+int find_match_in_range(struct memory_range range, unsigned char *pattern, \
+        unsigned int patlength, struct patmatch *locations);
 
