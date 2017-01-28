@@ -15,13 +15,17 @@
 #include <stdlib.h>
 #include "findpattern.h"
 #include <string.h>
-#include <elf.h>
+#include "printbits.h"
+#include <sys/stat.h>
+#include <errno.h>
 
 /*  Macros */
+#define CHUNK 1024
 
 /* function definitions */
 void print_byte_array(unsigned char *pattern, unsigned int patlength,\
         struct patmatch *locations, unsigned int loclength); //Used for debugging patterns
+void scanMemory();
 
 /*  Main */
 
@@ -40,6 +44,7 @@ int main(int argc, char *argv[]){
 
     //Calling findpattern
     //pattern_occurrances = findpattern(pattern, patlength, locations, loclength);
+    scanMemory();
     
     printf("%u", pattern);
     return 0;
@@ -53,3 +58,26 @@ void print_byte_array(unsigned char *pattern, unsigned int patlength,\
     printf("pattern: %s\n", pattern);
     printf("patlength: %d\n", patlength);
 }
+
+void scanMemory(){
+    // Scans the calling process's id from /proc/self/maps
+    FILE *fp;  
+    size_t nread;
+    fp = fopen("/proc/self/maps", "r");
+    char *buf = (char *)malloc(sizeof(char)*1000000000); //So fucking hacky
+    
+    if(buf == NULL){
+        // Deal with faile malloc
+        printf("Malloc Failed\n");
+        exit(-1);
+    }
+
+    if(fp){
+        while((nread = fread(buf, 1, chunk, file)) > 0))
+    }
+
+    
+
+}
+
+
