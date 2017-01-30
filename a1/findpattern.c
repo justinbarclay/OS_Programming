@@ -1,6 +1,7 @@
 #include "findpattern.h"
 #include <string.h>
 #define _GNU_SOURCE
+
 /*******************************************************************
  * CMPUT 379 Assignment 1
  * Due:
@@ -44,7 +45,7 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
             // If the memory space isn't accessible, search for a match in the range from 
             // startAddress to currentAddress using find_match_in_range
             pattern_occurrances += find_match_in_range(range,\
-                    pattern, patlength, locations);         //Increment pattern occurances by the
+                    pattern, patlength, locations, loclength);         //Increment pattern occurances by the
                                                             // number of occurances found
            
             currentAddress = nextPage(currentAddress); // Jump to next page
@@ -54,9 +55,10 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
     }
     return pattern_occurrances;
 }
+
 /*  Function body */
 int find_match_in_range(struct memory_range range, unsigned char *pattern, \
-        unsigned int patlength, struct patmatch *locations){
+        unsigned int patlength, struct patmatch *locations, unsigned int loclength){
     /*  When called, searches through the range of memory given, and returns any matches into the 
      *  locations array. Returns the number of matches found*/ 
     int mem; 
@@ -65,9 +67,25 @@ int find_match_in_range(struct memory_range range, unsigned char *pattern, \
     mem = memmem(range.start_address, (range.stop_address - range.start_address), pattern, patlength);
 
     while(mem != NULL){
-        
-    }
+        // Allocate struct for a match
+        struct patmatch *match = malloc(sizeof (struct patmatch));  
+        printf("Pattern Found\n"); // For DEBUGGING 
+        if(match == NULL){
+            // Check memory allocation was successful
+            printf("MALLOC ERROR in find_match_in_range\n");
+            exit(-1);
+        }
     
+        // Assign values to struct
+        match->location = mem;
+        match->location = range.permission;
+       
+        // Increment counters and set up for next iteration
+        locations = match;
+        locations++;
+        loclength++;
+        matches_found++;
+    }
 
     return matches_found;
 }

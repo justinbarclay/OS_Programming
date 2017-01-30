@@ -20,5 +20,5 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
         struct patmatch *locations, unsigned int loclength);
 
 int find_match_in_range(struct memory_range range, unsigned char *pattern, \
-        unsigned int patlength, struct patmatch *locations);
+        unsigned int patlength, struct patmatch *locations, unsigned int loclength);
 
