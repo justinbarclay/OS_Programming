@@ -12,36 +12,19 @@
 
 /*  imports */
 #include "readmem.h"
+#include "findpattern.h"
 #include <stdlib.h>
-
+unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
+        struct patmatch *locations, unsigned int loclength);
 /*  Main */
 int main(){
-    char *test =(void *) 0x1000;
-    char test2 = 'h';
-    
-    while(true){
-
-        printf("address %p\n", (void *)test);
-        bool read = canRead(test);
-        
-        test++;
-        if(read){
-            printf("Can read: %i \n", read);
-            printf("Can read: %i \n", canRead(&test2));
-
-            bool write = canWrite(test);
-            if(write){
-                printf("Can write: %i \n", write);
-                printf("Can write: %i \n", canWrite(&test2));
-                
-            }
-        } else {
-            test = nextPage(test);
-        }
-        /* else { */
-        /*     printf("Can not read %ld \n", i); */
-        /* } */
-        
-    }
-    exit(0);
+    unsigned char stuff[4] = "abcd";
+    unsigned char *pat = stuff; 
+    unsigned int patlength = sizeof(stuff);
+    struct patmatch locations_arr[1000];
+    struct patmatch *locations = locations_arr;
+    unsigned int loclength = 0;
+    int matches = 0;
+    matches = findpattern(pat, patlength, locations, loclength);
+    printf("matches found: %d\n", matches);
 }

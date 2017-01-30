@@ -69,11 +69,11 @@ bool canWrite(char* currentByte){
     if(i == 1){
         // Tests to see if they bytes are writeable
         char save = *currentByte;
-        printf("%c", *currentByte);
+        //printf("%c", *currentByte);
         *currentByte = 'H';
-        printf("%c", *currentByte);
+        //printf("%c", *currentByte);
         *currentByte = save;
-        printf("%c", *currentByte);
+        //printf("%c", *currentByte);
 
     } else if( i == SEGFAULT){
         canWrite = false;
