@@ -23,6 +23,8 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
 
     int pattern_occurrances = 0; // Keeping count of number of occurances
     char *currentAddress = 0x0;  // Address that will be incrimented to explore address space
+    
+    char* previousAddress = currentAddress; //Address before increment or change currentAddress
     bool read;
     bool write;
     printf("start") ;
@@ -30,6 +32,12 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
     while(currentAddress < 0xffffffff){
         int isMatch = -100;
         int matchPermission = -1;
+
+        // This is a guard to check to see if we bufferoverflow currentAddress
+        if(currentAddress < previousAddress){
+            break;
+        }
+        previousAddress = currentAddress;
         read = canRead(currentAddress);     // Check if address is readable
         write = canWrite(currentAddress);   // Check if address is writeable
 
@@ -43,7 +51,8 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
             }
 
             // check memory
-            for(size_t i = 0; i < patlength; i++){
+            size_t i;
+            for(i = 0; i < patlength; i++){
                 if(pattern[i] != currentAddress[i]){
                     isMatch = 0;
                     break;
@@ -61,8 +70,8 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
                 loclength++;
                 pattern_occurrances++;
 
-                printf("address %p\n", (void *)currentAddress);
-                printf("Match of pattern %02X and %02X ", *pattern, *currentAddress);
+                printf("address %p\n", currentAddress);
+                printf("Match of pattern %p and %p", pattern, currentAddress);
 
                 currentAddress += patlength;
                 matchPermission = -100;
