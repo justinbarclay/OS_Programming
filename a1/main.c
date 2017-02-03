@@ -18,13 +18,17 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
         struct patmatch *locations, unsigned int loclength);
 /*  Main */
 int main(){
-    unsigned char stuff[4] = "abcd";
-    unsigned char *pat = stuff; 
-    unsigned int patlength = sizeof(stuff);
+    unsigned char things[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
+    unsigned char t[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
+
+    unsigned char fake[6] = {'t', 'z', 'a', 'h', 'e', 'a'};
+
+    unsigned int patlength = sizeof(things);
     struct patmatch locations_arr[1000];
-    struct patmatch *locations = locations_arr;
+
     unsigned int loclength = 0;
     int matches = 0;
-    matches = findpattern(pat, patlength, locations, loclength);
+    printf("main");
+    matches = findpattern(things, patlength, locations_arr, loclength);
     printf("matches found: %d\n", matches);
 }
