@@ -47,12 +47,14 @@ int main(){
     struct patmatch* test2 = calloc(10, sizeof(struct patmatch));
     int found;
 
+
+    fprintf(stdout, "test1\n");
+    fprintf(stdout, "Testing findpattern's ability to find a pattern on the heap. For this, we used memcpy\n");
+    
     //Converting pattern to unsigned char* as it is a pointer to first element in a list
     found = findpattern((unsigned char *) pattern, 10, test1, 10);
 
-    printf("Found %i occurences %i ", found, 1);
-
-    report(1, found, test1);
+    report(1, found, test1, 0);
     // Copy pattern over
     memcpy(pattern2, pattern, sizeof(pattern));
     memcpy(pattern3, pattern, sizeof(pattern));
