@@ -27,7 +27,6 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
     char* previousAddress = currentAddress; //Address before increment or change currentAddress
     bool read;
     bool write;
-    printf("start") ;
 
     while(currentAddress < 0xffffffff){
         int isMatch = -100;
@@ -37,7 +36,8 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
         if(currentAddress < previousAddress){
             break;
         }
-        previousAddress = currentAddress;
+
+        previousAddress = currentAddress;   // Synchronize currentAddress and previous Address
         read = canRead(currentAddress);     // Check if address is readable
         write = canWrite(currentAddress);   // Check if address is writeable
 
