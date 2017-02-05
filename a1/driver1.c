@@ -4,6 +4,24 @@
 #include <sys/mman.h>
 #include "findpattern.h"
 
+/*******************************************************************
+ * CMPUT 379 Assignment 1
+ * Due:
+ *
+ * Group: Justin Barclay & Mackenzie Bligh
+ * CCIDs: jbarclay & bligh 
+ * *****************************************************************
+ * Driver1 tests findpatter.c by copying the pattern to a local
+ * variable, testing to see how many patterns exist in memory. This
+ * first invocation should find at least two, one for argv[1] and one
+ * for pattern. Next it adds 9 copies of the pattern to a linked list
+ * and mprotects (using PROT_READ) the node9. This then reports back
+ * on the changes to all of memory. The report should mention it found
+ * atleast 11 patterns, with one being RO, 2 in stack memory and 9
+ * in heap.
+ * *****************************************************************/
+
+
 struct node{
     char* pattern;
     struct node* next;
@@ -26,22 +44,25 @@ int main(int argc, char *argv[]){
         return -1;
     }
 
-    //pattern is patLength to get the terminating null character
+    //Copy original pattern into another local variable of known size
     unsigned char pattern[patLength];
     memcpy(pattern, argv[1], patLength);
 
+    //store locations and memory status from test 1
     struct patmatch* test1 = calloc(100, sizeof(struct patmatch));
-    
+
+    //Track instances of numbers of pattern found in memory
     int found;
 
+    //Boiler plate
     fprintf(stdout, "test1\n");
     fprintf(stdout, "Here we are findpattern's ability to find a pattern on the heap using memalign and mprotect.\n\n");
 
     //Converting pattern to unsigned char* as it is a pointer to first element in a list
     found = findpattern((unsigned char*) pattern, patLength, test1, 100);
     report(1, found, test1, 0);
+
     // Copy pattern over
-    
     LinkedList* node1 = addNode(0, pattern, patLength);
     LinkedList* node2 = addNode(node1, pattern, patLength);
     LinkedList* node3 = addNode(node2, pattern, patLength);
@@ -52,15 +73,20 @@ int main(int argc, char *argv[]){
     LinkedList* node8 = addNode(node7, pattern, patLength);
     LinkedList* node9 = addNode(node8, pattern, patLength);
 
+    // Protect one node from writing
     long nodeBoundary = (long) node9->pattern - ((long) node9->pattern % getpagesize());
-
     mprotect((void *) nodeBoundary, getpagesize(), PROT_READ);
+
+    // Store results of second test here
     struct patmatch* test2 = malloc(sizeof(struct patmatch)*100);
 
-    
+    // Test for changes
     found = findpattern((unsigned char*) pattern, patLength, test2, 100);
 
+    //Make node read/write
     mprotect((void *) nodeBoundary, getpagesize(), PROT_WRITE);
+
+    // Report our findings
     report(2, found, test1, test2);
 
     // Free malloc variables
@@ -71,6 +97,7 @@ int main(int argc, char *argv[]){
 }
 
 void report(int testNum, unsigned int length, struct patmatch* test1, struct patmatch* test2){
+    // Function to report found patterns
     printf("Report %i matches found\n", length);
     size_t i = 0;
     char* memoryType[2] = {"MEM_RW", "MEM_RO"};
@@ -87,7 +114,7 @@ void report(int testNum, unsigned int length, struct patmatch* test1, struct pat
 }
 
 LinkedList* addNode(LinkedList* head, unsigned char* pattern, int length){
-   //create a link
+   //create a linklist to the next node
    LinkedList* next = calloc(1, sizeof(LinkedList));
 
    //Allocate a page per pattern, for easily protecting of regions
@@ -99,10 +126,12 @@ LinkedList* addNode(LinkedList* head, unsigned char* pattern, int length){
    //point it to old first node
    head = next;
 
+   // Return node so we can easily set it to read only
    return next;
 }
 
 void freeNodes(LinkedList* head){
+    // Go through the linked list until we hit the tail and free each
     LinkedList* next;
     while(head->next != 0){
         free(head->pattern);
@@ -111,6 +140,7 @@ void freeNodes(LinkedList* head){
 }
 
 size_t getStringLength(char* pattern){
+     // look for the null character in a char array and report back its position in that array
     char null = '\0';
 
     size_t i=0;

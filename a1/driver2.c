@@ -4,14 +4,25 @@
 #include <sys/mman.h>
 #include "findpattern.h"
 
-struct node{
-    char* pattern;
-    struct node* next;
-} typedef LinkedList;
+/*******************************************************************
+ * CMPUT 379 Assignment 1
+ * Due:
+ *
+ * Group: Justin Barclay & Mackenzie Bligh
+ * CCIDs: jbarclay & bligh 
+ * *****************************************************************
+ * Driver2 tests findpatter.c by copying the pattern to a local
+ * variable, testing to see how many patterns exist in memory. This
+ * first invocation should find at least two, one for argv[1] and one
+ * for pattern. Next it adds 9 copies of the pattern to local variables
+ * and mprotects (using PROT_READ) the stackPattern8. This then reports back
+ * on the changes to all of memory. The report should mention it found
+ * atleast 11 patterns, with one being RO, 2 in stack memory and 9
+ * in heap.
+ * *****************************************************************/
 
 void report(int testNum, unsigned int length, struct patmatch* test1, struct patmatch* test2);
 size_t getStringLength(char* pattern);
-
 
 int main(int argc, char *argv[]){
     int patLength = 0;
@@ -22,9 +33,11 @@ int main(int argc, char *argv[]){
         return -1;
     }
 
+    //Copy original pattern into another local variable of known size
     unsigned char pattern[patLength];
-    strncpy(pattern, argv[1], patLength);
+    memcpy(pattern, argv[1], patLength);
 
+    // Copied patterns will live here
     char stackPattern1[patLength];
     char stackPattern2[patLength];
     char stackPattern3[patLength];
@@ -35,20 +48,23 @@ int main(int argc, char *argv[]){
     char stackPattern8[patLength];
     char stackPattern9[patLength];
 
+    //store locations and memory status from test 1
     struct patmatch* test1 = calloc(100, sizeof(struct patmatch));
-    
+
+    //Track instances of numbers of pattern found in memory
     int found;
 
-    
-
+    //Boiler plate
     fprintf(stdout, "test1\n");
     fprintf(stdout, "Here we are findpattern's ability to find a pattern on the heap using memalign and mprotect.\n\n");
 
     //Converting pattern to unsigned char* as it is a pointer to first element in a list
     found = findpattern((unsigned char*) pattern, patLength, test1, 100);
+
+    // Report our findings
     report(1, found, test1, 0);
 
-
+    //Copy pattern into local variables
     memcpy(stackPattern1,pattern, patLength);
     memcpy(stackPattern2,pattern, patLength);
     memcpy(stackPattern3,pattern, patLength);
@@ -60,69 +76,50 @@ int main(int argc, char *argv[]){
     memcpy(stackPattern9,pattern, patLength);
     
 
-    
+    // Set one variable to read only
     long nodeBoundary = (long) stackPattern8 - ((long) stackPattern8 % getpagesize());
-
     mprotect((void *) nodeBoundary, getpagesize(), PROT_READ);
+
+    //Have to set test2 onto a new page due to setting a variable to readonly.
     struct patmatch* test2;
     posix_memalign((void** )&test2, getpagesize(), sizeof(struct patmatch)*100);
 
     
     found = findpattern((unsigned char*) pattern, patLength, test2, 100);
 
+    //Make StackPattern8 RW
     mprotect((void *) nodeBoundary, getpagesize(), PROT_WRITE);
     report(2, found, test1, test2);
 
     // Free malloc variables
-    //freeNodes(node9);
     free(test1);
     free(test2);
     return 0;
 }
 
 void report(int testNum, unsigned int length, struct patmatch* test1, struct patmatch* test2){
-    size_t i = 0;
+    // Function to report the found patterns
     char* memoryType[2] = {"MEM_RW", "MEM_RO"};
-    fprintf(stdout, "Pass %i\n Total Matches %02i\n", testNum, length);
+    fprintf(stdout, "Pass %i\nTotal Matches %02i\n", testNum, length);
+
+    size_t i = 0;
     if(testNum == 1){
+        // IF this is our first test, we can't check for change in state
         for(i = 0; i < length; ++i){
             fprintf(stdout, "0x%02X\t%s\t\n", test1[i].location, memoryType[test1[i].mode]);
         }
         fprintf(stdout, "\n");
     } else {
+
+        //test2, let's see what differences there are
         for(i = 0; i < length; ++i){
             fprintf(stdout, "0x%02X\t%s\t\n", test2[i].location, memoryType[test2[i].mode]);
         }
     }
 }
 
-LinkedList* addNode(LinkedList* head, unsigned char* pattern, int length){
-    //create a link
-    LinkedList* next = calloc(1, sizeof(LinkedList));
-
-    //Allocate a page per pattern, for easily protecting of regions
-    //This is overkill but it wouldn't let me protect pages otherwise
-    posix_memalign((void**) &next->pattern, getpagesize(), getpagesize());
-    memcpy(next->pattern, pattern, length);
-    next->next = head;
-   
-    //point it to old first node
-    head = next;
-
-    return next;
-}
-
-void freeNodes(LinkedList* head){
-    LinkedList* next;
-    while(head->next != 0){
-        free(head->pattern);
-        next = head->next;
-        head = head->next;
-        free(next);        
-    }
-}
-
 size_t getStringLength(char* pattern){
+    // look for the null character in a char array and report back its position in that array
     char null = '\0';
 
     size_t i=0;
