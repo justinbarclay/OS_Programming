@@ -89,14 +89,16 @@ int main(){
 }
 
 void report(int testNum, unsigned int length, struct patmatch* test1, struct patmatch* test2){
+    printf("Report %i matches found\n", length);
+    size_t i = 0;
     //char* memoryType[2] = {"MEM_RO", "MEM_RW"};
     if(testNum == 0){
-        for(size_t i = 0; i < length; ++i){
-            fprintf(stdout, "%02X\t%s\t\n", test1[0].location, &test1[0].mode);
+        for(i = 0; i < length; ++i){
+            fprintf(stdout, "%02X\t%s\t\n", test1[i].location, &test1[i].mode);
         }   
     } else {
-        for(size_t i = 0; i < length; ++i){
-            fprintf(stdout, "%02X\t%s\t%c\n", test2[0].location, &test2[0].mode, 'C');
+        for(i = 0; i < length; ++i){
+            fprintf(stdout, "%02X\t%s\t%c\n", test2[i].location, &test2[i].mode, 'C');
         }
     }
 }
