@@ -32,7 +32,7 @@
 void report(int testNum, unsigned int length, struct patmatch* test1, struct patmatch* test2);
 
 int main(){
-    char pattern[10] = {'X', 'Y', '1', '0', 'A', 'd', 't', '@', ' ', 0xFF};
+    unsigned char pattern[10] = {'X', 'Y', '1', '0', 'A', 'd', 't', '@', ' ', '8'};
     char* pattern2 = (char *) calloc(1, sizeof(pattern));
     char* pattern3 = (char *) calloc(1, sizeof(pattern));
     char* pattern4 = (char *) calloc(1, sizeof(pattern));
@@ -43,8 +43,8 @@ int main(){
     char* pattern9 = (char *) calloc(1, sizeof(pattern));
     char* pattern10 = (char *) calloc(1, sizeof(pattern));
     
-    struct patmatch* test1 = calloc(10, sizeof(struct patmatch));
-    struct patmatch* test2 = calloc(10, sizeof(struct patmatch));
+    struct patmatch* test1 = calloc(100, sizeof(struct patmatch));
+    struct patmatch* test2 = calloc(100, sizeof(struct patmatch));
     int found;
 
 
@@ -52,7 +52,7 @@ int main(){
     fprintf(stdout, "Testing findpattern's ability to find a pattern on the heap. For this, we used memcpy\n");
     
     //Converting pattern to unsigned char* as it is a pointer to first element in a list
-    found = findpattern((unsigned char *) pattern, 10, test1, 10);
+    found = findpattern(pattern, 10, test1, 100);
 
     report(1, found, test1, 0);
     // Copy pattern over
@@ -68,7 +68,7 @@ int main(){
     memcpy(pattern10, pattern, sizeof(pattern));
 
     
-    found = findpattern((unsigned char*) pattern, 10, test2, 10);
+    found = findpattern((unsigned char*) pattern, 10, test2, 100);
 
     report(1, found, test1, test2);
 
