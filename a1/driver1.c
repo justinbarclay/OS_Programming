@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
     strncpy(pattern, argv[1], patLength+1);
 
     struct patmatch* test1 = calloc(100, sizeof(struct patmatch));
-    struct patmatch* test2 = calloc(100, sizeof(struct patmatch));
+    
     int found;
 
     fprintf(stdout, "test1\n");
@@ -75,16 +75,18 @@ int main(int argc, char *argv[]){
     LinkedList* node7 = addNode(node6, pattern, patLength);
     LinkedList* node8 = addNode(node7, pattern, patLength);
     LinkedList* node9 = addNode(node8, pattern, patLength);
+
+    long nodeBoundary = (long) node9->pattern - ((long) node9->pattern % getpagesize());
+
+    mprotect((void *) nodeBoundary, getpagesize(), PROT_READ);
+    struct patmatch* test2 = malloc(sizeof(struct patmatch)*100);
+
     
-
-    long nodeBoundary = ((int) node9/getpagesize())*getpagesize();
-    /* printf("Memprotect %i\n", mprotect((void *) nodeBoundary, getpagesize(), PROT_READ)); */
-
     found = findpattern((unsigned char*) pattern, patLength, test2, 100);
 
-    /* printf("Memprotect %i\n", mprotect((void *) nodeBoundary, getpagesize(), PROT_WRITE)); */
+    mprotect((void *) nodeBoundary, getpagesize(), PROT_WRITE);
     report(2, found, test1, test2);
-    
+
     // Free malloc variables
     free(node9);
     free(test1);
@@ -103,15 +105,18 @@ void report(int testNum, unsigned int length, struct patmatch* test1, struct pat
         }   
     } else {
         for(i = 0; i < length; ++i){
-            fprintf(stdout, "0x%02X\t%s\t%c\n", test2[i].location, memoryType[test2[i].mode]);
+            fprintf(stdout, "0x%02X\t%s\t\n", test2[i].location, memoryType[test2[i].mode]);
         }
     }
 }
 
 LinkedList* addNode(LinkedList* head, unsigned char* pattern, int length){
    //create a link
-   LinkedList* next = (LinkedList*) malloc(sizeof(LinkedList));
-   next->pattern = calloc(length, sizeof(char));
+   LinkedList* next = calloc(1, sizeof(LinkedList));
+
+   //Allocate a page per pattern, for easily protecting of regions
+   //This is overkill but it wouldn't let me protect pages otherwise
+   posix_memalign((void**) &next->pattern, getpagesize(), getpagesize());
    memcpy(next->pattern, pattern, length);
    next->next = head;
    
