@@ -3,12 +3,12 @@
 jmp_buf env;
 
 #define SEGFAULT 2
-
+/*
 void handleSegFault(int num){
 
     siglongjmp(env, SEGFAULT);
     return;
-}
+}*/
 
 void setupSignalHandler(){
     // Set the signal handler

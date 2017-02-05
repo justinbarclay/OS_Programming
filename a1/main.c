@@ -21,6 +21,10 @@ int main(){
     unsigned char things[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
     unsigned char t[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
     unsigned char r[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
+    
+    printf("Address t %p\n", things);
+    printf("Address t %p\n", t);
+    printf("Address r %p\n", r);
 
     unsigned char fake[6] = {'t', 'z', 'a', 'h', 'e', 'a'};
 
