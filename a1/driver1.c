@@ -4,31 +4,6 @@
 #include <sys/mman.h>
 #include "findpattern.h"
 
-/* test1                              #Should be test1 or test2 or test3 corresponding to three invocations  */
-
-/* one-line-description       #brief description of the method used for memory modification (mmap, heap, stack, etc) */
-
-/*                                       #blank line */
-
-/* Pass 1                           #First call to findpattern() without memory modification */
-
-/* Total Matches: xx */
-
-/* 0xF8098    MEM_RO    #separated by tab (\t) */
-
-/* 0xFF139    MEM_RW   #separated by tab (\t) */
-
-/* ... */
-
-/*                                       #blank line */
-
-/* Pass 2                           #Second call to findpattern() after memory modification */
-
-/* 0xF8098    MEM_RO    U      #separated by tab (\t), U:unchanged, C: only mode is changed, N: new match */
-
-/* 0xFF139    MEM_RO    C      #separated by tab (\t), U:unchanged, C: only mode is changed, N: new match */
-
-/* 0XFFEB9   MEM_RW    N     #separated by tab (\t), U:unchanged, C: only mode is changed, N: new match */
 struct node{
     char* pattern;
     struct node* next;
@@ -36,6 +11,7 @@ struct node{
 
 void report(int testNum, unsigned int length, struct patmatch* test1, struct patmatch* test2);
 
+// This is probably overkill, but it's a clean looking way of getting a new page per pattern
 LinkedList* addNode(LinkedList* head, unsigned char* pattern, int length);
 void freeNodes(LinkedList* head);
 size_t getStringLength(char* pattern);
@@ -59,7 +35,7 @@ int main(int argc, char *argv[]){
     int found;
 
     fprintf(stdout, "test1\n");
-    fprintf(stdout, "Here we are findpattern's ability to find a pattern on the heap using memalign and mprotect.\n");
+    fprintf(stdout, "Here we are findpattern's ability to find a pattern on the heap using memalign and mprotect.\n\n");
 
     //Converting pattern to unsigned char* as it is a pointer to first element in a list
     found = findpattern((unsigned char*) pattern, patLength, test1, 100);
@@ -102,7 +78,7 @@ void report(int testNum, unsigned int length, struct patmatch* test1, struct pat
     if(testNum == 1){
         for(i = 0; i < length; ++i){
             fprintf(stdout, "0x%02X\t%s\t\n", test1[i].location, memoryType[test1[i].mode]);
-        }   
+        }
     } else {
         for(i = 0; i < length; ++i){
             fprintf(stdout, "0x%02X\t%s\t\n", test2[i].location, memoryType[test2[i].mode]);
