@@ -13,6 +13,11 @@
 /*  Libraries */
 #include "findpattern.h"
 #include <stdlib.h>
+#include <string.h>
+#include <setjmp.h>
+#include <signal.h>
+#include <unistd.h>
+#include <stdbool.h>
 
 /*  Macros */
 #define SEGFAULT 2
