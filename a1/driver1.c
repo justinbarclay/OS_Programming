@@ -96,7 +96,7 @@ void report(int testNum, unsigned int length, struct patmatch* test1, struct pat
         }   
     } else {
         for(size_t i = 0; i < length; ++i){
-            fprintf(stdout, "%02X\t%s\t%c\n", test1[0].location, &test1[0].mode, 'C');
+            fprintf(stdout, "%02X\t%s\t%c\n", test2[0].location, &test2[0].mode, 'C');
         }
     }
 }
