@@ -60,21 +60,22 @@ bool canRead(char* currentByte){
 }
 
 bool canWrite(char* currentByte){
-    int i =1;
-    bool canWrite = true;
+    char save;
+    bool canWrite = false;
     setupSignalHandler();
     //Use sigsetjmp to save the mask
-    i = sigsetjmp(env, 1);
-
-    if(i == 1){
+    int i = sigsetjmp(env, 1);
+    printf("i= %i", i);
+    if(i == 0){
         // Tests to see if they bytes are writeable
-        char save = *currentByte;
-        //printf("%c", *currentByte);
-        *currentByte = 'H';
-        //printf("%c", *currentByte);
-        *currentByte = save;
-        //printf("%c", *currentByte);
+        save = *currentByte;
 
+        // See if we can write using an arbitrary byte
+        *currentByte = 'H';
+        // if succssful revert to original
+        *currentByte = save;
+        canWrite = true;
+       
     } else if( i == SEGFAULT){
         canWrite = false;
     }
