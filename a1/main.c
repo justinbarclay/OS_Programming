@@ -20,6 +20,7 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
 int main(){
     unsigned char things[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
     unsigned char t[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
+    unsigned char r[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
 
     unsigned char fake[6] = {'t', 'z', 'a', 'h', 'e', 'a'};
 

@@ -1,8 +1,3 @@
-#include "findpattern.h"
-#include "printbits.h"
-#include <string.h>
-#define _GNU_SOURCE
-
 /*******************************************************************
  * CMPUT 379 Assignment 1
  * Due:
@@ -15,6 +10,25 @@
  * - Must impliment a way to print the patmatch struct
  *   */
 
+/*  Libraries */
+#include "findpattern.h"
+#include <stdlib.h>
+
+/*  Macros */
+#define SEGFAULT 2
+#define setupSignalHandler(){struct sigaction act; \
+                            act.sa_handler = handleSegFault; \
+                            sigemptyset(&act.sa_mask); \
+                            act.sa_flags = 0;  \
+                            sigaction(SIGSEGV, &act, NULL);}
+/*  Globals*/
+jmp_buf env;
+
+void handleSegFault(int num){
+    // Used to handle sigaction struct
+    siglongjmp(env, SEGFAULT);
+    return;
+}
 
 unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
         struct patmatch *locations, unsigned int loclength){
@@ -25,9 +39,11 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
     char *currentAddress = 0x0;  // Address that will be incrimented to explore address space
 
     char* previousAddress = currentAddress; //Address before increment or change currentAddress
-    bool read;
-    bool write;
+    bool read = false;
+    bool write = false;
     size_t i;                   // Iterator for looping
+    int pagesize = getpagesize();
+
 
     while(currentAddress < 0xffffffff){
         int isMatch = -100;
@@ -39,8 +55,26 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
         }
 
         previousAddress = currentAddress;   // Synchronize currentAddress and previous Address
-        read = canRead(currentAddress);     // Check if address is readable
-        write = canWrite(currentAddress);   // Check if address is writeable
+
+        char test;
+        int z = sigsetjmp(env, 1);
+        read = false;
+        write = false;
+
+        setupSignalHandler();   // Sub in setting up signal handler
+
+        if(z == 0){
+            // Checks to see if current byte is readable
+            test = *currentAddress;
+            read = true;
+            if( z == 1){
+                // Tests to see if they bytes are writeable
+                char save = *currentAddress;
+                *currentAddress = 'H';
+                *currentAddress = save;
+
+            }
+        }
 
         // Check read/write permissions and set accordingly
         if(read){
@@ -81,7 +115,9 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
         } else {
             // If the memory space isn't accessible, search for a match in the range from
             // startAddress to currentAddress using find_match_in_range
-            currentAddress = nextPage(currentAddress); // Jump to next page
+            long distance = pagesize -  ((long)currentAddress % pagesize);
+
+            currentAddress += distance; // Jump to next page
             continue;
         }
         currentAddress++; // Move head by 1 to next current address
