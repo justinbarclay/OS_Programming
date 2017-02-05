@@ -25,8 +25,10 @@ int main(){
 
     unsigned int patlength = sizeof(things);
     struct patmatch locations_arr[1000];
-
-    unsigned int loclength = 0;
+    
+    printf("t: %s\n", t);
+    printf("fake: %s\n", fake);
+    unsigned int loclength = sizeof(locations_arr);
     int matches = 0;
     printf("main");
     matches = findpattern(things, patlength, locations_arr, loclength);

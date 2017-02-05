@@ -23,10 +23,11 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
 
     int pattern_occurrances = 0; // Keeping count of number of occurances
     char *currentAddress = 0x0;  // Address that will be incrimented to explore address space
-    
+
     char* previousAddress = currentAddress; //Address before increment or change currentAddress
     bool read;
     bool write;
+    size_t i;                   // Iterator for looping
 
     while(currentAddress < 0xffffffff){
         int isMatch = -100;
@@ -41,51 +42,50 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
         read = canRead(currentAddress);     // Check if address is readable
         write = canWrite(currentAddress);   // Check if address is writeable
 
-
+        // Check read/write permissions and set accordingly
         if(read){
-            matchPermission = 0;
-
+            matchPermission = MEM_RO;
             if(write){
-            // check for memory
-            matchPermission = 1;
+            matchPermission = MEM_RW;
             }
-
-            // check memory
-            size_t i;
+            // Iterate through patlength bytes starting at current address,
+            // to check for possible pattern matches
             for(i = 0; i < patlength; i++){
                 if(pattern[i] != currentAddress[i]){
+                    // Match not found, break out of loop
                     isMatch = 0;
                     break;
                 }
+                // Match found, set match indicator accordingly
                 isMatch = 1;
             }
 
             if(isMatch == 1){
-                struct patmatch match;
-                match.location = (unsigned int)currentAddress;
-                match.mode = matchPermission;
-                locations = &match;
-                locations++;
+                // Match has been found
+                struct patmatch match;    // Create patmatch struct
+                match.location = (unsigned int)currentAddress; // Add locaton to struct
+                match.mode = matchPermission;                  // Set correct match permissions
+                locations[pattern_occurrances] = match;        // Place match into locations
 
-                loclength++;
-                pattern_occurrances++;
+                pattern_occurrances++;  // Increase the number of patterns found
 
+                // DEBUGGING, MUST REMOVE //
                 printf("address %p\n", currentAddress);
-                printf("Match of pattern %p and %p", pattern, currentAddress);
+                printf("Match of pattern %p and %p\n", pattern, currentAddress);
 
-                currentAddress += patlength;
-                matchPermission = -100;
-                printf("match\n\n");
-                isMatch = 0;
+                currentAddress += patlength; // Skip ahead by the length of the pattern
+                                             // so duplicates aren't detected
+                matchPermission = -100;      // Ensure matchPermission is properly reset
+                isMatch = 0;                 // Reset match to no
             }
         } else {
             // If the memory space isn't accessible, search for a match in the range from
             // startAddress to currentAddress using find_match_in_range
-
             currentAddress = nextPage(currentAddress); // Jump to next page
             continue;
         }
-        currentAddress++;
+        currentAddress++; // Move head by 1 to next current address
     }
+
     return pattern_occurrances;
 }
