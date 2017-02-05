@@ -70,7 +70,7 @@ int main(){
     
     found = findpattern((unsigned char*) pattern, 10, test2, 100);
 
-    report(1, found, test1, test2);
+    report(2, found, test1, test2);
 
 
     // Free malloc variables
@@ -91,14 +91,15 @@ int main(){
 void report(int testNum, unsigned int length, struct patmatch* test1, struct patmatch* test2){
     printf("Report %i matches found\n", length);
     size_t i = 0;
-    //char* memoryType[2] = {"MEM_RO", "MEM_RW"};
-    if(testNum == 0){
+    char* memoryType[2] = {"MEM_RO", "MEM_RW"};
+    fprintf(stdout, "Pass %i\n Total Matches %02i\n", testNum, length);
+    if(testNum == 1){
         for(i = 0; i < length; ++i){
-            fprintf(stdout, "%02X\t%s\t\n", test1[i].location, &test1[i].mode);
+            fprintf(stdout, "0x%02X\t%s\t\n", test1[i].location, memoryType[test1[i].mode]);
         }   
     } else {
         for(i = 0; i < length; ++i){
-            fprintf(stdout, "%02X\t%s\t%c\n", test2[i].location, &test2[i].mode, 'C');
+            fprintf(stdout, "0x%02X\t%s\t%c\n", test2[i].location, memoryType[test2[i].mode], 'C');
         }
     }
 }
