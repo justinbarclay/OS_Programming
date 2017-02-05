@@ -50,13 +50,24 @@ int main(int argc, char *argv[]){
         return -1;
     }
 
-    //pattern is patLength to get the terminating null character
     unsigned char pattern[patLength];
-    memcpy(pattern, argv[1], patLength);
+    strncpy(pattern, argv[1], patLength);
+
+    char stackPattern1[patLength];
+    char stackPattern2[patLength];
+    char stackPattern3[patLength];
+    char stackPattern4[patLength];
+    char stackPattern5[patLength];
+    char stackPattern6[patLength];
+    char stackPattern7[patLength];
+    char stackPattern8[patLength];
+    char stackPattern9[patLength];
 
     struct patmatch* test1 = calloc(100, sizeof(struct patmatch));
     
     int found;
+
+    
 
     fprintf(stdout, "test1\n");
     fprintf(stdout, "Here we are findpattern's ability to find a pattern on the heap using memalign and mprotect.\n");
@@ -64,31 +75,33 @@ int main(int argc, char *argv[]){
     //Converting pattern to unsigned char* as it is a pointer to first element in a list
     found = findpattern((unsigned char*) pattern, patLength, test1, 100);
     report(1, found, test1, 0);
-    // Copy pattern over
+
+
+    memcpy(stackPattern1,pattern, patLength);
+    memcpy(stackPattern2,pattern, patLength);
+    memcpy(stackPattern3,pattern, patLength);
+    memcpy(stackPattern4,pattern, patLength);
+    memcpy(stackPattern5,pattern, patLength);
+    memcpy(stackPattern6,pattern, patLength);
+    memcpy(stackPattern7,pattern, patLength);
+    memcpy(stackPattern8,pattern, patLength);
+    memcpy(stackPattern9,pattern, patLength);
     
-    LinkedList* node1 = addNode(0, pattern, patLength);
-    LinkedList* node2 = addNode(node1, pattern, patLength);
-    LinkedList* node3 = addNode(node2, pattern, patLength);
-    LinkedList* node4 = addNode(node3, pattern, patLength);
-    LinkedList* node5 = addNode(node4, pattern, patLength);
-    LinkedList* node6 = addNode(node5, pattern, patLength);
-    LinkedList* node7 = addNode(node6, pattern, patLength);
-    LinkedList* node8 = addNode(node7, pattern, patLength);
-    LinkedList* node9 = addNode(node8, pattern, patLength);
 
-    long nodeBoundary = (long) node9->pattern - ((long) node9->pattern % getpagesize());
+    
+    //long nodeBoundary = (long) node9->pattern - ((long) node9->pattern % getpagesize());
 
-    mprotect((void *) nodeBoundary, getpagesize(), PROT_READ);
+  //  mprotect((void *) nodeBoundary, getpagesize(), PROT_READ);
     struct patmatch* test2 = malloc(sizeof(struct patmatch)*100);
 
     
     found = findpattern((unsigned char*) pattern, patLength, test2, 100);
 
-    mprotect((void *) nodeBoundary, getpagesize(), PROT_WRITE);
+    //mprotect((void *) nodeBoundary, getpagesize(), PROT_WRITE);
     report(2, found, test1, test2);
 
     // Free malloc variables
-    free(node9);
+    //freeNodes(node9);
     free(test1);
     free(test2);
     return 0;
@@ -111,19 +124,19 @@ void report(int testNum, unsigned int length, struct patmatch* test1, struct pat
 }
 
 LinkedList* addNode(LinkedList* head, unsigned char* pattern, int length){
-   //create a link
-   LinkedList* next = calloc(1, sizeof(LinkedList));
+    //create a link
+    LinkedList* next = calloc(1, sizeof(LinkedList));
 
-   //Allocate a page per pattern, for easily protecting of regions
-   //This is overkill but it wouldn't let me protect pages otherwise
-   posix_memalign((void**) &next->pattern, getpagesize(), getpagesize());
-   memcpy(next->pattern, pattern, length);
-   next->next = head;
+    //Allocate a page per pattern, for easily protecting of regions
+    //This is overkill but it wouldn't let me protect pages otherwise
+    posix_memalign((void**) &next->pattern, getpagesize(), getpagesize());
+    memcpy(next->pattern, pattern, length);
+    next->next = head;
    
-   //point it to old first node
-   head = next;
+    //point it to old first node
+    head = next;
 
-   return next;
+    return next;
 }
 
 void freeNodes(LinkedList* head){
