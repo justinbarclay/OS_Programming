@@ -58,7 +58,6 @@ int main(int argc, char *argv[]){
     struct patmatch* test2 = calloc(100, sizeof(struct patmatch));
     int found;
 
-
     fprintf(stdout, "test1\n");
     fprintf(stdout, "Here we are findpattern's ability to find a pattern on the heap using memalign and mprotect.\n");
 
@@ -85,9 +84,6 @@ int main(int argc, char *argv[]){
 
     /* printf("Memprotect %i\n", mprotect((void *) nodeBoundary, getpagesize(), PROT_WRITE)); */
     report(2, found, test1, test2);
-    printf("Pattern %s\n",  pattern);
-    fflush(stdout);
-    printf("Pattern %s\n",  node9->pattern);
     
     // Free malloc variables
     free(node9);
