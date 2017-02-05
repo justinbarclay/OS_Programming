@@ -35,8 +35,6 @@ int main(){
     unsigned int patlength = sizeof(things);
     struct patmatch locations_arr[1000];
     
-    printf("t: %s\n", t);
-    printf("fake: %s\n", fake);
     unsigned int loclength = sizeof(locations_arr);
     int matches = 0;
     printf("main");

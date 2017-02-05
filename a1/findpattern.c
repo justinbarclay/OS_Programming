@@ -98,7 +98,6 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
                 z = sigsetjmp(env, 2);
                 if(z == 0){
 
-                    printf("Entered\n");
                     // Tests to see if they bytes are writeable
                     char save = *currentAddress;
                     *currentAddress = 'H';
@@ -106,7 +105,6 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
                     write = true;
                     matchPermission = MEM_RW;
                 }
-                 printf("Looping\n %i", z);
                 // Match has been found
                 struct patmatch match;    // Create patmatch struct
                 match.location = (unsigned int)currentAddress; // Add locaton to struct
@@ -115,7 +113,6 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
 
                 pattern_occurrances++;  // Increase the number of patterns found
 
-                printf("Match location: %p", currentAddress);
                 currentAddress += patlength; // Skip ahead by the length of the pattern
                                              // so duplicates aren't detected
                 matchPermission = -100;      // Ensure matchPermission is properly reset
