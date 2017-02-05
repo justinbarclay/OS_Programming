@@ -88,7 +88,7 @@ int main(int argc, char *argv[]){
     report(2, found, test1, test2);
 
     // Free malloc variables
-    free(node9);
+    freeNodes(node9);
     free(test1);
     free(test2);
     return 0;
@@ -130,9 +130,7 @@ void freeNodes(LinkedList* head){
     LinkedList* next;
     while(head->next != 0){
         free(head->pattern);
-        next = head->next;
         head = head->next;
-        free(next);        
     }
 }
 

@@ -89,15 +89,16 @@ int main(int argc, char *argv[]){
     
 
     
-    //long nodeBoundary = (long) node9->pattern - ((long) node9->pattern % getpagesize());
+    long nodeBoundary = (long) stackPattern8 - ((long) stackPattern8 % getpagesize());
 
-  //  mprotect((void *) nodeBoundary, getpagesize(), PROT_READ);
-    struct patmatch* test2 = malloc(sizeof(struct patmatch)*100);
+    mprotect((void *) nodeBoundary, getpagesize(), PROT_READ);
+    struct patmatch* test2;
+    posix_memalign((void** )&test2, getpagesize(), sizeof(struct patmatch)*100);
 
     
     found = findpattern((unsigned char*) pattern, patLength, test2, 100);
 
-    //mprotect((void *) nodeBoundary, getpagesize(), PROT_WRITE);
+    mprotect((void *) nodeBoundary, getpagesize(), PROT_WRITE);
     report(2, found, test1, test2);
 
     // Free malloc variables
