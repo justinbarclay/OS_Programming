@@ -18,15 +18,19 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
         struct patmatch *locations, unsigned int loclength);
 /*  Main */
 int main(){
-    unsigned char things[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
-    unsigned char t[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
-    unsigned char r[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
+    unsigned char things[6] = {'B', 'e', 'a', 'r', 's' };
+
+    unsigned char fake[6] = {'t', 'z', 'a', 'h', 'e', 'a'};
     
-    printf("Address t %p\n", things);
+    unsigned char t[6] = {'B', 'e', 'a', 'r', 's' };
+
+    unsigned char r[6] = {'B', 'e', 'a', 'r', 's' };
+
+    
+    printf("Address things  %p\n", things);
     printf("Address t %p\n", t);
     printf("Address r %p\n", r);
 
-    unsigned char fake[6] = {'t', 'z', 'a', 'h', 'e', 'a'};
 
     unsigned int patlength = sizeof(things);
     struct patmatch locations_arr[1000];

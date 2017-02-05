@@ -44,12 +44,12 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
     size_t i;                   // Iterator for looping
     int pagesize = getpagesize();
 
-    struct sigaction act; 
-    act.sa_handler = handleSegFault; 
-    sigemptyset(&act.sa_mask); 
-    act.sa_flags = 0;  
+    struct sigaction act;
+    act.sa_handler = handleSegFault;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = 0;
     sigaction(SIGSEGV, &act, NULL);
-        
+
     while(currentAddress < 0xffffffff){
         int isMatch = -100;
         int matchPermission = -1;
@@ -64,15 +64,15 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
         char test;
         read = false;
         write = false;
-        
+
         //setupSignalHandler();   // Sub in setting up signal handler
-        
+
         int z = sigsetjmp(env, 1);
-        
+
         if(z == 0){
             // Checks to see if current byte is readable
             test = *currentAddress;
-            read = true;   
+            read = true;
         }
 
         // Check read/write permissions and set accordingly
@@ -115,20 +115,17 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
 
                 pattern_occurrances++;  // Increase the number of patterns found
 
-                // DEBUGGING, MUST REMOVE //
-                /* printf("address %p\n", currentAddress); */
-                /* printf("Match of pattern %p and %p\n", pattern, currentAddress); */
-
+                printf("Match location: %p", currentAddress);
                 currentAddress += patlength; // Skip ahead by the length of the pattern
                                              // so duplicates aren't detected
                 matchPermission = -100;      // Ensure matchPermission is properly reset
                 isMatch = 0;                 // Reset match to no
+                continue;
             }
         } else {
             // If the memory space isn't accessible, search for a match in the range from
             // startAddress to currentAddress using find_match_in_range
 
-            
             // Find the pagesize for the system
             long distance = pagesize -  ((long)currentAddress % pagesize);
 
