@@ -107,7 +107,7 @@ void report(int testNum, unsigned int length, struct patmatch* test1, struct pat
         }   
     } else {
         for(i = 0; i < length; ++i){
-            fprintf(stdout, "0x%02X\t%s\t%c\n", test2[i].location, memoryType[test2[i].mode], 'C');
+            fprintf(stdout, "0x%02X\t%s\t%c\n", test2[i].location, memoryType[test2[i].mode]);
         }
     }
 }
