@@ -11,45 +11,27 @@
  * *****************************************************************/
 
 /*  imports */
-#include <stdio.h>
-#include <stdlib.h>
+#include "readmem.h"
 #include "findpattern.h"
-#include <string.h>
-#include <elf.h>
-
-/*  Macros */
-
-/* function definitions */
-void print_byte_array(unsigned char *pattern, unsigned int patlength,\
-        struct patmatch *locations, unsigned int loclength); //Used for debugging patterns
-
+#include <stdlib.h>
+unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
+        struct patmatch *locations, unsigned int loclength);
 /*  Main */
+int main(){
+    unsigned char things[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
+    unsigned char t[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
+    unsigned char r[6] = {'h', 'e', 'a', 'h', 'e', 'a'};
 
-int main(int argc, char *argv[]){
+    unsigned char fake[6] = {'t', 'z', 'a', 'h', 'e', 'a'};
 
-    //Variable declarations to be fed into findpattern()
-    int pattern_occurrances = 0;
-    unsigned char *pattern;
-    unsigned int patlength;
-    struct patmatch *locations;
-    unsigned int loclength;
+    unsigned int patlength = sizeof(things);
+    struct patmatch locations_arr[1000];
     
-    //Variable initializtions
-    pattern = (unsigned char *) (malloc(sizeof(char)));
-    memcpy(pattern, "a", sizeof(unsigned char));
-
-    //Calling findpattern
-    //pattern_occurrances = findpattern(pattern, patlength, locations, loclength);
-    
-    printf("%u", pattern);
-    return 0;
-}
-/*  Function Bodies */
-void print_byte_array(unsigned char *pattern, unsigned int patlength,\
-        struct patmatch *locations, unsigned int loclength){
-
-    //For debugging purposes
-    printf("Printing byte array for pattern matching\n");
-    printf("pattern: %s\n", pattern);
-    printf("patlength: %d\n", patlength);
+    printf("t: %s\n", t);
+    printf("fake: %s\n", fake);
+    unsigned int loclength = sizeof(locations_arr);
+    int matches = 0;
+    printf("main");
+    matches = findpattern(things, patlength, locations_arr, loclength);
+    printf("matches found: %d\n", matches);
 }
