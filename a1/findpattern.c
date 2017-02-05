@@ -67,12 +67,13 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
             // Checks to see if current byte is readable
             test = *currentAddress;
             read = true;
-            if( z == 1){
+            if( z == 0){
+                
                 // Tests to see if they bytes are writeable
                 char save = *currentAddress;
                 *currentAddress = 'H';
                 *currentAddress = save;
-
+                write=true;
             }
         }
 
