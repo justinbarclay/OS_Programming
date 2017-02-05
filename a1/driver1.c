@@ -40,21 +40,20 @@ LinkedList* addNode(LinkedList* head, unsigned char* pattern, int length);
 void freeNodes(LinkedList* head);
 int main(){
     unsigned char pattern[10] = {'X', 'Y', '1', '0', 'A', 'd', 't', '@', ' ', '8'};
-    
+    printf("Address %p\n", pattern);
     struct patmatch* test1 = calloc(100, sizeof(struct patmatch));
     struct patmatch* test2 = calloc(100, sizeof(struct patmatch));
     int found;
 
 
     fprintf(stdout, "test1\n");
-    fprintf(stdout, "Testing findpattern's ability to find a pattern on the heap. For this, we used memcpy\n");
-    
-    //Converting pattern to unsigned char* as it is a pointer to first element in a list
-    found = findpattern(pattern, 10, test1, 100);
+    fprintf(stdout, "Testing findpattern's ability to find a pattern on the heap. For this, we used memcpy.\n");
 
+    //Converting pattern to unsigned char* as it is a pointer to first element in a list
+    found = findpattern((unsigned char*) pattern, 10, test1, 100);
     report(1, found, test1, 0);
     // Copy pattern over
-
+    
     LinkedList* node1 = addNode(0, &pattern[0], sizeof(pattern));
     LinkedList* node2 = addNode(node1, &pattern[0], sizeof(pattern));
     LinkedList* node3 = addNode(node2, &pattern[0], sizeof(pattern));
@@ -64,13 +63,18 @@ int main(){
     LinkedList* node7 = addNode(node6, &pattern[0], sizeof(pattern));
     LinkedList* node8 = addNode(node7, &pattern[0], sizeof(pattern));
     LinkedList* node9 = addNode(node8, &pattern[0], sizeof(pattern));
+    
 
-    printf("Memprotect %i\n", mprotect(node9, sizeof(LinkedList)*2, PROT_READ));
+    long nodeBoundary = ((int) node9/getpagesize())*getpagesize();
+    /* printf("Memprotect %i\n", mprotect((void *) nodeBoundary, getpagesize(), PROT_READ)); */
+
     found = findpattern((unsigned char*) pattern, 10, test2, 100);
 
+    /* printf("Memprotect %i\n", mprotect((void *) nodeBoundary, getpagesize(), PROT_WRITE)); */
     report(2, found, test1, test2);
-
-
+    printf("Pattern %s\n",  pattern);
+    printf("Pattern %s\n",  node9->pattern);
+    
     // Free malloc variables
     free(node9);
     free(test1);
@@ -81,7 +85,7 @@ int main(){
 void report(int testNum, unsigned int length, struct patmatch* test1, struct patmatch* test2){
     printf("Report %i matches found\n", length);
     size_t i = 0;
-    char* memoryType[2] = {"MEM_RO", "MEM_RW"};
+    char* memoryType[2] = {"MEM_RW", "MEM_RO"};
     fprintf(stdout, "Pass %i\n Total Matches %02i\n", testNum, length);
     if(testNum == 1){
         for(i = 0; i < length; ++i){
