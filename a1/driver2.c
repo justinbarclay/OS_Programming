@@ -11,7 +11,7 @@
  * Group: Justin Barclay & Mackenzie Bligh
  * CCIDs: jbarclay & bligh
  * *****************************************************************
- * Driver2 tests findpatter.c by copying the pattern to a local
+ * Driver2 tests findpattern.c by copying the pattern to a local
  * variable, testing to see how many patterns exist in memory. This
  * first invocation should find at least two, one for argv[1] and one
  * for pattern. Next it adds 9 copies of the pattern to local variables
@@ -21,8 +21,10 @@
  * in heap.
  * *****************************************************************/
 
+/*  Function Declarations */
 void report(int testNum, unsigned int length, struct patmatch* test1, struct patmatch* test2);
 size_t getStringLength(char* pattern);
+void detectChange(struct patmatch* location1,struct patmatch* location2, char* differences, size_t length);
 
 int main(int argc, char *argv[]){
     int patLength = 0;
@@ -96,7 +98,7 @@ int main(int argc, char *argv[]){
     free(test2);
     return 0;
 }
-
+/*  Function bodies */
 void report(int testNum, unsigned int length, struct patmatch* test1, struct patmatch* test2){
     // Function to report the found patterns
     char* memoryType[2] = {"MEM_RW", "MEM_RO"};
