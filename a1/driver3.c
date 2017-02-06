@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
         printf("Invalid input, please ensure that only one command line argument is passed in.\n");
         return -1;
     }
-    //
+    
     //pattern is patLength to get the terminating null character
     unsigned char pattern[patLength+1];
     strncpy(pattern, argv[1], patLength+1);
@@ -35,21 +35,30 @@ int main(int argc, char *argv[]){
     fprintf(stdout, "test3\n");
     fprintf(stdout, "mmap is used to place a file descriptor of testing.txt (created by this program) into memory\n\n");
 
+    
+    // Create a file containing the pattern, and write to it to ensure pattern exists
+    fp = fopen("driver3Mapping.txt", "w+");
+    fprintf(fp, "%s", pattern);
+    fclose(fp);
+    fp = NULL;
+
+    // Get filesize
+    struct stat st;
+    stat("driver3Mapping.txt", &st);
+
+    // Open file descriptor to file you just created
+    fileDescriptor = open("driver3Mapping.txt", O_WRONLY);
+
+    // Map pattern into memory using mmap(2)
+    void *p = mmap(&fileDescriptor,st.st_size ,PROT_WRITE, MAP_SHARED, fileDescriptor, 0);
+    
     // Converting pattern to unsigned char* as it is a pointer to first element in a list
     // Make first pass and report
     found = findpattern((unsigned char*) pattern, 10, test1, 100);
     report(1, found, test1, 0);
 
-    // Create a file containing the pattern, and write to it to ensure pattern exists
-    fp = fopen("driver3Mapping.txt", "w+");
-    fprintf(fp, "%s", pattern);
-    fp = NULL;
-
-    // Open file descriptor to file you just created
-    fileDescriptor = open("testing.txt", O_WRONLY);
-
-    // Map pattern into memory using mmap(2)
-    void *p = mmap(NULL, sizeof(fp), PROT_READ, MAP_SHARED, fileDescriptor, 0);
+    // Make remapping of memory from read
+     p = mmap(&fileDescriptor,st.st_size , PROT_READ, MAP_SHARED, fileDescriptor, 0);
 
     // Make second pass and report
     found = findpattern((unsigned char*) pattern, 10, test2, 100);
@@ -58,8 +67,7 @@ int main(int argc, char *argv[]){
     // Free malloc variables
     free(test1);
     free(test2);
-
-    /* printf("Memprotect %i\n", mprotect((void *) nodeBoundary, getpagesize(), PROT_READ)); */
+    close(fileDescriptor);
 }
 
 /*  Function bodies */
