@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
-#include "findpattern.h"
+#include "../findpattern.h"
 
 /*******************************************************************
  * CMPUT 379 Assignment 1

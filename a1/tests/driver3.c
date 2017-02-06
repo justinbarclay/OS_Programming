@@ -3,7 +3,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#include "findpattern.h"
+#include "../findpattern.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
