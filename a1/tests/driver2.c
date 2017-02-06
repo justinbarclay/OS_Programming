@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/mman.h>
 #include "../findpattern.h"
 
@@ -145,7 +146,7 @@ void detectChange(struct patmatch* location1,struct patmatch* location2, char* d
             if(location1[j].location == location2[i].location){
                 differences[i] = 'U';
                 if(location1[j].mode != location2[i].mode){
-                    differences[j] = 'C';
+                    differences[i] = 'C';
                 }
             }
         }
