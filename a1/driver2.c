@@ -110,10 +110,13 @@ void report(int testNum, unsigned int length, struct patmatch* test1, struct pat
         }
         fprintf(stdout, "\n");
     } else {
+        char differences[length];
+        detectChange(test1, test2, differences,length);
 
         //test2, let's see what differences there are
+      
         for(i = 0; i < length; ++i){
-            fprintf(stdout, "0x%02X\t%s\t\n", test2[i].location, memoryType[test2[i].mode]);
+            fprintf(stdout, "0x%02X\t%s\t%c\n", test2[i].location, memoryType[test2[i].mode], differences[i]);
         }
     }
 }
@@ -127,4 +130,22 @@ size_t getStringLength(char* pattern){
         i++;
     }
     return i;
+}
+
+void detectChange(struct patmatch* location1,struct patmatch* location2, char* differences, size_t length){
+    //This function expects an array of two patmatch arrays, and a pointer to an empter char array to
+    //store the tracking of difference
+    size_t i;
+    for(i = 0; i < length; ++i){
+        differences[i] = 'N';
+        size_t j;
+        for(j=0; j < length; ++j){
+            if(location1[j].location == location2[i].location){
+                differences[i] = 'U';
+                if(location1[j].mode != location2[i].mode){
+                    differences[j] = 'C';
+                }
+            }
+        }
+    }
 }

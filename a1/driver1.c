@@ -33,6 +33,7 @@ void report(int testNum, unsigned int length, struct patmatch* test1, struct pat
 LinkedList* addNode(LinkedList* head, unsigned char* pattern, int length);
 void freeNodes(LinkedList* head);
 size_t getStringLength(char* pattern);
+void detectChange(struct patmatch* location1,struct patmatch* location2, char* differences, size_t length);
 
 
 int main(int argc, char *argv[]){
@@ -47,6 +48,7 @@ int main(int argc, char *argv[]){
     //Copy original pattern into another local variable of known size
     unsigned char pattern[patLength];
     memcpy(pattern, argv[1], patLength);
+    LinkedList* node1 = addNode(0, pattern, patLength);
 
     //store locations and memory status from test 1
     struct patmatch* test1 = calloc(100, sizeof(struct patmatch));
@@ -63,7 +65,6 @@ int main(int argc, char *argv[]){
     report(1, found, test1, 0);
 
     // Copy pattern over
-    LinkedList* node1 = addNode(0, pattern, patLength);
     LinkedList* node2 = addNode(node1, pattern, patLength);
     LinkedList* node3 = addNode(node2, pattern, patLength);
     LinkedList* node4 = addNode(node3, pattern, patLength);
@@ -74,9 +75,11 @@ int main(int argc, char *argv[]){
     LinkedList* node9 = addNode(node8, pattern, patLength);
 
     // Protect one node from writing
-    long nodeBoundary = (long) node9->pattern - ((long) node9->pattern % getpagesize());
+    long nodeBoundary = (long) node1->pattern - ((long) node9->pattern % getpagesize());
     mprotect((void *) nodeBoundary, getpagesize(), PROT_READ);
 
+    long node9Boundary = (long) node9->pattern - ((long) node9->pattern % getpagesize());
+    mprotect((void *) nodeBoundary, getpagesize(), PROT_READ);
     // Store results of second test here
     struct patmatch* test2 = malloc(sizeof(struct patmatch)*100);
 
@@ -85,7 +88,8 @@ int main(int argc, char *argv[]){
 
     //Make node read/write
     mprotect((void *) nodeBoundary, getpagesize(), PROT_WRITE);
-
+    mprotect((void *) node9Boundary, getpagesize(), PROT_WRITE);
+    
     // Report our findings
     report(2, found, test1, test2);
 
@@ -107,8 +111,11 @@ void report(int testNum, unsigned int length, struct patmatch* test1, struct pat
             fprintf(stdout, "0x%02X\t%s\t\n", test1[i].location, memoryType[test1[i].mode]);
         }
     } else {
+        char differences[length];
+        detectChange(test1, test2, differences,length);
+        
         for(i = 0; i < length; ++i){
-            fprintf(stdout, "0x%02X\t%s\t\n", test2[i].location, memoryType[test2[i].mode]);
+            fprintf(stdout, "0x%02X\t%s\t%c\n", test2[i].location, memoryType[test2[i].mode], differences[i]);
         }
     }
 }
@@ -148,4 +155,22 @@ size_t getStringLength(char* pattern){
         i++;
     }
     return i;
+}
+
+void detectChange(struct patmatch* location1,struct patmatch* location2, char* differences, size_t length){
+    //This function expects an array of two patmatch arrays, and a pointer to an empter char array to
+    //store the tracking of difference
+    size_t i;
+    for(i = 0; i < length; ++i){
+        differences[i] = 'N';
+        size_t j;
+        for(j=0; j < length; ++j){
+            if(location1[j].location == location2[i].location){
+                differences[i] = 'U';
+                if(location1[j].mode != location2[i].mode){
+                    differences[j] = 'C';
+                }
+            }
+        }
+    }
 }
