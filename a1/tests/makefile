@@ -1,10 +1,15 @@
 CC=gcc
 IDIR=../
-CFLAGS = -m32 -w 
-p=walalds
+CFLAGS = -m32 -w -g
+p=makefilesarehorrid
 
 findpattern.o: ../findpattern.c ../findpattern.h
 	$(CC) $(CFLAGS) -c ../findpattern.c
+
+all: driver1 driver2 driver3
+	./driver1 $(p) > test_results.txt
+	./driver2 $(p) >> test_results.txt
+	./driver3 $(p) >> test_results.txt
 
 driver1: findpattern.o
 	$(CC) $(CFLAGS) -o driver1 driver1.c findpattern.o 
