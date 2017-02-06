@@ -102,7 +102,7 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
 
                 z = sigsetjmp(env, 2);
                 if(z == 0){
-
+                    
                     // Tests to see if they bytes are writeable
                     char save = *currentAddress;
                     *currentAddress = 'H';
@@ -136,6 +136,6 @@ unsigned int findpattern (unsigned char *pattern, unsigned int patlength,\
         }
         currentAddress++; // Move head by 1 to next current address
     }
-
+    
     return pattern_occurrances;
 }
