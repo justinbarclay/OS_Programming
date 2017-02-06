@@ -9,7 +9,7 @@
  * Due:
  *
  * Group: Justin Barclay & Mackenzie Bligh
- * CCIDs: jbarclay & bligh 
+ * CCIDs: jbarclay & bligh
  * *****************************************************************
  * Driver2 tests findpatter.c by copying the pattern to a local
  * variable, testing to see how many patterns exist in memory. This
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
         return -1;
     }
 
-    //Copy original pattern into another local variable of known size
+    // Copy original pattern into another local variable of known size
     unsigned char pattern[patLength];
     memcpy(pattern, argv[1], patLength);
 
@@ -48,23 +48,23 @@ int main(int argc, char *argv[]){
     char stackPattern8[patLength];
     char stackPattern9[patLength];
 
-    //store locations and memory status from test 1
+    // Store locations and memory status from test 1
     struct patmatch* test1 = calloc(100, sizeof(struct patmatch));
 
-    //Track instances of numbers of pattern found in memory
+    // Track instances of numbers of pattern found in memory
     int found;
 
-    //Boiler plate
+    // Boiler plate
     fprintf(stdout, "test1\n");
     fprintf(stdout, "Here we are findpattern's ability to find a pattern on the heap using memalign and mprotect.\n\n");
 
-    //Converting pattern to unsigned char* as it is a pointer to first element in a list
+    // Converting pattern to unsigned char* as it is a pointer to first element in a list
     found = findpattern((unsigned char*) pattern, patLength, test1, 100);
 
     // Report our findings
     report(1, found, test1, 0);
 
-    //Copy pattern into local variables
+    // Copy pattern into local variables
     memcpy(stackPattern1,pattern, patLength);
     memcpy(stackPattern2,pattern, patLength);
     memcpy(stackPattern3,pattern, patLength);
@@ -74,20 +74,20 @@ int main(int argc, char *argv[]){
     memcpy(stackPattern7,pattern, patLength);
     memcpy(stackPattern8,pattern, patLength);
     memcpy(stackPattern9,pattern, patLength);
-    
+
 
     // Set one variable to read only
     long nodeBoundary = (long) stackPattern8 - ((long) stackPattern8 % getpagesize());
     mprotect((void *) nodeBoundary, getpagesize(), PROT_READ);
 
-    //Have to set test2 onto a new page due to setting a variable to readonly.
+    // Have to set test2 onto a new page due to setting a variable to readonly.
     struct patmatch* test2;
     posix_memalign((void** )&test2, getpagesize(), sizeof(struct patmatch)*100);
 
-    
+
     found = findpattern((unsigned char*) pattern, patLength, test2, 100);
 
-    //Make StackPattern8 RW
+    // Make StackPattern8 RW
     mprotect((void *) nodeBoundary, getpagesize(), PROT_WRITE);
     report(2, found, test1, test2);
 
@@ -104,7 +104,7 @@ void report(int testNum, unsigned int length, struct patmatch* test1, struct pat
 
     size_t i = 0;
     if(testNum == 1){
-        // IF this is our first test, we can't check for change in state
+        // If this is our first test, we can't check for change in state
         for(i = 0; i < length; ++i){
             fprintf(stdout, "0x%02X\t%s\t\n", test1[i].location, memoryType[test1[i].mode]);
         }
@@ -113,8 +113,8 @@ void report(int testNum, unsigned int length, struct patmatch* test1, struct pat
         char differences[length];
         detectChange(test1, test2, differences,length);
 
-        //test2, let's see what differences there are
-      
+        // Test2, let's see what differences there are
+
         for(i = 0; i < length; ++i){
             fprintf(stdout, "0x%02X\t%s\t%c\n", test2[i].location, memoryType[test2[i].mode], differences[i]);
         }
@@ -122,7 +122,7 @@ void report(int testNum, unsigned int length, struct patmatch* test1, struct pat
 }
 
 size_t getStringLength(char* pattern){
-    // look for the null character in a char array and report back its position in that array
+    // Look for the null character in a char array and report back its position in that array
     char null = '\0';
 
     size_t i=0;
@@ -133,8 +133,8 @@ size_t getStringLength(char* pattern){
 }
 
 void detectChange(struct patmatch* location1,struct patmatch* location2, char* differences, size_t length){
-    //This function expects an array of two patmatch arrays, and a pointer to an empter char array to
-    //store the tracking of difference
+    // This function expects an array of two patmatch arrays, and a pointer to an empter char array to
+    // store the tracking of difference
     size_t i;
     for(i = 0; i < length; ++i){
         differences[i] = 'N';
