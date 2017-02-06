@@ -1,0 +1,10 @@
+test3
+mmap is used to place a file descriptor of testing.txt (created by this program) into memory
+
+Pass 1
+Total Matches 01
+0xFF7F9F80	MEM_RW	
+
+Pass 2
+Total Matches 01
+0xFF7F9F80	MEM_RW	U

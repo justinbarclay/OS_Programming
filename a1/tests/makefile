@@ -13,12 +13,12 @@ test1: driver1
 
 driver2: findpattern.o 
 	$(CC) $(CFLAGS) -o driver2 driver2.c findpattern.o
-test2:
+test2:driver2
 	./driver2 $(p) > test_results.txt
 
 driver3: findpattern.o
-	$(CC) $(CFLAGS) -o driver2 driver2.c findpattern.c findpattern.h
-test3:
+	$(CC) $(CFLAGS) -o driver3 driver3.c findpattern.o
+test3: driver3
 	./driver3 $(p) > test_results.txt
 
 clean:
