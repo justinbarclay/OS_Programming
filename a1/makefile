@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS = -Wall -m32
-DEPS= findpattern.h readmem.h
+DEPS= findpattern.h 
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

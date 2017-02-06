@@ -1,0 +1,24 @@
+Driver1 tests findpattern.c by copying the pattern to a local
+variable, testing to see how many patterns exist in memory. This
+first invocation should find at least two, one for argv[1] and one
+for pattern. Next it adds 9 copies of the pattern to a linked list
+and mprotects (using PROT_READ) the node9. This then reports back
+on the changes to all of memory. The report should mention it found
+atleast 11 patterns, with one being RO, 2 in stack memory and 9
+in heap.
+
+Driver2 tests findpattern.c by copying the pattern to a local
+variable, testing to see how many patterns exist in memory. This
+first invocation should find at least two, one for argv[1] and one
+for pattern. Next it adds 9 copies of the pattern to local variables
+and mprotects (using PROT_READ) the stackPattern8. This then reports back
+on the changes to all of memory. The report should mention it found
+atleast 11 patterns, with one being RO, 2 in stack memory and 9
+in heap.
+
+Driver3 tests findpattern.c by first taking command line input
+for a pattern, and writing that pattern into a file. It then opens
+a file descriptor to that file, makes a read mapping, and displays
+the result of findpattern. Then it remaps that mapping to a write
+mapping, calls findpattern, and displays the result again before 
+terminating.

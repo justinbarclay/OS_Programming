@@ -11,7 +11,7 @@
  * Group: Justin Barclay & Mackenzie Bligh
  * CCIDs: jbarclay & bligh
  * *****************************************************************
- * Driver1 tests findpatter.c by copying the pattern to a local
+ * Driver1 tests findpattern.c by copying the pattern to a local
  * variable, testing to see how many patterns exist in memory. This
  * first invocation should find at least two, one for argv[1] and one
  * for pattern. Next it adds 9 copies of the pattern to a linked list
