@@ -9,7 +9,7 @@
  * Due:
  *
  * Group: Justin Barclay & Mackenzie Bligh
- * CCIDs: jbarclay & bligh 
+ * CCIDs: jbarclay & bligh
  * *****************************************************************
  * Driver1 tests findpatter.c by copying the pattern to a local
  * variable, testing to see how many patterns exist in memory. This
@@ -45,22 +45,22 @@ int main(int argc, char *argv[]){
         return -1;
     }
 
-    //Copy original pattern into another local variable of known size
+    // Copy original pattern into another local variable of known size
     unsigned char pattern[patLength];
     memcpy(pattern, argv[1], patLength);
     LinkedList* node1 = addNode(0, pattern, patLength);
 
-    //store locations and memory status from test 1
+    // Store locations and memory status from test 1
     struct patmatch* test1 = calloc(100, sizeof(struct patmatch));
 
-    //Track instances of numbers of pattern found in memory
+    // Track instances of numbers of pattern found in memory
     int found;
 
-    //Boiler plate
+    // Boiler plate
     fprintf(stdout, "test1\n");
     fprintf(stdout, "Here we are findpattern's ability to find a pattern on the heap using memalign and mprotect.\n\n");
 
-    //Converting pattern to unsigned char* as it is a pointer to first element in a list
+    // Converting pattern to unsigned char* as it is a pointer to first element in a list
     found = findpattern((unsigned char*) pattern, patLength, test1, 100);
     report(1, found, test1, 0);
 
@@ -86,10 +86,10 @@ int main(int argc, char *argv[]){
     // Test for changes
     found = findpattern((unsigned char*) pattern, patLength, test2, 100);
 
-    //Make node read/write
+    // Make node read/write
     mprotect((void *) nodeBoundary, getpagesize(), PROT_WRITE);
     mprotect((void *) node9Boundary, getpagesize(), PROT_WRITE);
-    
+
     // Report our findings
     report(2, found, test1, test2);
 
@@ -113,7 +113,7 @@ void report(int testNum, unsigned int length, struct patmatch* test1, struct pat
     } else {
         char differences[length];
         detectChange(test1, test2, differences,length);
-        
+
         for(i = 0; i < length; ++i){
             fprintf(stdout, "0x%02X\t%s\t%c\n", test2[i].location, memoryType[test2[i].mode], differences[i]);
         }
@@ -129,8 +129,8 @@ LinkedList* addNode(LinkedList* head, unsigned char* pattern, int length){
    posix_memalign((void**) &next->pattern, getpagesize(), getpagesize());
    memcpy(next->pattern, pattern, length);
    next->next = head;
-   
-   //point it to old first node
+
+   // Point it to old first node
    head = next;
 
    // Return node so we can easily set it to read only
@@ -147,7 +147,7 @@ void freeNodes(LinkedList* head){
 }
 
 size_t getStringLength(char* pattern){
-     // look for the null character in a char array and report back its position in that array
+     // Look for the null character in a char array and report back its position in that array
     char null = '\0';
 
     size_t i=0;
@@ -158,8 +158,8 @@ size_t getStringLength(char* pattern){
 }
 
 void detectChange(struct patmatch* location1,struct patmatch* location2, char* differences, size_t length){
-    //This function expects an array of two patmatch arrays, and a pointer to an empter char array to
-    //store the tracking of difference
+    // This function expects an array of two patmatch arrays, and a pointer to an empter char array to
+    // store the tracking of difference
     size_t i;
     for(i = 0; i < length; ++i){
         differences[i] = 'N';
