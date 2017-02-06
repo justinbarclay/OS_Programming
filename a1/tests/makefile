@@ -27,4 +27,4 @@ test3: driver3
 	./driver3 $(p) > test_results.txt
 
 clean:
-	rm *.o test_results.txt driver1 driver2 driver3
+	rm *.o test_results.txt driver1 driver2 driver3 driver3Mapping.txt

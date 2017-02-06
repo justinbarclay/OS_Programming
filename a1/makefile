@@ -1,7 +1,7 @@
 SUBDIRS:=$(wildcard */.)
 
 tests:$(SUBDIRS)
-	$(MAKE) -C $@
+	cd tests && make all
 
 .PHONY: tests $(SUBDIRS)
 	

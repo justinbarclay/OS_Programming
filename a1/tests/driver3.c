@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
 
     // Pattern is patLength to get the terminating null character
     unsigned char pattern[patLength+1];
-    strncpy(pattern, argv[1], patLength+1);
+    memcpy(pattern, argv[1], patLength+1);
 
     // Beginning of test format printing
     fprintf(stdout, "test3\n");
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]){
     void *addr = p;
     // Converting pattern to unsigned char* as it is a pointer to first element in a list
     // Make first pass and report
-    found = findpattern((unsigned char*) pattern, 10, test1, 100);
+    found = findpattern((unsigned char*) pattern, patLength, test1, 100);
     report(1, found, test1, 0);
 
     // Make remapping of memory from read
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]){
         printf("FAIL\n");
     }
     // Make second pass and report
-    found = findpattern((unsigned char*) pattern, 10, test2, 100);
+    found = findpattern((unsigned char*) pattern, patLength, test2, 100);
     report(2, found, test1, test2);
 
     // Free malloc variables
