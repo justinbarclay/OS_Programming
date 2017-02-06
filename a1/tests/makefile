@@ -11,8 +11,10 @@ all:
 findpattern.o: ../findpattern.c ../findpattern.h
 	$(CC) $(CFLAGS) -c ../findpattern.c
 
-test1: findpattern.o
-	$(CC) $(CFLAGS) -o driver1 driver1.c findpattern.o
+driver1: findpattern.o
+	$(CC) $(CFLAGS) -o driver1 driver1.c findpattern.o 
+test1: driver1
+	./driver1 hello
 
 test2:
 	$(CC) $(CFLAGS) -o driver2 driver2.c findpattern.c findpattern.h
