@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
 /*******************************************************************
  * CMPUT 379 Assignment 1
  * Due:
@@ -18,7 +19,7 @@
  * for a pattern, and writing that pattern into a file. It then opens
  * a file descriptor to that file, makes a read mapping, and displays
  * the result of findpattern. Then it remaps that mapping to a write
- * mapping, calls findpattern, and displays the result again before 
+ * mapping, calls findpattern, and displays the result again before
  * terminating.
  * *****************************************************************/
 
@@ -134,7 +135,7 @@ void detectChange(struct patmatch* location1,struct patmatch* location2, char* d
             if(location1[j].location == location2[i].location){
                 differences[i] = 'U';
                 if(location1[j].mode != location2[i].mode){
-                    differences[j] = 'C';
+                    differences[i] = 'C';
                 }
             }
         }

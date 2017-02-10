@@ -1,0 +1,52 @@
+* Handshake message:
+CMPUT 379 Whiteboard Server v0
+nXX
+
+- Message of ↑ format will be sent to client upon completion of handshake
+
+* Query Message
+?linenumber
+
+- Message of this format can be sent by client, and server will reply:
+!12p30\nthisisaresponsetodemothelength\n
+- Where 12 is the entry, 30 is the number of bytes in the message
+
+* Update/Entry Message
+@12p16\nthisisawritetest\n
+- Where 12 is the entry, 16 is the number of bytes in the message
+
+@12p0\n\n → should clean an entry
+
+* Encrypted messages
+- Client must:
+    1. Take stdin for user input
+    2. Prepend the CMPUT379 Whiteboard Encrypted v0\n to the plaintext
+    they wish to send
+    3. Perform encryption with provided algorithm
+    4. Convert the encrypted output to Base64 representation
+    5. Send this Base64 representation in the
+    update message
+- Server is clueless about encryption algorithm, and client's keys
+
+* Encryption Algorithm
+- AES-256-CBC
+- Use openssl and the EVP group of calls
+- Hardcode initialization vector
+- Can use Base64 calls as well
+- Base64 strings must not be split by newlines
+
+* Error messages
+- !12e0\n\n → indicates success because size of error is 0
+** No post to update error
+!47e14\nNo such entry!\n
+
+* General notes
+- Server must be defensive against stupid users
+- We can define error messages, but they must be meaningful
+- All entries are clean when the server is initialized
+- p Denotes plaintext
+- c Denotes encrypted
+- Empty messages must be reported as unecrypted
+- Servers must track wether an entry is p or c
+    + Must be able to update between the two
+- Clients must decrypt using their own keys
