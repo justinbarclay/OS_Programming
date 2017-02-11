@@ -27,6 +27,7 @@ nXX
     5. Send this Base64 representation in the
     update message
 - Server is clueless about encryption algorithm, and client's keys
+- Empty entries should be reported as unecrypted
 
 * Encryption Algorithm
 - AES-256-CBC
@@ -40,6 +41,23 @@ nXX
 ** No post to update error
 !47e14\nNo such entry!\n
 
+* Client & Server interface
+- The client should be callable as the following command:
+        wbc379 hostname portnumber [keyfile]]
+- keyfile should can contain multiple Base64 keys
+    - Separated by line
+    - Decryption uses each key untill it gets a correct one or runs out of
+      keys
+- Human cli is up to us
+    + Must have graceful exit command eg; 'exit'
+    + Must orderly exit on <C-c>
+    + Terminate as soon as possible on error condition
+
+- Server should be callable as the following command:
+        wbs379 portnumber {-f statefile | -n entries}
+** Server
+- Must be able to start with a statefile or fresh
+
 * General notes
 - Server must be defensive against stupid users
 - We can define error messages, but they must be meaningful
@@ -50,3 +68,4 @@ nXX
 - Servers must track wether an entry is p or c
     + Must be able to update between the two
 - Clients must decrypt using their own keys
+- Probably will need a way to give clients the encryption keys
