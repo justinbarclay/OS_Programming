@@ -17,13 +17,14 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <strings.h>
+#include <string.h>
 #define	MY_PORT	2222
 
 int main(int argc, char *argv[]){
     int s, number;
     struct sockaddr_in server;
     struct hostent *host;
-
+    char sendBuffer[20];
     host = gethostbyname("localhost");
 
     if(host == NULL){
@@ -51,12 +52,17 @@ int main(int argc, char *argv[]){
             exit(-3);
         }
 
-        read(s, &number, sizeof (number)); //Read socket
-        close(s); // Close socket
+        read(s, &number, sizeof (number)); //Read socket; perhaps delete
+        // Wipe send buffer
+        memset(sendBuffer, '', sizeof(sendBuffer));
+        // Write new info to sendbuffer
+        sprintf(sendBuffer, "Socket %d\n",ntohl(number));
+        // Send
+        send(s,sendBuffer, strlen(sendBuffer),0 ); close(s); // Close socket
 
         // Probably get rid of this bullshit
         fprintf(stderr, "Process %d gets number %d\n", getpid (),
-                ntohl (number));
+                ntohl(number));
         sleep (2);
 
     }
