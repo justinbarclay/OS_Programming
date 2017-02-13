@@ -22,6 +22,7 @@
 
 int main(int argc, char *argv[]){
     int s, number;
+    char message[512];
     struct sockaddr_in server;
     struct hostent *host;
     char sendBuffer[20];
@@ -52,17 +53,17 @@ int main(int argc, char *argv[]){
             exit(-3);
         }
 
-        read(s, &number, sizeof (number)); //Read socket; perhaps delete
-        // Wipe send buffer
-        memset(sendBuffer, '', sizeof(sendBuffer));
-        // Write new info to sendbuffer
-        sprintf(sendBuffer, "Socket %d\n",ntohl(number));
-        // Send
-        send(s,sendBuffer, strlen(sendBuffer),0 ); close(s); // Close socket
+        read(s, message, 512); //Read socket; perhaps delete
+        /* // Wipe send buffer */
+        /* memset(sendBuffer, '', sizeof(sendBuffer)); */
+        /* // Write new info to sendbuffer */
+        /* sprintf(sendBuffer, "Socket %d\n",ntohl(number)); */
+        /* // Send */
+        /* send(s,sendBuffer, strlen(sendBuffer),0 ); close(s); // Close socket */
 
         // Probably get rid of this bullshit
-        fprintf(stderr, "Process %d gets number %d\n", getpid (),
-                ntohl(number));
+        fprintf(stderr, "Process %d gets number %s\n", getpid (),
+                message);
         sleep (2);
 
     }

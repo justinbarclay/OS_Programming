@@ -15,11 +15,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #define	MY_PORT	2222
 
 int main(int argc, char *argv[]){
     int s, snew, fromlength, number, outnum;
+    char message[512];
+    memcpy(message, "hello", 5);
     struct sockaddr_in master, from;
 
     // Intitalize variables
@@ -51,7 +54,8 @@ int main(int argc, char *argv[]){
         }
         // Setup for next listen
         outnum = htonl(number);
-        write(snew, &outnum, sizeof (outnum));
+//        write(snew, &outnum, sizeof (outnum));
+        send(snew, "hello", 512, 0);
         close(snew);
         number++;
     }
