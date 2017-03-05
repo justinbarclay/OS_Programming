@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
     char message[512];
     struct sockaddr_in server;
     struct hostent *host;
-    
+
     host = gethostbyname("localhost");
     int err;
 
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]){
 
             fprintf(stderr, "Error joining thread\n");
             return 2;
- 
+
         }
     }
     return 0;
@@ -90,7 +90,7 @@ void readFromHost(void *info){
             perror("Client: cannot connect to server");
         }
         read(s, message, 512); //Read socket; perhaps delete
-        
+
         fprintf(stderr, "Message recieved = %s\n",
                 message);
         sleep (2);
