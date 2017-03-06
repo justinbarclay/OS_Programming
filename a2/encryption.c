@@ -7,30 +7,33 @@
  * *****************************************************************
  * Notes: http://rosettacode.org/wiki/Read_a_file_line_by_line#Using_mmap.28.29
  *   */
-/* Global variables */
-char *keys; //Used to store a pointer to the keys
-char Encryptionkey[256];
-
-char keyfile[] = "keys.txt";
-/*  Macros */
-#define IV_SIZE 15
-
-unsigned char iv[IV_SIZE];
 
 /*  Imports*/
 #include "encryption.h"
-/*  Function declarations*/
+
+char keyfile[] = "keys.txt";
+
+/*  Macros */
+#define IV_SIZE 15
+#define MAX_KEY_SIZE 256
+#define IV_FILE "IV.txt"
+
+/* Global variables */
+char *keys; //Used to store a pointer to the keys
+char Encryptionkey[MAX_KEY_SIZE];
+unsigned char iv[IV_SIZE];
+
+/* Local Function declarations*/
 int fetchKeys(const char *fileName, \
         int (*call_back) (const char*, const char*, char *), char *dest);
 int fetchEncryptionKey(const char *begin, const char *end, char *key);
 unsigned int generateRand();
 unsigned char *generateIV();
-
+unsigned char *getIV();
 /*  Main body for testing */
 int main (){
-    unsigned char *encryptedOutput = NULL;
-    encryptedOutput = malloc(sizeof(unsigned char) *100);
-    encrypt((unsigned char* )"ABCD", encryptedOutput);
+    unsigned char encryptedOutput[1000];
+    encrypt((unsigned char* )"this is really stupid hello", encryptedOutput);
     /*char *base64ToSend = NULL;
       convertToBase64(encryptedOutput, base64ToSend);
       char *base64Recieved = NULL;
@@ -42,10 +45,68 @@ int main (){
       decrypt_wrapper(recievedText, plaintext);
 
 */
-    free(encryptedOutput);
+}
+unsigned char *getIV(){
+    FILE *fp;
+    memset(iv, 0, IV_SIZE);
+    if(access(IV_FILE, F_OK) !=-1) {
+        //File exists
+        fp = fopen(IV_FILE, "r");
+        fgets((char *)iv, IV_SIZE+2, fp);
+        printf("FILE\ninit with %s\n\n", iv);
+
+    }else{
+        return generateIV();
+    }
+
+    return 0;
 }
 
+
 /*  Function bodies */
+int encrypt(unsigned char *plaintext, unsigned char *ciphertext){
+    int outlen, tmplen;
+
+    memset(Encryptionkey, 0, MAX_KEY_SIZE);
+    memset(ciphertext, 0, 100);
+
+    EVP_CIPHER_CTX ctx;
+    EVP_CIPHER_CTX_init(&ctx);
+    if(!fetchKeys(keyfile, fetchEncryptionKey, (char *) Encryptionkey)){
+        printf("Failed to fetch Encryptionkey\n");
+        return 0;
+    }
+
+    EVP_EncryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, (const unsigned char*)Encryptionkey, getIV());
+
+    if(!EVP_EncryptUpdate(&ctx, ciphertext, &outlen, plaintext, strlen((const char *)plaintext))){
+        printf("Error in EVP_Encrypt_Update\n");
+        return 0;
+    }
+
+    if(!EVP_EncryptFinal_ex(&ctx, ciphertext + outlen, &tmplen)){
+        printf("Error in EVP_EncryptFinal_ex\n");
+        return 0;
+    }
+    outlen += tmplen;
+    EVP_CIPHER_CTX_cleanup(&ctx);
+
+    printf("key %s\n", Encryptionkey);
+    printf("IV: ");
+    for(int i =0; i< IV_SIZE; i++){
+    printf("%x", iv[i]);
+    }
+    printf("\nciphertext ");
+    for(int i = 0; i < outlen; i++){
+        printf("%x", ciphertext[i]);
+    }
+    return 1;
+}
+
+int decrypt(unsigned char *ciphertext, unsigned char *plaintext){
+
+    return 1;
+}
 int fetchKeys(const char *fileName, \
         int (*call_back) (const char*, const char*, char *), char *dest){
 
@@ -87,9 +148,9 @@ int fetchKeys(const char *fileName, \
 
         int call_back_result = call_back(begin, end, dest);
         if(call_back_result == 0){
-            err(1, "[call_back] failed on keyfile %s", fileName);
             break;
         } else if(call_back_result < 0){
+            err(1, "[call_back] failed on keyfile %s", fileName);
             printf("Broke after %d\n", i);
             i++;
             break;
@@ -101,45 +162,20 @@ int fetchKeys(const char *fileName, \
     close(fd);
     return 1;
 }
-int encrypt(unsigned char *plaintext, unsigned char *ciphertext){
-    int outlen, tmplen;
 
-    EVP_CIPHER_CTX ctx;
-    EVP_CIPHER_CTX_init(&ctx);
-    if(!fetchKeys(keyfile, fetchEncryptionKey, (char *) Encryptionkey)){
-        printf("Failed to fetch Encryptionkey\n");
-        return 0;
-    }
-
-    EVP_EncryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, (const unsigned char*)Encryptionkey, generateIV());
-
-    if(!EVP_EncryptUpdate(&ctx, ciphertext, &outlen, plaintext, strlen((const char *)plaintext))){
-        printf("Error in EVP_Encrypt_Update\n");
-        return 0;
-    }
-
-    if(!EVP_EncryptFinal_ex(&ctx, ciphertext + outlen, &tmplen)){
-        printf("Error in EVP_EncryptFinal_ex\n");
-        return 0;
-    }
-    outlen += tmplen;
-    EVP_CIPHER_CTX_cleanup(&ctx);
-
-    printf("key %s\n", Encryptionkey);
-    printf("IV %s\n", iv);
-    printf("ciphertext ");
-    for(int i = 0; i < outlen-1; i++){
-        printf("%C", ciphertext[i]);
-    }
-
-    return 1;
-}
 unsigned char *generateIV(){
     int i = 0;
-    for(i; i < IV_SIZE; i++){
+    FILE *fp;
+    for(i= 0; i < IV_SIZE; i++){
         iv[i] = generateRand() + '0';
     }
 
+    fp = fopen(IV_FILE, "w");
+    if(fp == NULL){
+       printf( "IV_FILE cannot be created\n");
+       return 0;
+    }
+    fprintf(fp,"%s", iv);
     return iv;
 }
 
@@ -164,9 +200,8 @@ int fetchEncryptionKey(const char *begin, const char *end, char *key){
         key[i] = begin[i];
         i++;
     }
-    return 1;
+    return 0;
 }
 
 int convertToBase64(char *ciphertext, char *base64Text);
 int convertFromBase64(char *recievedBase64Text, char *recivedPlaintext);
-int decrypt(char *ciphertext, char *plaintext);
