@@ -8,6 +8,7 @@
 #include <strings.h>
 #include <arpa/inet.h>
 #include <ncurses.h>
+#include <pthread.h>
 
 #define	 MY_PORT  2222
 
@@ -35,7 +36,7 @@ void destroy_win(WINDOW *local_win);
 
 void exampleSendRcv(WINDOW *w1, WINDOW *w2);
 
-void readFromSocket(int s, char* c, charBuffer *output);
+void readFromSocket(int s, charBuffer *output);
 void getSocket(int *s);
 
 // This structure contains the current element that needs to be printed to screen
@@ -64,6 +65,7 @@ int main(){
     // This should be split off into two segments/ screen rendering and input
     // network send recieve
     // The network send recieve should be a pull interface, the system pulls whenever it is ready to send new stuff
+    
     exampleSendRcv(w1, w2);
 
     // Clean up
@@ -98,6 +100,7 @@ void exampleSendRcv(WINDOW *w1, WINDOW *w2){
     refresh();
     
     while(1){
+        // Handle drawing of then window
         wborder(w2, ' ', ' ', '_', ' ', ' ', ' ', ' ', ' ');
         mvwprintw(w1, 0, 0, "%s\n",output->buffer);
         mvwprintw(w2, 1, 0, "buf: %s", buf);
@@ -107,12 +110,7 @@ void exampleSendRcv(WINDOW *w1, WINDOW *w2){
         
         if ((ch = getch()) != ERR) {
             if (ch == '\n') {
-
-                getSocket(&s); // Get new socket
-                send(s, buf, 11, 0);
-                readFromSocket(s, c, output);
-                close (s);
-                
+                memcpy(input->buffer,buf, sizeof(buf)/sizeof(char));
                 *bufPointer = 0; // Set current char to 0
                 sscanf(buf, "%d", &n); //0 out buffer
                 bufPointer = buf;
@@ -135,14 +133,13 @@ void exampleSendRcv(WINDOW *w1, WINDOW *w2){
     free(output);
 }
 
-void readFromSocket(int s, char* c, charBuffer *output){
+void readFromSocket(int s, charBuffer *output){
     // zero out each byte of the array before receiving from the server
-    bzero(c,11);
+    bzero(output->buffer,11);
 
     // Here the client wants to receive 7 bytes from the server, but the server
     // only sends 5 bytes
-    recv(s,c,7,0);
-    memcpy(output->buffer, c,100);
+    recv(s, output, 7, 0);
 }
 
 void getSocket(int *s){
@@ -175,7 +172,22 @@ void getSocket(int *s){
         exit (1);
     }
 }
-
+void handleNetworkCalls(){
+    int s;
+    // Initial implementation to handle network.
+    // Run in a continuous loop and check every second for input or output;
+    while(1){
+        getSocket(&s); // Get new socket
+        if(input->size > 0){
+                send(s, input->buffer, input->size, 0);
+                bzero(input->buffer, input->size);
+        }
+        readFromSocket(s, output);
+        close (s);
+        sleep(1);
+    }
+    
+}
 
 WINDOW *create_newwin(int height, int width, int starty, int startx){
     WINDOW *local_win;
