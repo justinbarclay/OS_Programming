@@ -1,0 +1,60 @@
+test1
+Here we are findpattern's ability to find a pattern on the heap using memalign and mprotect.
+
+Report 3 matches found
+Pass 1
+ Total Matches 03
+0x99C4000	MEM_RW	
+0xFFE1F040	MEM_RW	
+0xFFE2026F	MEM_RW	
+Report 11 matches found
+Pass 2
+ Total Matches 11
+0x99C4000	MEM_RO	C
+0x99C7000	MEM_RW	N
+0x99C9000	MEM_RW	N
+0x99CB000	MEM_RW	N
+0x99CD000	MEM_RW	N
+0x99CF000	MEM_RW	N
+0x99D1000	MEM_RW	N
+0x99D3000	MEM_RW	N
+0x99D5000	MEM_RW	N
+0xFFE1F040	MEM_RW	U
+0xFFE2026F	MEM_RW	U
+test1
+Here we are findpattern's ability to find a pattern on the heap using memalign and mprotect.
+
+Pass 1
+Total Matches 02
+0xFFF1A550	MEM_RW	
+0xFFF1B26F	MEM_RW	
+
+Pass 2
+Total Matches 11
+0xFFF1A430	MEM_RW	N
+0xFFF1A450	MEM_RW	N
+0xFFF1A470	MEM_RW	N
+0xFFF1A490	MEM_RW	N
+0xFFF1A4B0	MEM_RW	N
+0xFFF1A4D0	MEM_RW	N
+0xFFF1A4F0	MEM_RW	N
+0xFFF1A510	MEM_RW	N
+0xFFF1A530	MEM_RW	N
+0xFFF1A550	MEM_RW	U
+0xFFF1B26F	MEM_RO	C
+test3
+mmap is used to place a file descriptor of testing.txt (created by this program) into memory
+
+Pass 1
+Total Matches 04
+0x9F8B7C0	MEM_RW	
+0xF7705000	MEM_RO	
+0xFF9914A0	MEM_RW	
+0xFF99326F	MEM_RW	
+
+Pass 2
+Total Matches 04
+0x9F8B7C0	MEM_RW	U
+0xF7705000	MEM_RW	C
+0xFF9914A0	MEM_RW	U
+0xFF99326F	MEM_RW	U
