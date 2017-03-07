@@ -28,8 +28,8 @@ int fetchKeys(const char *fileName, \
         int (*call_back) (const char*, const char*, char *), char *dest);
 int fetchEncryptionKey(const char *begin, const char *end, char *key);
 unsigned int generateRand();
-unsigned char *generateIV();
-unsigned char *getIV();
+int generateIV();
+int getIV();
 /*  Main body for testing */
 int main (){
     unsigned char encryptedOutput[1000];
@@ -46,20 +46,18 @@ int main (){
 
 */
 }
-unsigned char *getIV(){
+ int getIV(){
     FILE *fp;
     memset(iv, 0, IV_SIZE);
     if(access(IV_FILE, F_OK) !=-1) {
         //File exists
         fp = fopen(IV_FILE, "r");
         fgets((char *)iv, IV_SIZE+2, fp);
-        printf("FILE\ninit with %s\n\n", iv);
-
     }else{
         return generateIV();
     }
 
-    return 0;
+    return 1;
 }
 
 
@@ -76,8 +74,13 @@ int encrypt(unsigned char *plaintext, unsigned char *ciphertext){
         printf("Failed to fetch Encryptionkey\n");
         return 0;
     }
+    
+    if(getIV() != 1){
+        printf("Failed to get IV\n");
+        exit(0);
+    }
 
-    EVP_EncryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, (const unsigned char*)Encryptionkey, getIV());
+    EVP_EncryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, (const unsigned char*)Encryptionkey, iv);
 
     if(!EVP_EncryptUpdate(&ctx, ciphertext, &outlen, plaintext, strlen((const char *)plaintext))){
         printf("Error in EVP_Encrypt_Update\n");
@@ -94,7 +97,7 @@ int encrypt(unsigned char *plaintext, unsigned char *ciphertext){
     printf("key %s\n", Encryptionkey);
     printf("IV: ");
     for(int i =0; i< IV_SIZE; i++){
-    printf("%x", iv[i]);
+    printf("%c", iv[i]);
     }
     printf("\nciphertext ");
     for(int i = 0; i < outlen; i++){
@@ -163,7 +166,7 @@ int fetchKeys(const char *fileName, \
     return 1;
 }
 
-unsigned char *generateIV(){
+int generateIV(){
     int i = 0;
     FILE *fp;
     for(i= 0; i < IV_SIZE; i++){
@@ -176,7 +179,7 @@ unsigned char *generateIV(){
        return 0;
     }
     fprintf(fp,"%s", iv);
-    return iv;
+    return 1;
 }
 
 unsigned int generateRand(){
