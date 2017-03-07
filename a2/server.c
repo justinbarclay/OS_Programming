@@ -37,7 +37,9 @@ int main(int argc, char * argv[])
         perror ("Server: cannot bind master socket");
         exit (1);
     }
-    char steve[7] = "Steven";
+    char welcomeMessage[] = "CMPUT379 Whiteboard Server v0\n";
+    int welcomeLength = strlen(welcomeMessage);
+    int first = 1;
     while(1){
 	listen (sock, 5);
 	fromlength = sizeof(from);
@@ -50,7 +52,7 @@ int main(int argc, char * argv[])
 	
 	// Zero out all of the bytes in character array c
 	bzero(c,11);
-
+        
 	// Here we print off the values of character array c to show that
 	// each byte has an intial value of zero before receiving anything
 	// from the client.
@@ -78,7 +80,11 @@ int main(int argc, char * argv[])
 	
 	//Send the first five bytes of character array c back to the client
 	//The client, however, wants to receive 7 bytes.
-	send(snew,c,5,0);
+        if(first){
+            send(snew, welcomeMessage, welcomeLength, 0);
+        } else {
+        send(snew,c,5,0);
+        }
 
 	close (snew);
 	sleep(1);

@@ -26,14 +26,18 @@
 struct charBuffer {
     char buffer[100];
     int size;
+    int ready;
 } typedef charBuffer;
 
+// Global variables
 static charBuffer *output;
 static charBuffer *input;
+static WINDOW *w1;
+
 WINDOW *create_newwin(int height, int width, int starty, int startx);
 void destroy_win(WINDOW *local_win);
 
-
+void * handleNetworkCalls();
 void exampleSendRcv(WINDOW *w1, WINDOW *w2);
 
 void readFromSocket(int s, charBuffer *output);
@@ -44,9 +48,10 @@ void getSocket(int *s);
 int main(){
     output = malloc(sizeof(charBuffer));
     input = malloc(sizeof(charBuffer));
-    WINDOW *w1, *w2;
+
+    WINDOW *w2;
     int row, column;
-    
+    pthread_t thread;
     // Begin nCruses Mode
     if (initscr() == NULL) {
         fprintf(stderr, "Error: initscr()\n");
@@ -65,15 +70,18 @@ int main(){
     // This should be split off into two segments/ screen rendering and input
     // network send recieve
     // The network send recieve should be a pull interface, the system pulls whenever it is ready to send new stuff
-    
+
+    pthread_create(&thread, NULL, handleNetworkCalls, NULL);
     exampleSendRcv(w1, w2);
 
     // Clean up
+    pthread_join(thread, NULL);
     destroy_win(w1);
     destroy_win(w2);
 
     free(output);
     free(input);
+    exit(1);
 }
 
 void exampleSendRcv(WINDOW *w1, WINDOW *w2){
@@ -90,56 +98,63 @@ void exampleSendRcv(WINDOW *w1, WINDOW *w2){
     // assign 'A' to the first element of c
     c[0] = 'A';
 
-    getSocket(&s);
-
     // Send all 11 bytes of character array c to the server
     // It is important to note that even the null terminating (zero valued) bytes
-    // are sent to the server. 
-    send(s,c,11,0);
-    readFromSocket(s, c, output);
-    refresh();
+    // are sent to the server.
     
     while(1){
         // Handle drawing of then window
         wborder(w2, ' ', ' ', '_', ' ', ' ', ' ', ' ', ' ');
-        mvwprintw(w1, 0, 0, "%s\n",output->buffer);
-        mvwprintw(w2, 1, 0, "buf: %s", buf);
+        mvwprintw(w1, 0, 0, "%s\n", output->buffer);       
+        mvwprintw(w2, 1, 0, "Message: %s %d", buf, input->size);
+
         wnoutrefresh(w1);
         wnoutrefresh(w2);
         doupdate();
         
         if ((ch = getch()) != ERR) {
             if (ch == '\n') {
-                memcpy(input->buffer,buf, sizeof(buf)/sizeof(char));
+
+                *bufPointer++ = ch;
+                *bufPointer = 0;
+                cnt++;
+                
+                memcpy(input->buffer, buf, cnt);
+                input->size = cnt; // Once the size is greater than 0 network will send
+                
                 *bufPointer = 0; // Set current char to 0
                 sscanf(buf, "%d", &n); //0 out buffer
                 bufPointer = buf;
                 *bufPointer = 0;
+
+                cnt = 0; //Size of buffer is 0
             } else if (ch == 127) {
                 if (bufPointer > buf){
                     *--bufPointer = 0;
+                    cnt--;
                 }
             } else if(ch == 'q') {
                 break;
             } else if (bufPointer - buf < (long)sizeof buf - 1) {
                 *bufPointer++ = ch;
                 *bufPointer = 0;
+                cnt++;
             }
         }
         // Erase the screen
-        werase(w1);
+        // werase(w1);
         werase(w2);
     }
-    free(output);
+    return;
 }
 
 void readFromSocket(int s, charBuffer *output){
     // zero out each byte of the array before receiving from the server
-    bzero(output->buffer,11);
+    bzero(output->buffer, 100);
 
     // Here the client wants to receive 7 bytes from the server, but the server
     // only sends 5 bytes
-    recv(s, output, 7, 0);
+    recv(s, output, 100, 0);
 }
 
 void getSocket(int *s){
@@ -172,21 +187,26 @@ void getSocket(int *s){
         exit (1);
     }
 }
-void handleNetworkCalls(){
+
+void * handleNetworkCalls(){
     int s;
     // Initial implementation to handle network.
     // Run in a continuous loop and check every second for input or output;
     while(1){
-        getSocket(&s); // Get new socket
-        if(input->size > 0){
-                send(s, input->buffer, input->size, 0);
-                bzero(input->buffer, input->size);
-        }
-        readFromSocket(s, output);
-        close (s);
+        /* getSocket(&s); // Get new socket */
+        if(input->size > 0) {
+            getSocket(&s); // Get new socket
+
+            send(s, input->buffer, input->size, 0);
+            bzero(input->buffer, input->size);
+            input->size = 0;
+            readFromSocket(s, output);
+            close (s);
+        } 
+        /* close (s); */
         sleep(1);
     }
-    
+    return (void *) 0;
 }
 
 WINDOW *create_newwin(int height, int width, int starty, int startx){
@@ -197,7 +217,7 @@ WINDOW *create_newwin(int height, int width, int starty, int startx){
      * for the vertical and horizontal
      * lines			*/
         
-    wrefresh(local_win);		/* Show that box 		*/
+    //wrefresh(local_win);		/* Show that box 		*/
 
     return local_win;
 }
@@ -222,3 +242,8 @@ void destroy_win(WINDOW *local_win){
     wrefresh(local_win);
     delwin(local_win);
 }
+
+/* char* parseResponse(char* response){ */
+/*     char hi[10]; */
+/*     return hi;    */
+/* } */
