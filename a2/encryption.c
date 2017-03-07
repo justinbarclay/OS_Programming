@@ -32,32 +32,18 @@ int generateIV();
 int getIV();
 /*  Main body for testing */
 int main (){
+    unsigned char plaintext[] = "this is really stupid hello\0";
     unsigned char encryptedOutput[1000];
-    encrypt((unsigned char* )"this is really stupid hello", encryptedOutput);
-    /*char *base64ToSend = NULL;
-      convertToBase64(encryptedOutput, base64ToSend);
-      char *base64Recieved = NULL;
-      encrypt_wrapper(plaintext, resultText);
+    encrypt(plaintext, encryptedOutput);
 
-      convertFromBase64(base64ToSend, base64Recieved);
-      char *decryptedOutput = NULL;
-      decrypt(base64Recieved, decryptedOutput);
-      decrypt_wrapper(recievedText, plaintext);
-
-*/
-}
- int getIV(){
-    FILE *fp;
-    memset(iv, 0, IV_SIZE);
-    if(access(IV_FILE, F_OK) !=-1) {
-        //File exists
-        fp = fopen(IV_FILE, "r");
-        fgets((char *)iv, IV_SIZE+2, fp);
-    }else{
-        return generateIV();
+    unsigned char decryptedOutput[1000] ;
+    decrypt(encryptedOutput, decryptedOutput);
+    int i =0;
+    printf("\nDecrypted output: \n");
+    while(decryptedOutput[i] != '\0'){
+        printf("%x %x\n", decryptedOutput[i], plaintext[i] );
+        i++;
     }
-
-    return 1;
 }
 
 
@@ -74,7 +60,7 @@ int encrypt(unsigned char *plaintext, unsigned char *ciphertext){
         printf("Failed to fetch Encryptionkey\n");
         return 0;
     }
-    
+
     if(getIV() != 1){
         printf("Failed to get IV\n");
         exit(0);
@@ -107,7 +93,42 @@ int encrypt(unsigned char *plaintext, unsigned char *ciphertext){
 }
 
 int decrypt(unsigned char *ciphertext, unsigned char *plaintext){
+    EVP_CIPHER_CTX *ctx;
+    int len, plaintext_len;
 
+    if(!(ctx = EVP_CIPHER_CTX_new())){
+        printf("Failed setting up EVP Context in decrypt\n");
+        return 0;
+    }
+
+    if(getIV() != 1){
+        printf("Failed to get IV\n");
+        exit(0);
+    }
+
+    //Must rework
+    if(!fetchKeys(keyfile, fetchEncryptionKey, (char *) Encryptionkey)){
+        printf("Failed to fetch Encryptionkey\n");
+        return 0;
+    }
+    if(!(EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, (const unsigned char *) Encryptionkey, iv))){
+        printf("Failure Initializing Decryption\n");
+        return 0;
+    }
+    if(!(EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, strlen((const char *) ciphertext)))){
+       printf("Failure during decryption\n");
+       return 0;
+    }
+    plaintext_len = len;
+
+    //Finalize decryption
+    if(!(EVP_DecryptFinal_ex(ctx, plaintext + len, &len))){
+       printf("Failure finalizing decryption\n");
+       return 0;
+    }
+
+    //Clean up
+    EVP_CIPHER_CTX_free(ctx);
     return 1;
 }
 int fetchKeys(const char *fileName, \
@@ -163,6 +184,20 @@ int fetchKeys(const char *fileName, \
         }
     }
     close(fd);
+    return 1;
+}
+
+int getIV(){
+    FILE *fp;
+    memset(iv, 0, IV_SIZE);
+    if(access(IV_FILE, F_OK) !=-1) {
+        //File exists
+        fp = fopen(IV_FILE, "r");
+        fgets((char *)iv, IV_SIZE+2, fp);
+    }else{
+        return generateIV();
+    }
+
     return 1;
 }
 
