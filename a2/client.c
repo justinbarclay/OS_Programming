@@ -33,6 +33,7 @@ struct charBuffer {
 static charBuffer *output;
 static charBuffer *input;
 static WINDOW *w1;
+static int Quit;
 
 WINDOW *create_newwin(int height, int width, int starty, int startx);
 void destroy_win(WINDOW *local_win);
@@ -48,7 +49,7 @@ void getSocket(int *s);
 int main(){
     output = malloc(sizeof(charBuffer));
     input = malloc(sizeof(charBuffer));
-
+    Quit = 0;
     WINDOW *w2;
     int row, column;
     pthread_t thread;
@@ -134,6 +135,7 @@ void exampleSendRcv(WINDOW *w1, WINDOW *w2){
                     cnt--;
                 }
             } else if(ch == 'q') {
+                Quit = 1;
                 break;
             } else if (bufPointer - buf < (long)sizeof buf - 1) {
                 *bufPointer++ = ch;
@@ -192,7 +194,7 @@ void * handleNetworkCalls(){
     int s;
     // Initial implementation to handle network.
     // Run in a continuous loop and check every second for input or output;
-    while(1){
+    while(Quit != 1){
         /* getSocket(&s); // Get new socket */
         if(input->size > 0) {
             getSocket(&s); // Get new socket
@@ -202,7 +204,7 @@ void * handleNetworkCalls(){
             input->size = 0;
             readFromSocket(s, output);
             close (s);
-        } 
+        }
         /* close (s); */
         sleep(1);
     }

@@ -8,11 +8,20 @@
 
 #define	MY_PORT	2222
 
+struct query{
+    int type;
+    int column;
+    int messageLength;
+    char* message;
+} typedef query;
+
 /* ---------------------------------------------------------------------
    This	is  a sample server which opens a stream socket and then awaits
    requests coming from client processes.
    --------------------------------------------------------------------- */
-
+int getMessageType(char indicator);
+query* parseMessage(char *input, int inputSize);
+int getNumberFromMessage(char *input, int *bytesRead);
 int main(int argc, char * argv[])
 {
     int	sock, snew, fromlength, number, outnum;
@@ -89,4 +98,61 @@ int main(int argc, char * argv[])
 	close (snew);
 	sleep(1);
     }
+}
+query* parseMessage(char *input, int inputSize){
+    int bytesRead;
+    int totalBytesRead = 0;
+    query* newMessage = malloc(sizeof(query));
+    char* copiedInput = malloc(sizeof(char) * 20); // Copying the first 20 chars from our message the important 
+    newMessage->type = getMessageType(input[0]);
+
+    memcpy(copiedInput, input+1, 20 ); // Is this the right pointer arithmetic?
+    newMessage->column = getNumberFromMessage(copiedInput, &bytesRead);
+
+    totalBytesRead += bytesRead;
+    memcpy(copiedInput, input+totalBytesRead, 20);
+    newMessage->messageLength = getNumberFromMessage(copiedInput, &bytesRead);
+
+    if(inputSize == newMessage->messageLength + totalBytesRead){
+        newMessage->message = malloc(newMessage->messageLength);
+        memcpy(newMessage->message, input+totalBytesRead, newMessage->messageLength);
+
+        if(newMessage->message[newMessage->messageLength-1] != '\n'){
+            perror("Message not parsed properly");
+        }
+    }
+    return newMessage;
+}
+
+int getMessageType(char indicator){
+    if(indicator == '?'){
+        // Query is int 1
+        return 1;
+    } else if (indicator == '@'){
+        // Update entry
+        return 2;
+    } else {
+        // We have reached an error
+        return 0;
+    }
+}
+
+int getNumberFromMessage(char* input,int* bytesRead){
+    //Naive implementation of getNumberFromMessage
+    int i=0; // Assume we've already
+    char charAsNumber[20];
+    int number; // number to return
+    while(input[i] != 'p' || input[i] != '\n'){ //Could do this while input[i] is greater than 47 and less than 58
+        charAsNumber[i] = input[i];
+        input++;
+    }
+    if(i > 20){
+        perror("Parsing number failed, larger than 20 bytes");
+    }
+    charAsNumber[i] = '\0';
+
+    sscanf(charAsNumber, "%d", &number);
+    
+    *bytesRead = i;
+    return number;
 }
