@@ -1,34 +1,50 @@
 #include "parser.h"
+int getEncryptionType(char encryption);
 
 query* parseMessage(char *input, int inputSize){
     int bytesRead;
-    int totalBytesRead = 1;
+    int totalBytesRead = 0;
     query* newMessage = malloc(sizeof(query));
     char* copiedInput = malloc(sizeof(char) * 20); // Copying the first 20 chars from our message the important 
-    newMessage->type = getMessageType(input[0]);
-
-    memcpy(copiedInput, input+1, 20 ); // Is this the right pointer arithmetic?
+    newMessage->type = getMessageType(input[0]); // We know query type
+    totalBytesRead++;
+    // Find column type
+    memcpy(copiedInput, input+1, 20);
     newMessage->column = getNumberFromMessage(copiedInput, &bytesRead);
-
+    
     totalBytesRead += bytesRead;
+    newMessage->encryption = getEncryptionType(input[totalBytesRead]);
+    totalBytesRead++;
+    
     memcpy(copiedInput, input+totalBytesRead, 20);
     newMessage->messageLength = getNumberFromMessage(copiedInput, &bytesRead);
 
     totalBytesRead += bytesRead;
-    printf("totalBytesread %d\n", totalBytesRead);
-    printf("Input size %d\n",inputSize);
-    printf("totalParsed Size %d", newMessage->messageLength + totalBytesRead);
+
     if(inputSize == newMessage->messageLength + totalBytesRead){
         newMessage->message = malloc(newMessage->messageLength);
         memcpy(newMessage->message, input+totalBytesRead, newMessage->messageLength);
 
+        //Sanity check to make sure we've parsed the message correctly
+        //Need to subtract 1 because messageLength is not 0 based
         if(newMessage->message[newMessage->messageLength-1] != '\n'){
-            perror("Message not parsed properly");
+            perror("Message not parsed properly\n");
         }
     } else {
         perror("Size does not match up");
     }
     return newMessage;
+}
+
+// Plaintext is 0 and encryption is 1
+int getEncryptionType(char encryption){
+    if(encryption == 'p'){
+        return 0;
+    } else if(encryption == 'c') {
+        return 1;
+    } else {
+        exit(-1);
+    }
 }
 
 int getMessageType(char indicator){
@@ -64,6 +80,6 @@ int getNumberFromMessage(char* input,int* bytesRead){
 
     sscanf(charAsNumber, "%d", &number);
 
-    *bytesRead = i+1; // Remember 0 based index
+    *bytesRead = i; // Remember 0 based index
     return number;
 }

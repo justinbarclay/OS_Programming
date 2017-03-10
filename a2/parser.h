@@ -5,6 +5,7 @@
 
 struct query{
     int type;
+    int encryption;
     int column;
     int messageLength;
     char* message;
