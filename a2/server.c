@@ -5,29 +5,21 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include "parser.h"
 
 #define	MY_PORT	2222
-
-struct query{
-    int type;
-    int column;
-    int messageLength;
-    char* message;
-} typedef query;
 
 /* ---------------------------------------------------------------------
    This	is  a sample server which opens a stream socket and then awaits
    requests coming from client processes.
    --------------------------------------------------------------------- */
-int getMessageType(char indicator);
-query* parseMessage(char *input, int inputSize);
-int getNumberFromMessage(char *input, int *bytesRead);
+void getSocket(int *s);
+
 int main(int argc, char * argv[])
 {
     int	sock, snew, fromlength, number, outnum;
-
+    char* message = malloc(sizeof(char) * 1024);
     struct	sockaddr_in	master, from;
-    char c[11];
 
 
     int i = 0;
@@ -57,6 +49,7 @@ int main(int argc, char * argv[])
             perror ("Server: accept failed");
             exit (1);
 	}
+        
 	outnum = htonl (number);
 	
 	// Zero out all of the bytes in character array c
@@ -67,21 +60,21 @@ int main(int argc, char * argv[])
 	// from the client.
 	printf("Before recieving from client\n--------------------------\n");
 	printf("Character array c has the following byte values:\n");
-	for (i = 0; i < 11; i++){
-            printf("c[%d] = %d\n",i,c[i]);
+	for (i = 0; i < 1024; i++){
+            printf("c[%d] = %d\n",i,message[i]);
 	}
 
 	// Now we receive from the client, we specify that we would like 11 bytes
-	recv(snew,c,11,0);
+	recv(snew,message,1024,0);
 
 	// Print off the received bytes from the client as a string. 
 	// Next, print off the value of each byte to showcase that indeed
 	// 11 bytes were received from the client
 	printf("\nAfter receiving from client\n-------------------------\n");
-	printf("Printing character array c as a string is: %s\n",c);
+	printf("Printing character array c as a string is: %s\n",message);
 	printf("Character array c has the following byte values:\n");
-	for (i = 0; i < 11; i++){
-            printf("c[%d] = %d\n",i,c[i]);
+	for (i = 0; i < 1024; i++){
+            printf("c[%d] = %d\n",i,message[i]);
 	}
         
 	//copy the string "Stevens" into character array c
@@ -92,67 +85,44 @@ int main(int argc, char * argv[])
         if(first){
             send(snew, welcomeMessage, welcomeLength, 0);
         } else {
-        send(snew,c,5,0);
+        send(snew,message,5,0);
         }
 
 	close (snew);
 	sleep(1);
     }
-}
-query* parseMessage(char *input, int inputSize){
-    int bytesRead;
-    int totalBytesRead = 0;
-    query* newMessage = malloc(sizeof(query));
-    char* copiedInput = malloc(sizeof(char) * 20); // Copying the first 20 chars from our message the important 
-    newMessage->type = getMessageType(input[0]);
-
-    memcpy(copiedInput, input+1, 20 ); // Is this the right pointer arithmetic?
-    newMessage->column = getNumberFromMessage(copiedInput, &bytesRead);
-
-    totalBytesRead += bytesRead;
-    memcpy(copiedInput, input+totalBytesRead, 20);
-    newMessage->messageLength = getNumberFromMessage(copiedInput, &bytesRead);
-
-    if(inputSize == newMessage->messageLength + totalBytesRead){
-        newMessage->message = malloc(newMessage->messageLength);
-        memcpy(newMessage->message, input+totalBytesRead, newMessage->messageLength);
-
-        if(newMessage->message[newMessage->messageLength-1] != '\n'){
-            perror("Message not parsed properly");
-        }
-    }
-    return newMessage;
-}
-
-int getMessageType(char indicator){
-    if(indicator == '?'){
-        // Query is int 1
-        return 1;
-    } else if (indicator == '@'){
-        // Update entry
-        return 2;
-    } else {
-        // We have reached an error
-        return 0;
+    if(message != NULL){
+        free(message);
     }
 }
 
-int getNumberFromMessage(char* input,int* bytesRead){
-    //Naive implementation of getNumberFromMessage
-    int i=0; // Assume we've already
-    char charAsNumber[20];
-    int number; // number to return
-    while(input[i] != 'p' || input[i] != '\n'){ //Could do this while input[i] is greater than 47 and less than 58
-        charAsNumber[i] = input[i];
-        input++;
-    }
-    if(i > 20){
-        perror("Parsing number failed, larger than 20 bytes");
-    }
-    charAsNumber[i] = '\0';
+void getSocket(int *s){
+    struct	sockaddr_in	server;
 
-    sscanf(charAsNumber, "%d", &number);
-    
-    *bytesRead = i;
-    return number;
+    struct	hostent		*host;
+
+    host = gethostbyname ("localhost");
+
+    if (host == NULL) {
+        perror ("Client: cannot get host description");
+        exit (1);
+    }
+
+
+    *s = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (*s < 0) {
+        perror ("Client: cannot open socket");
+        exit (1);
+    }
+
+    bzero (&server, sizeof (server));
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server.sin_port = htons (MY_PORT);
+
+    if (connect (*s, (struct sockaddr*) & server, sizeof (server))) {
+        perror("Client: cannot connect to server");
+        exit (1);
+    }
 }
