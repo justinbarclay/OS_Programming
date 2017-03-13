@@ -1,0 +1,39 @@
+int decrypt(unsigned char *ciphertext, unsigned char *plaintext){
+    EVP_CIPHER_CTX *ctx;
+    int len, plaintext_len;
+
+    if(!(ctx = EVP_CIPHER_CTX_new())){
+        printf("Failed setting up EVP Context in decrypt\n");
+        return 0;
+    }
+
+    if(getIV() != 1){
+        printf("Failed to get IV\n");
+        exit(0);
+    }
+
+    //Must rework
+    if(!fetchKeys(keyfile, fetchEncryptionKey, (char *) Encryptionkey)){
+        printf("Failed to fetch Encryptionkey\n");
+        return 0;
+    }
+    if(!(EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, (const unsigned char *) Encryptionkey, iv))){
+        printf("Failure Initializing Decryption\n");
+        return 0;
+    }
+    if(!(EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, strlen((const char *) ciphertext)))){
+       printf("Failure during decryption\n");
+       return 0;
+    }
+    plaintext_len = len;
+
+    //Finalize decryption
+    if(!(EVP_DecryptFinal_ex(ctx, plaintext + len, &len))){
+       printf("Failure finalizing decryption\n");
+       return 0;
+    }
+
+    //Clean up
+    EVP_CIPHER_CTX_free(ctx);
+    return 1;
+}

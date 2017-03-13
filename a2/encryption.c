@@ -10,7 +10,9 @@
 
 /*  Imports*/
 #include "encryption.h"
-
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/conf.h>
 char keyfile[] = "keys.txt";
 
 /*  Macros */
@@ -20,7 +22,7 @@ char keyfile[] = "keys.txt";
 #define HEADER_TEXT "CMPUT 379 Whiteboard Encrypted v0\n"
 /* Global variables */
 char *keys; //Used to store a pointer to the keys
-char Encryptionkey[MAX_KEY_SIZE];
+unsigned char Encryptionkey[MAX_KEY_SIZE];
 unsigned char iv[IV_SIZE];
 
 /* Local Function declarations*/
@@ -34,22 +36,26 @@ unsigned int generateRand();
 int generateIV();
 int getIV();
 
+void handleErrors(void)
+{
+  ERR_print_errors_fp(stderr);
+  abort();
+}
 /*  Main body for testing */
 int main (){
-    unsigned char plaintext[] = "this is really stupid hello\0";
+    unsigned char plaintext[] = "this is really stupid hello";
     unsigned char encryptedOutput[1024];
-
-    encrypt(plaintext, 32, encryptedOutput);
-
+    int ciph_len = encrypt(plaintext, 32, encryptedOutput);
+    printf("ciphlen: %d", ciph_len);
     unsigned char decryptedOutput[1024];
-    decrypt(encryptedOutput, decryptedOutput);
+    decrypt(encryptedOutput, ciph_len, decryptedOutput);
 }
 
 int prependHeader(unsigned char *plaintext, int plaintextLen, unsigned char *prependedPlaintext){
     int i = 0, z;
     size_t ppSize;
     if(!realloc(prependedPlaintext ,\
-                (sizeof(unsigned char*) * plaintextLen)+ sizeof(HEADER_TEXT))){
+                (strlen((const char *) plaintext))+ strlen(HEADER_TEXT))){
         printf("Failure mallocing for prependedPlaintext\n");
         return 0;
     }
@@ -70,6 +76,7 @@ int prependHeader(unsigned char *plaintext, int plaintextLen, unsigned char *pre
         i++;
     }
 
+    printf("%s\n", prependedPlaintext);
     return 1;
 }
 
@@ -112,44 +119,45 @@ int encrypt(unsigned char *plaintext, int plaintextLen,  unsigned char *cipherte
     outlen += tmplen;
     EVP_CIPHER_CTX_cleanup(&ctx);
 
-    return 1;
+    return outlen;
 }
 
-int decrypt(unsigned char *ciphertext, unsigned char *plaintext){
-    EVP_CIPHER_CTX ctx;
+int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *plaintext){
+    EVP_CIPHER_CTX *ctx;
     int len, plaintext_len;
 
     if(getIV() != 1){
         printf("Failed to get IV\n");
         exit(0);
     }
-    EVP_CIPHER_CTX_init(&ctx);
+    if(!(ctx = EVP_CIPHER_CTX_new())) handleErrors();
 
     //Must rework
     if(!fetchKeys(keyfile, fetchEncryptionKey, (char *) Encryptionkey)){
         printf("Failed to fetch Encryptionkey\n");
         return 0;
     }
-    
-    if((EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, (const unsigned char *) Encryptionkey, iv))){
+
+    if((EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, Encryptionkey, iv))){
         printf("Failure Initializing Decryption\n");
+        handleErrors();
         return 0;
     }
 
-    if(!(EVP_DecryptUpdate(&ctx, plaintext, &len, ciphertext, strlen((const char *) ciphertext)))){
+    if(!(EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len ))){
        printf("Failure during decryption\n");
        return 0;
     }
     plaintext_len = len;
 
     //Finalize decryption
-    if(!(EVP_DecryptFinal(&ctx, plaintext, &len))){
+    if(!(EVP_DecryptFinal(ctx, plaintext, &len))){
        printf("Failure finalizing decryption\n");
        return 0;
     }
 
     //Clean up
-    EVP_CIPHER_CTX_free(&ctx);
+    EVP_CIPHER_CTX_free(ctx);
     return 1;
 }
 int fetchKeys(const char *fileName, \

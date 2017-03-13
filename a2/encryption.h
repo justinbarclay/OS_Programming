@@ -28,4 +28,4 @@
 int encrypt(unsigned char *plaintext, int plaintextLen, unsigned char *ciphertext);
 int convertToBase64(char *ciphertext, char *base64Text);
 int convertFromBase64(char *recievedBase64Text, char *recivedPlaintext);
-int decrypt(unsigned char *ciphertext, unsigned char *plaintext);
+int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *plaintext);
