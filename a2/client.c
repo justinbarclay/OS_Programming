@@ -196,10 +196,11 @@ int addToMessage(char* message, int length, char* newMessage){
         return -1;
     };
     bzero(newMessage, length+7);
-    for(int i=0; i<starterSize; ++i){
+    int i=0;
+    for(i = 0; i<starterSize; ++i){
         newMessage[i] = starter[i];
     }
-    for(int i = 0; i<length; ++i){
+    for(i = 0; i<length; ++i){
         newMessage[starterSize + i] = message[i];
     }
     return length+7;
