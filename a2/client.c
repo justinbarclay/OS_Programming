@@ -48,11 +48,18 @@ int addToMessage(char* message, int length, char* newMessage);
 // This structure contains the current element that needs to be printed to screen
 
 int main(){
+    
+    // Set up the charBuffers
     output = malloc(sizeof(charBuffer));
-    input = malloc(sizeof(charBuffer));
     output->buffer = malloc(sizeof(char)*1024);
+    output->size = 1024;
+    input = malloc(sizeof(charBuffer));
     input->buffer = malloc(sizeof(char)*1024);
+    input->size = 1024;
+
+    // Set quit
     Quit = 0;
+
     WINDOW *w2;
     int row, column;
     pthread_t thread;
@@ -103,7 +110,7 @@ void exampleSendRcv(WINDOW *w1, WINDOW *w2){
         // Handle drawing of then window
         wborder(w2, ' ', ' ', '_', ' ', ' ', ' ', ' ', ' ');
         mvwprintw(w1, 0, 0, "%s\n", output->buffer);       
-        mvwprintw(w2, 1, 0, "Message: %s %d", buf, input->size);
+        mvwprintw(w2, 1, 0, "Message: %s", buf);
 
         wnoutrefresh(w1);
         wnoutrefresh(w2);
@@ -152,7 +159,7 @@ void readFromSocket(int s, charBuffer *output){
 
     // Here the client wants to receive 7 bytes from the server, but the server
     // only sends 5 bytes
-    recv(s, output->buffer, output->size, 0);
+    recv(s, output->buffer, 1024, 0);
 }
 
 void getSocket(int *s){
@@ -189,13 +196,13 @@ void getSocket(int *s){
 int addToMessage(char* message, int length, char* newMessage){
     char starter[7] = "@12p14\n";
     int starterSize = 7;
-    if(newMessage == NULL){
-        newMessage = calloc(length+7, sizeof(char));
-    } else if (!realloc(newMessage, sizeof(char) * (length + starterSize))){
-        printf("Failure to allocate memory");
-        return -1;
-    };
-    bzero(newMessage, length+7);
+    /* if(newMessage == NULL){ */
+    /*     newMessage = calloc(length+7, sizeof(char)); */
+    /* } else if (!realloc(newMessage, sizeof(char) * (length + st))){ */
+    /*     printf("Failure to allocate memory"); */
+    /*     return -1; */
+    /* }; */
+    bzero(newMessage, 1024);
     int i=0;
     for(i = 0; i<starterSize; ++i){
         newMessage[i] = starter[i];
@@ -210,7 +217,7 @@ void * handleNetworkCalls(){
     int s;
     // Initial implementation to handle network.
     // Run in a continuous loop and check every second for input or output;
-    char *message = calloc(1, sizeof(char));
+    char *message = calloc(1024, sizeof(char));
     int size;
     int sent;
     while(Quit != 1){
@@ -221,17 +228,18 @@ void * handleNetworkCalls(){
             getSocket(&s); // Get new socket
 
             sent =  send(s, message, size, 0);
-            printf("%d\n", sent);
+
             bzero(input->buffer, input->size);
             input->size = 0;
-            output->buffer = message;
-            output->size = size;
-            //readFromSocket(s, output);
+            /* output->buffer = message; */
+            /* output->size = size; */
+            readFromSocket(s, output);
             close (s);
         }
         /* close (s); */
         sleep(1);
     }
+    free(message);
     return 0;
 }
 
