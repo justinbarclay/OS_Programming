@@ -22,7 +22,7 @@ int main(int argc, char * argv[])
     int	sock, snew, fromlength, number, outnum;
     struct	sockaddr_in	master, from;
 
-
+    sock = startServer(master);
     int i = 0;
 
     char welcomeMessage[] = "CMPUT379 Whiteboard Server v0\n";
@@ -30,9 +30,8 @@ int main(int argc, char * argv[])
     int first = 1;
     query* newMessage;
     while(1){
-        sock = startServer(master);
 	listen (sock, 5);
-        
+        fromlength = 0;
 	snew = accept (sock, (struct sockaddr*) & from, (socklen_t *) &fromlength);
 	if (snew < 0) {
             perror ("Server: accept failed");
