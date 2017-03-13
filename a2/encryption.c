@@ -13,14 +13,14 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/conf.h>
-char keyfile[] = "keys.txt";
 
 /*  Macros */
-#define IV_SIZE 16
+#define IV_SIZE 256 
 #define MAX_KEY_SIZE 256
 #define MAX_KEYS 1024
 #define IV_FILE "IV.txt"
 #define HEADER_TEXT "CMPUT 379 Whiteboard Encrypted v0\n"
+
 /* Global variables */
 unsigned char *keys[10]; //Used to store a pointer to the keys
 unsigned char Encryptionkey[MAX_KEY_SIZE];
@@ -32,7 +32,6 @@ int fetchKeys(const char *fileName, \
 int fetchEncryptionKey(const char *begin, const char *end, char *key);
 int prependHeader(unsigned char *plaintext, int plaintextLen, \
         unsigned char *prependedPlaintext);
-
 unsigned int generateRand();
 int generateIV();
 int getIV();
@@ -45,43 +44,20 @@ void handleErrors(void){
 
 /*  Main bodr for testing */
 int main (){
-    unsigned char plaintext[] = "hello";
+    char keyfile[] = "keys.txt";
+
+    unsigned char plaintext[] = "hail satan ahalahsdklfhasl";
     unsigned char encryptedOutput[1024];
-    int ciph_len = encrypt(plaintext, sizeof(plaintext), encryptedOutput);
+    int ciph_len = encrypt(plaintext, sizeof(plaintext), encryptedOutput, keyfile);
     unsigned char decryptedOutput[1024];
-    decrypt(encryptedOutput, ciph_len, decryptedOutput);
+    decrypt(encryptedOutput, ciph_len, decryptedOutput,keyfile);
     printf("Decrypted output: %s\n", decryptedOutput);
 }
 
-int prependHeader(unsigned char *plaintext, int plaintextLen, unsigned char *prependedPlaintext){
-    int i = 0, z;
-    size_t ppSize;
-    if(!realloc(prependedPlaintext ,\
-                (strlen((const char *) plaintext))+ strlen(HEADER_TEXT))){
-        printf("Failure mallocing for prependedPlaintext\n");
-        return 0;
-    }
 
-    ppSize = strlen(HEADER_TEXT);
-
-
-    if(prependedPlaintext == 0){
-        printf("Failed allocating prependedPlaintext\n");
-        return 0;
-    }
-    while(i < strlen(HEADER_TEXT)){
-        prependedPlaintext[i] = HEADER_TEXT[i];
-        i++;
-    }
-    for(z = 0; z < plaintextLen; z++){
-        prependedPlaintext[i] = plaintext[z];
-        i++;
-    }
-    return plaintextLen + sizeof(HEADER_TEXT);
-}
 
 /*  Function bodies */
-int encrypt(unsigned char *plain, int plaintext_len, unsigned char *ciphertext){
+int encrypt(unsigned char *plain, int plaintext_len, unsigned char *ciphertext, char *keyfile){
     // Encrypts a block of text of size plaintext_len bytes. Prepends the HEADER_TEXT
     // before plain is encrypted to conform to message spec. Returns the size of the
     // encrypted message
@@ -122,7 +98,6 @@ int encrypt(unsigned char *plain, int plaintext_len, unsigned char *ciphertext){
     // Record the length of the ciphertext
     ciphertext_len = len;
 
-
     // Finalize encryption
     if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len)){
         printf("failure finalizing decryption\n");
@@ -135,35 +110,33 @@ int encrypt(unsigned char *plain, int plaintext_len, unsigned char *ciphertext){
 
     return ciphertext_len;
 }
-int decrypt(unsigned char *ciphertext, int ciphertextLen, unsigned char *plaintext){
+int decrypt(unsigned char *ciphertext, int ciphertextLen, unsigned char *plaintext, char *keyfile){
     int decrypted = 0, i = 0;
     int numKeys = 0;
 
+    // Populate the array of keys
     numKeys = fetchDecryptionKeys(keyfile);
-    printf("numkeys %d\n\n", numKeys);
+
     if(!numKeys){
         printf("Failed to fetch keys\n");
         return 0;
     }
     while(!decrypted && i < numKeys){
-        // crashes in here
         // must be same format passed as encryptionkey
-        printf("keys: %s|\n", keys[i]);
         if(!decrypt_simple(ciphertext, ciphertextLen,keys[i] , plaintext)){
             printf("Decrypt simple failed\n");
             return 0;
         }
-    
+
         if(strncmp(HEADER_TEXT, (const char *)plaintext, strlen(HEADER_TEXT)) == 0){
             decrypted = 1;
             return 1;
         }
         i++;
     }
-    /*
-       for(i = 0; i < numKeys; i++){
-       free(keys[i]);
-       }*/
+    for(i = 0; i < numKeys; i++){
+        free(keys[i]);
+    }
     return 1;
 }
 
@@ -192,7 +165,6 @@ int decrypt_simple(unsigned char *ciphertext, int ciphertext_len,
         handleErrors();
     plaintext_len = len;
 
-    printf("LEN %d\n", len);
     // Finalize decryption
     if(1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len)) handleErrors();
 
@@ -206,7 +178,7 @@ int decrypt_simple(unsigned char *ciphertext, int ciphertext_len,
 
 int fetchKeys(const char *fileName, \
         int (*call_back) (const char*, const char*, char *), char *dest){
-
+    // Fetches the encryption key and writes it into memory
     struct stat fs;
     char *buf, *buf_end;
     char *begin, *end, c;
@@ -268,6 +240,7 @@ int fetchEncryptionKey(const char *begin, const char *end, char *key){
     }
     return 0;
 }
+
 int fetchDecryptionKeys(char *keyfile){
     int numKeys = 0;
     char *line;
@@ -283,13 +256,53 @@ int fetchDecryptionKeys(char *keyfile){
             printf("mallocing keys failed\n");
             return 0;
         }
-        strncpy((char *)keys[numKeys], line,strlen(line));
+        if((line)[read-1] == '\n'){
+            line[read-1] = '\0';
+            read--;
+        }
+        strncpy((char *)keys[numKeys], line, strlen(line));
         numKeys++;
     }
 
     return numKeys;
 }
 
+int prependHeader(unsigned char *plaintext, int plaintextLen, unsigned char *prependedPlaintext){
+    // Prepends the header specified by HEADER_TEXT to the plaintext, and returns the length of 
+    // the prepended header. It fills the prependedPlaintext pointer with the header + plaintext
+
+    int i = 0, z;
+    size_t ppSize;
+    // Allocate for size of plaintext
+    if(!realloc(prependedPlaintext ,\
+                (strlen((const char *) plaintext))+ strlen(HEADER_TEXT))){
+        printf("Failure mallocing for prependedPlaintext\n");
+        return 0;
+    }
+
+    if(prependedPlaintext == 0){
+        printf("Failed allocating prependedPlaintext\n");
+        return 0;
+    }
+    
+    // Get size of HEADER_TEXT
+    ppSize = strlen(HEADER_TEXT);
+
+    // Copy header text into prepended plaintext
+    while(i < strlen(HEADER_TEXT)){
+        prependedPlaintext[i] = HEADER_TEXT[i];
+        i++;
+    }
+    
+    // Copy plaintext into prepended plaintext
+    for(z = 0; z < plaintextLen; z++){
+        prependedPlaintext[i] = plaintext[z];
+        i++;
+    }
+
+    // Return the size of the new plaintext to be encrypted
+    return plaintextLen + sizeof(HEADER_TEXT);
+}
 int getIV(){
     FILE *fp;
     memset(iv, 0, IV_SIZE);
