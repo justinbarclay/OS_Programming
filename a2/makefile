@@ -7,7 +7,7 @@ server: server.c parser.o
 	gcc -o server server.c parser.o
 
 client: client.c
-	gcc -o client client.c -lncurses
+	gcc -o client client.c -lncurses -lpthread
 
 
 tests:$(SUBDIRS)
