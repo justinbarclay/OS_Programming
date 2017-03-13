@@ -18,10 +18,11 @@ char keyfile[] = "keys.txt";
 /*  Macros */
 #define IV_SIZE 16
 #define MAX_KEY_SIZE 256
+#define MAX_KEYS 1024
 #define IV_FILE "IV.txt"
 #define HEADER_TEXT "CMPUT 379 Whiteboard Encrypted v0\n"
 /* Global variables */
-char *keys; //Used to store a pointer to the keys
+unsigned char *keys[1024]; //Used to store a pointer to the keys
 unsigned char Encryptionkey[MAX_KEY_SIZE];
 unsigned char iv[IV_SIZE];
 
@@ -38,15 +39,14 @@ int getIV();
 
 void handleErrors(void)
 {
-  ERR_print_errors_fp(stderr);
-  abort();
+    ERR_print_errors_fp(stderr);
+    abort();
 }
 /*  Main body for testing */
 int main (){
-    unsigned char plaintext[] = "this is really stupid hello";
+    unsigned char plaintext[] = "hello";
     unsigned char encryptedOutput[1024];
-    int ciph_len = encrypt(plaintext, 32, encryptedOutput);
-    printf("ciphlen: %d", ciph_len);
+    int ciph_len = encrypt(plaintext, sizeof(plaintext), encryptedOutput);
     unsigned char decryptedOutput[1024];
     decrypt(encryptedOutput, ciph_len, decryptedOutput);
 }
@@ -75,26 +75,20 @@ int prependHeader(unsigned char *plaintext, int plaintextLen, unsigned char *pre
         prependedPlaintext[i] = plaintext[z];
         i++;
     }
-
-    printf("%s\n", prependedPlaintext);
-    return 1;
+    return plaintextLen + sizeof(HEADER_TEXT);
 }
 
 /*  Function bodies */
-int encrypt(unsigned char *plaintext, int plaintextLen,  unsigned char *ciphertext){
-    int outlen, tmplen;
-    unsigned char *prependedPlaintext = (unsigned char *) malloc(sizeof(unsigned char *));
+int encrypt(unsigned char *plain, int plaintext_len, unsigned char *ciphertext){
+    // Encrypts a block of text of size plaintext_len bytes. Prepends the HEADER_TEXT
+    // before plain is encrypted to conform to message spec. Returns the size of the
+    // encrypted message
+    EVP_CIPHER_CTX *ctx;
 
-    if(!prependHeader(plaintext, plaintextLen, prependedPlaintext)){
-        printf("Failed prepending plaintext\n");
-        return 0;
-    }
-
-    memset(Encryptionkey, 0, MAX_KEY_SIZE);
-    memset(ciphertext, 0, 100);
-
-    EVP_CIPHER_CTX ctx;
-    EVP_CIPHER_CTX_init(&ctx);
+    int len;
+    int ciphertext_len;
+    unsigned char *plaintext = malloc(sizeof (unsigned char *));
+    plaintext_len = prependHeader(plain, plaintext_len, plaintext);
 
     if(!fetchKeys(keyfile, fetchEncryptionKey, (char *) Encryptionkey)){
         printf("Failed to fetch Encryptionkey\n");
@@ -105,61 +99,98 @@ int encrypt(unsigned char *plaintext, int plaintextLen,  unsigned char *cipherte
         printf("Failed to get IV\n");
         exit(0);
     }
-    EVP_EncryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, (const unsigned char*)Encryptionkey, iv);
 
-    if(!EVP_EncryptUpdate(&ctx, ciphertext, &outlen, prependedPlaintext, strlen((const char *)prependedPlaintext))){
-        printf("Error in EVP_Encrypt_Update\n");
+    // Create and initialize cipher context
+    if(!(ctx = EVP_CIPHER_CTX_new())){
+        printf("Failure creating context\n");
+        return 0;
+    }
+    // Initialize encryption
+    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, Encryptionkey, iv)){
+        printf("Failure initalizing context");
         return 0;
     }
 
-    if(!EVP_EncryptFinal_ex(&ctx, ciphertext + outlen, &tmplen)){
-        printf("Error in EVP_EncryptFinal_ex\n");
+    // Perform encryption
+    if(1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len)){
+        printf("Failure updating encryption\n");
         return 0;
     }
-    outlen += tmplen;
-    EVP_CIPHER_CTX_cleanup(&ctx);
 
-    return outlen;
+    // Record the length of the ciphertext
+    ciphertext_len = len;
+
+
+    // Finalize encryption
+    if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len)) handleErrors();
+    ciphertext_len += len;
+
+    // Clean up encryption
+    EVP_CIPHER_CTX_free(ctx);
+
+    return ciphertext_len;
+}
+int decrypt(unsigned char *ciphertext, int ciphertextLen, unsigned char *plaintext){
+    int decrypted = 0, i = 0;
+    int numKeys = 1;
+
+    numKeys = fetchDecryptionKeys(keyfile)
+
+    if(!numKeys){
+        printf("Failed to fetch Encryptionkey\n");
+        return 0;
+    }
+    while(!decrypted && i < numKeys){
+        if(!decrypt_simple(ciphertext, ciphertextLen, Encryptionkey, plaintext)){
+            printf("Decrypt simple failed\n");
+            return 0;
+        }
+
+        if(strncmp(HEADER_TEXT, (const char *)plaintext, strlen(HEADER_TEXT)) == 0){
+            decrypted = 1;
+            return 1;
+        }
+    }
+
+    return 1;
 }
 
-int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *plaintext){
+int decrypt_simple(unsigned char *ciphertext, int ciphertext_len, 
+        unsigned char *key, unsigned char *plaintext){
+    // Decrypts a ciphertext block of ciphertext_len bytes
     EVP_CIPHER_CTX *ctx;
     int len, plaintext_len;
 
     if(getIV() != 1){
         printf("Failed to get IV\n");
-        exit(0);
-    }
-    if(!(ctx = EVP_CIPHER_CTX_new())) handleErrors();
-
-    //Must rework
-    if(!fetchKeys(keyfile, fetchEncryptionKey, (char *) Encryptionkey)){
-        printf("Failed to fetch Encryptionkey\n");
         return 0;
     }
 
-    if((EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, Encryptionkey, iv))){
-        printf("Failure Initializing Decryption\n");
+    // Create context
+    if(!(ctx = EVP_CIPHER_CTX_new())){
+        printf("Error creating context\n");
+        return 0;
+    }
+
+    // Initialize decryption
+    if(1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv))
         handleErrors();
-        return 0;
-    }
 
-    if(!(EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len ))){
-       printf("Failure during decryption\n");
-       return 0;
-    }
+    // Perform decryption
+    if(1 != EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len))
+        handleErrors();
     plaintext_len = len;
 
-    //Finalize decryption
-    if(!(EVP_DecryptFinal(ctx, plaintext, &len))){
-       printf("Failure finalizing decryption\n");
-       return 0;
-    }
+    // Finalize decryption
+    if(1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len)) handleErrors();
+    plaintext_len += len;
 
-    //Clean up
+    // Clean up
     EVP_CIPHER_CTX_free(ctx);
-    return 1;
+
+    return plaintext_len;
 }
+
 int fetchKeys(const char *fileName, \
         int (*call_back) (const char*, const char*, char *), char *dest){
 
@@ -239,8 +270,8 @@ int generateIV(){
 
     fp = fopen(IV_FILE, "w");
     if(fp == NULL){
-       printf( "IV_FILE cannot be created\n");
-       return 0;
+        printf( "IV_FILE cannot be created\n");
+        return 0;
     }
     fprintf(fp,"%s", iv);
     return 1;
@@ -269,6 +300,13 @@ int fetchEncryptionKey(const char *begin, const char *end, char *key){
     }
     return 0;
 }
+int fetchDecryptionKeys(const char *begin, const char *end, const char *blarg){
+    int numKeys = 0;
+    keys[numKeys] =  malloc(sizeof(MAX_KEY_SIZE));
+ 
+    printf("begin %c end %c", begin[0], end[0]);
 
+    return numKeys;
+}
 int convertToBase64(char *ciphertext, char *base64Text);
 int convertFromBase64(char *recievedBase64Text, char *recivedPlaintext);

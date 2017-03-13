@@ -25,7 +25,9 @@
 #include <openssl/rand.h>
 
 /*  Function declarations */
-int encrypt(unsigned char *plaintext, int plaintextLen, unsigned char *ciphertext);
 int convertToBase64(char *ciphertext, char *base64Text);
-int convertFromBase64(char *recievedBase64Text, char *recivedPlaintext);
 int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *plaintext);
+int decrypt_simple(unsigned char *ciphertext, int ciphertext_len, unsigned char *key, unsigned char *plaintext);
+int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *ciphertext);
+
+int convertFromBase64(char *recievedBase64Text, char *recivedPlaintext);
