@@ -59,12 +59,13 @@ int main(int argc, char * argv[])
         newMessage = parseMessage(message, 1024);
 	//copy the string "Stevens" into character array c
 	//strncpy(c,steve,7);
-	sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength %d \nMessage %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
+	sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
         
-        printf("%s", newMessage->message);
+        printf("%s", message);
 	//Send the first five bytes of character array c back to the client
 	//The client, however, wants to receive 7 bytes.
         if(first){
+            first = 0;
             send(snew, welcomeMessage, welcomeLength, 0);
         } else {
         send(snew,message,1024,0);
