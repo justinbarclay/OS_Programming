@@ -15,7 +15,7 @@
 #include <openssl/conf.h>
 
 /*  Macros */
-#define IV_SIZE 256 
+#define IV_SIZE 256
 #define MAX_KEY_SIZE 256
 #define MAX_KEYS 1024
 #define IV_FILE "IV.txt"
@@ -23,19 +23,15 @@
 
 /* Global variables */
 unsigned char *keys[10]; //Used to store a pointer to the keys
-unsigned char Encryptionkey[MAX_KEY_SIZE];
 unsigned char iv[IV_SIZE];
 
 /* Local Function declarations*/
-int fetchKeys(const char *fileName, \
-        int (*call_back) (const char*, const char*, char *), char *dest);
-int fetchEncryptionKey(const char *begin, const char *end, char *key);
 int prependHeader(unsigned char *plaintext, int plaintextLen, \
         unsigned char *prependedPlaintext);
 unsigned int generateRand();
 int generateIV();
 int getIV();
-int fetchDecryptionKeys(char *keyfile);
+int fetchKeys(char *keyfile);
 
 void handleErrors(void){
     ERR_print_errors_fp(stderr);
@@ -63,12 +59,11 @@ int encrypt(unsigned char *plain, int plaintext_len, unsigned char *ciphertext, 
     // encrypted message
     EVP_CIPHER_CTX *ctx;
 
-    int len;
-    int ciphertext_len;
+    int len, numKeys, i, ciphertext_len;
     unsigned char *plaintext = malloc(sizeof (unsigned char *));
     plaintext_len = prependHeader(plain, plaintext_len, plaintext);
 
-    if(!fetchKeys(keyfile, fetchEncryptionKey, (char *) Encryptionkey)){
+    if((numKeys = fetchKeys(keyfile)) == 0){
         printf("Failed to fetch Encryptionkey\n");
         return 0;
     }
@@ -83,8 +78,8 @@ int encrypt(unsigned char *plain, int plaintext_len, unsigned char *ciphertext, 
         printf("Failure creating context\n");
         return 0;
     }
-    // Initialize encryption
-    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, Encryptionkey, iv)){
+    // Initialize encryption with first key
+    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, keys[0], iv)){
         printf("Failure initalizing context");
         return 0;
     }
@@ -108,6 +103,9 @@ int encrypt(unsigned char *plain, int plaintext_len, unsigned char *ciphertext, 
     // Clean up encryption
     EVP_CIPHER_CTX_free(ctx);
 
+    for(i = 0; i < numKeys; i++){
+        free(keys[i]);
+    }
     return ciphertext_len;
 }
 int decrypt(unsigned char *ciphertext, int ciphertextLen, unsigned char *plaintext, char *keyfile){
@@ -115,7 +113,7 @@ int decrypt(unsigned char *ciphertext, int ciphertextLen, unsigned char *plainte
     int numKeys = 0;
 
     // Populate the array of keys
-    numKeys = fetchDecryptionKeys(keyfile);
+    numKeys = fetchKeys(keyfile);
 
     if(!numKeys){
         printf("Failed to fetch keys\n");
@@ -176,72 +174,7 @@ int decrypt_simple(unsigned char *ciphertext, int ciphertext_len,
     return plaintext_len;
 }
 
-int fetchKeys(const char *fileName, \
-        int (*call_back) (const char*, const char*, char *), char *dest){
-    // Fetches the encryption key and writes it into memory
-    struct stat fs;
-    char *buf, *buf_end;
-    char *begin, *end, c;
-
-    // Create file descriptor
-    int fd = open(fileName, O_RDONLY);
-    if (fd == -1){
-        err(1, "Open %s failed", fileName);
-        return 0;
-    }
-
-    //Get stats about file descriptor
-    if(fstat(fd, &fs) == -1){
-        err(1, "Stat call on %s failed", fileName);
-    }
-
-    //Map file into memory
-    buf = mmap(0, fs.st_size, PROT_READ, MAP_SHARED, fd, 0);
-    if(buf == (void *) -1){
-        err(1, "mmap failed for %s", fileName);
-    }
-
-    //Set end of buffer
-    buf_end = buf + fs.st_size;
-    begin = end = buf;
-    int i = 1;
-    while(1){
-        if(! (*end == '\r' || *end == '\n')){
-            if(++end < buf_end) continue;
-        } else if(1 + end < buf_end){
-            c = *(1 + end);
-            if ((c == '\r' || c == '\n') && c != *end ){
-                end++;
-            }
-        }
-
-        int call_back_result = call_back(begin, end, dest);
-        if(call_back_result == 0){
-            break;
-        } else if(call_back_result < 0){
-            err(1, "[call_back] failed on keyfile %s", fileName);
-            printf("Broke after %d\n", i);
-            i++;
-            break;
-        }
-        if((begin = ++end) >= buf_end){
-            break;
-        }
-    }
-    close(fd);
-    return 1;
-}
-
-int fetchEncryptionKey(const char *begin, const char *end, char *key){
-    int i = 0;
-    while(begin[i] != '\n'){
-        key[i] = begin[i];
-        i++;
-    }
-    return 0;
-}
-
-int fetchDecryptionKeys(char *keyfile){
+int fetchKeys(char *keyfile){
     int numKeys = 0;
     char *line;
     size_t len = 0;
@@ -268,7 +201,7 @@ int fetchDecryptionKeys(char *keyfile){
 }
 
 int prependHeader(unsigned char *plaintext, int plaintextLen, unsigned char *prependedPlaintext){
-    // Prepends the header specified by HEADER_TEXT to the plaintext, and returns the length of 
+    // Prepends the header specified by HEADER_TEXT to the plaintext, and returns the length of
     // the prepended header. It fills the prependedPlaintext pointer with the header + plaintext
 
     int i = 0, z;
@@ -284,7 +217,7 @@ int prependHeader(unsigned char *plaintext, int plaintextLen, unsigned char *pre
         printf("Failed allocating prependedPlaintext\n");
         return 0;
     }
-    
+
     // Get size of HEADER_TEXT
     ppSize = strlen(HEADER_TEXT);
 
@@ -293,7 +226,7 @@ int prependHeader(unsigned char *plaintext, int plaintextLen, unsigned char *pre
         prependedPlaintext[i] = HEADER_TEXT[i];
         i++;
     }
-    
+
     // Copy plaintext into prepended plaintext
     for(z = 0; z < plaintextLen; z++){
         prependedPlaintext[i] = plaintext[z];
