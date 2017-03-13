@@ -32,7 +32,7 @@ int main(int argc, char * argv[])
     while(1){
 	listen (sock, 5);
         
-	snew = accept (sock, (struct sockaddr*) & from, &fromlength);
+	snew = accept (sock, (struct sockaddr*) & from, (socklen_t *) &fromlength);
 	if (snew < 0) {
             perror ("Server: accept failed");
             exit (1);
