@@ -21,13 +21,13 @@ query* parseMessage(char *input, int inputSize){
 
     totalBytesRead += bytesRead;
 
-    if(inputSize == newMessage->messageLength + totalBytesRead){
+    if(inputSize >= newMessage->messageLength + totalBytesRead){
         newMessage->message = malloc(newMessage->messageLength);
         memcpy(newMessage->message, input+totalBytesRead, newMessage->messageLength);
 
         //Sanity check to make sure we've parsed the message correctly
         //Need to subtract 1 because messageLength is not 0 based
-        if(newMessage->message[newMessage->messageLength-1] != '\n'){
+        if(newMessage->message[newMessage->messageLength] != '\n'){
             perror("Message not parsed properly\n");
         }
     } else {

@@ -24,7 +24,7 @@
 
 
 struct charBuffer {
-    char buffer[100];
+    char* buffer;
     int size;
     int ready;
 } typedef charBuffer;
@@ -44,11 +44,14 @@ void exampleSendRcv(WINDOW *w1, WINDOW *w2);
 void readFromSocket(int s, charBuffer *output);
 void getSocket(int *s);
 
+int addToMessage(char* message, int length, char* newMessage);
 // This structure contains the current element that needs to be printed to screen
 
 int main(){
     output = malloc(sizeof(charBuffer));
     input = malloc(sizeof(charBuffer));
+    output->buffer = malloc(sizeof(char)*1024);
+    input->buffer = malloc(sizeof(char)*1024);
     Quit = 0;
     WINDOW *w2;
     int row, column;
@@ -87,17 +90,10 @@ int main(){
 
 void exampleSendRcv(WINDOW *w1, WINDOW *w2){
     int	s, number;
-    char c[11];
     
     /* Vars for ncurses */
-    char buf[100] = {0}, *bufPointer = buf;
+    char buf[1024] = {0}, *bufPointer = buf;
     int ch, cnt = 0, n = 1;
-    // Zero out all bytes in character array c
-    bzero(c,11);
-    // assign 'M' to the last element of c
-    c[10] = 'M';
-    // assign 'A' to the first element of c
-    c[0] = 'A';
 
     // Send all 11 bytes of character array c to the server
     // It is important to note that even the null terminating (zero valued) bytes
@@ -152,11 +148,11 @@ void exampleSendRcv(WINDOW *w1, WINDOW *w2){
 
 void readFromSocket(int s, charBuffer *output){
     // zero out each byte of the array before receiving from the server
-    bzero(output->buffer, 100);
+    bzero(output->buffer, output->size);
 
     // Here the client wants to receive 7 bytes from the server, but the server
     // only sends 5 bytes
-    recv(s, output, 100, 0);
+    recv(s, output->buffer, output->size, 0);
 }
 
 void getSocket(int *s){
@@ -190,25 +186,52 @@ void getSocket(int *s){
     }
 }
 
+int addToMessage(char* message, int length, char* newMessage){
+    char starter[7] = "@12p14\n";
+    int starterSize = 7;
+    if(newMessage == NULL){
+        newMessage = calloc(length+7, sizeof(char));
+    } else if (!realloc(newMessage, sizeof(char) * (length + starterSize))){
+        printf("Failure to allocate memory");
+        return -1;
+    };
+    bzero(newMessage, length+7);
+    for(int i=0; i<starterSize; ++i){
+        newMessage[i] = starter[i];
+    }
+    for(int i = 0; i<length; ++i){
+        newMessage[starterSize + i] = message[i];
+    }
+    return length+7;
+}
+
 void * handleNetworkCalls(){
     int s;
     // Initial implementation to handle network.
     // Run in a continuous loop and check every second for input or output;
+    char *message = calloc(1, sizeof(char));
+    int size;
+    int sent;
     while(Quit != 1){
         /* getSocket(&s); // Get new socket */
         if(input->size > 0) {
+            size = addToMessage(input->buffer, input->size, message);
+            //printf("%s", message);
             getSocket(&s); // Get new socket
 
-            send(s, input->buffer, input->size, 0);
+            sent =  send(s, message, size, 0);
+            printf("%d\n", sent);
             bzero(input->buffer, input->size);
             input->size = 0;
-            readFromSocket(s, output);
+            output->buffer = message;
+            output->size = size;
+            //readFromSocket(s, output);
             close (s);
         }
         /* close (s); */
         sleep(1);
     }
-    return (void *) 0;
+    return 0;
 }
 
 WINDOW *create_newwin(int height, int width, int starty, int startx){
