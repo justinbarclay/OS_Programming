@@ -22,7 +22,7 @@ char keyfile[] = "keys.txt";
 #define IV_FILE "IV.txt"
 #define HEADER_TEXT "CMPUT 379 Whiteboard Encrypted v0\n"
 /* Global variables */
-unsigned char *keys[1024]; //Used to store a pointer to the keys
+unsigned char *keys[10]; //Used to store a pointer to the keys
 unsigned char Encryptionkey[MAX_KEY_SIZE];
 unsigned char iv[IV_SIZE];
 
@@ -36,19 +36,21 @@ int prependHeader(unsigned char *plaintext, int plaintextLen, \
 unsigned int generateRand();
 int generateIV();
 int getIV();
+int fetchDecryptionKeys(char *keyfile);
 
-void handleErrors(void)
-{
+void handleErrors(void){
     ERR_print_errors_fp(stderr);
     abort();
 }
-/*  Main body for testing */
+
+/*  Main bodr for testing */
 int main (){
     unsigned char plaintext[] = "hello";
     unsigned char encryptedOutput[1024];
     int ciph_len = encrypt(plaintext, sizeof(plaintext), encryptedOutput);
     unsigned char decryptedOutput[1024];
     decrypt(encryptedOutput, ciph_len, decryptedOutput);
+    printf("Decrypted output: %s\n", decryptedOutput);
 }
 
 int prependHeader(unsigned char *plaintext, int plaintextLen, unsigned char *prependedPlaintext){
@@ -122,7 +124,10 @@ int encrypt(unsigned char *plain, int plaintext_len, unsigned char *ciphertext){
 
 
     // Finalize encryption
-    if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len)) handleErrors();
+    if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len)){
+        printf("failure finalizing decryption\n");
+        return 0;
+    };
     ciphertext_len += len;
 
     // Clean up encryption
@@ -132,35 +137,41 @@ int encrypt(unsigned char *plain, int plaintext_len, unsigned char *ciphertext){
 }
 int decrypt(unsigned char *ciphertext, int ciphertextLen, unsigned char *plaintext){
     int decrypted = 0, i = 0;
-    int numKeys = 1;
+    int numKeys = 0;
 
-    numKeys = fetchDecryptionKeys(keyfile)
-
+    numKeys = fetchDecryptionKeys(keyfile);
+    printf("numkeys %d\n\n", numKeys);
     if(!numKeys){
-        printf("Failed to fetch Encryptionkey\n");
+        printf("Failed to fetch keys\n");
         return 0;
     }
     while(!decrypted && i < numKeys){
-        if(!decrypt_simple(ciphertext, ciphertextLen, Encryptionkey, plaintext)){
+        // crashes in here
+        // must be same format passed as encryptionkey
+        printf("keys: %s|\n", keys[i]);
+        if(!decrypt_simple(ciphertext, ciphertextLen,keys[i] , plaintext)){
             printf("Decrypt simple failed\n");
             return 0;
         }
-
+    
         if(strncmp(HEADER_TEXT, (const char *)plaintext, strlen(HEADER_TEXT)) == 0){
             decrypted = 1;
             return 1;
         }
+        i++;
     }
-
+    /*
+       for(i = 0; i < numKeys; i++){
+       free(keys[i]);
+       }*/
     return 1;
 }
 
-int decrypt_simple(unsigned char *ciphertext, int ciphertext_len, 
+int decrypt_simple(unsigned char *ciphertext, int ciphertext_len,
         unsigned char *key, unsigned char *plaintext){
     // Decrypts a ciphertext block of ciphertext_len bytes
     EVP_CIPHER_CTX *ctx;
     int len, plaintext_len;
-
     if(getIV() != 1){
         printf("Failed to get IV\n");
         return 0;
@@ -181,8 +192,10 @@ int decrypt_simple(unsigned char *ciphertext, int ciphertext_len,
         handleErrors();
     plaintext_len = len;
 
+    printf("LEN %d\n", len);
     // Finalize decryption
     if(1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len)) handleErrors();
+
     plaintext_len += len;
 
     // Clean up
@@ -247,6 +260,36 @@ int fetchKeys(const char *fileName, \
     return 1;
 }
 
+int fetchEncryptionKey(const char *begin, const char *end, char *key){
+    int i = 0;
+    while(begin[i] != '\n'){
+        key[i] = begin[i];
+        i++;
+    }
+    return 0;
+}
+int fetchDecryptionKeys(char *keyfile){
+    int numKeys = 0;
+    char *line;
+    size_t len = 0;
+    FILE *fp;
+    ssize_t read;
+
+    fp = fopen(keyfile, "r");
+
+    while ((read = getline(&line, &len, fp)) != -1) {
+        keys[numKeys] =  (unsigned char *) malloc(sizeof(unsigned char *) * MAX_KEY_SIZE);
+        if(keys[numKeys] == NULL){
+            printf("mallocing keys failed\n");
+            return 0;
+        }
+        strncpy((char *)keys[numKeys], line,strlen(line));
+        numKeys++;
+    }
+
+    return numKeys;
+}
+
 int getIV(){
     FILE *fp;
     memset(iv, 0, IV_SIZE);
@@ -292,21 +335,6 @@ unsigned int generateRand(){
     return u.i % limit;
 }
 
-int fetchEncryptionKey(const char *begin, const char *end, char *key){
-    int i = 0;
-    while(begin[i] != '\n'){
-        key[i] = begin[i];
-        i++;
-    }
-    return 0;
-}
-int fetchDecryptionKeys(const char *begin, const char *end, const char *blarg){
-    int numKeys = 0;
-    keys[numKeys] =  malloc(sizeof(MAX_KEY_SIZE));
- 
-    printf("begin %c end %c", begin[0], end[0]);
 
-    return numKeys;
-}
 int convertToBase64(char *ciphertext, char *base64Text);
 int convertFromBase64(char *recievedBase64Text, char *recivedPlaintext);
