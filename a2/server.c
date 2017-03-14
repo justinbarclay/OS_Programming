@@ -36,18 +36,28 @@ int main(int argc, char * argv[]){
     // Search for statefile
     if(argc > 1){
         for(z = 0; z < argc; z++){
-            printf("iteration %d\n", z);
             if(strcmp("-f", argv[z]) == 0){
                 statefile = (const char *) malloc(strlen(argv[z+1]));
                 if(statefile == NULL){
                     printf("Failed mallocing statefile name\n");
                 }
                 strcpy((char *)statefile, argv[z+1]);
+
+                z  = handleStateFile(statefile, Whiteboard);
+                if(!z){
+                    printf("Failed reading statefile\n");
+                }
                 break;
             }
         }
     }
-    z  = handleStateFile(statefile, Whiteboard);
+    char* m = malloc(sizeof(char));
+    
+    int boardsize = getWhiteboardSize();
+    for(int i = 1; i <= boardsize; i++){
+        readNode(Whiteboard, i, m);
+        printf("BOARD MESSAGE:%s\n", m);
+    }
     exit(0);
     sock = startServer(master);
 
@@ -114,20 +124,33 @@ int main(int argc, char * argv[]){
 int handleStateFile(const char *statefile, struct whiteboard *wb){
     FILE *fp;
     char *line;
+    int c;
     size_t len = 0;
     ssize_t read;
-    int i = 0;
+    int i = 0,newlineCounter =0;
+    int messageSize = 0;
+    char message[1024];
     fp = fopen(statefile, "r");
     if(fp == NULL){
         fp = fopen(statefile, "w");
     }
 
-    // Read a key from file
-    while ((read = getline(&line, &len, fp)) != -1){
-        // Copy to data store
-        //addMessageToWhiteboard(line, isEncrypted(line, len), fetchSize(line, len), wb);
-       }
-
+    // Read a key from file and create a whiteboard entry
+    while ((c = fgetc(fp)) != EOF){
+        message[i++]  = (char) c;
+        messageSize++;
+        if( (char) c == '\n') newlineCounter++; 
+        if(newlineCounter == 2 ){
+            message[i+1] = '\0';
+            printf("message %s\n", message);
+            addMessageToWhiteboard(message, isEncrypted(message,messageSize ), sizeof(message), wb);
+            messageSize =0; 
+            memset(&message[0],0, sizeof(message));
+            i =0;
+            newlineCounter = 0;
+        }
+    }
+    
     return 1;
 }
 int fetchSize(char *line, size_t len){
