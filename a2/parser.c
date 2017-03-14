@@ -1,5 +1,7 @@
 #include "parser.h"
 int getEncryptionType(char encryption);
+char returnQueryTypeChar(int type);
+char returnEncryptionTypeChar(int type);
 
 query* parseMessage(char *input, int inputSize){
     int bytesRead;
@@ -55,7 +57,10 @@ int getEncryptionType(char encryption){
 }
 
 int getMessageType(char indicator){
-    if(indicator == '?'){
+    if(indicator == '!'){
+        return 0;
+    }
+    else if(indicator == '?'){
         // Query is int 1
         return 1;
     } else if (indicator == '@'){
@@ -63,7 +68,7 @@ int getMessageType(char indicator){
         return 2;
     } else {
         // We have reached an error
-        return 0;
+        return -1;
     }
 }
 
@@ -88,4 +93,62 @@ int getNumberFromMessage(char* input,int* bytesRead){
 
     *bytesRead = i; // Remember 0 based index
     return number;
+}
+
+// Returns total message size
+int buildStringFromMessage(query * newQuery, char* message){
+    message = calloc(1024, sizeof(char));
+    char numToString[10]; //Assumption never going to have columns greater than 10 digits
+    int i=0;
+    int length = 0;
+    int index = 0;
+    message[index++] = returnQueryTypeChar(newQuery->type);
+
+    // Get column as a string
+    length = sprintf(numToString,"%d", newQuery->column);
+    if(length > 0){
+
+        for(i = 0; i< length; ++i){
+            message[index+i] = numToString[i];
+        }
+        index += length;
+    }
+    
+    message[index++] = returnEncryptionTypeChar(newQuery->encryption);
+
+    // Get messageLength as a string
+    length = sprintf(numToString,"%d", newQuery->messageLength);
+    if(length > 0){
+        for(i = 0; i< length; ++i){
+            message[index+i] = numToString[i];
+        }
+        index += length;
+    }
+
+    for(i = 0; i <= newQuery->messageLength; ++i){
+        message[index+i] = newQuery->message[i];
+    }
+    
+}
+
+char returnQueryTypeChar(int type){
+    if(type == 0)
+        return '!';
+    else if(type == 1){
+        return '?';
+    }
+    else if(type == 2){
+        return '!';
+    }
+}
+
+char returnEncryptionTypeChar(int type){
+    if(type == 0)
+        return 'p';
+    else if(type == 1){
+        return 'c';
+    }
+    else if(type == -1){
+        return 'e';
+    }
 }
