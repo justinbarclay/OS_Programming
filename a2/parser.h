@@ -14,4 +14,4 @@ struct query{
 int getMessageType(char indicator);
 query* parseMessage(char *input, int inputSize);
 int getNumberFromMessage(char *input, int *bytesRead);
-int buildStringFromQuery(query * newQuery, char* message);
+char* buildStringFromQuery(query * newQuery, int* index);
