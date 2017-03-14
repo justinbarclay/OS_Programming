@@ -103,8 +103,9 @@ int connectToServer(){
     int sent;
     int success;
     success = getSocket(&s); // Get new socket
+    
     if(success){
-        sent =  send(s, "", 0, 0);
+        sent =  send(s, "1", 1, 0);
 
         readFromSocket(s);
         close (s);

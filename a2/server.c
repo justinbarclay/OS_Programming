@@ -67,9 +67,19 @@ int main(int argc, char * argv[]){
     }
     sock = startServer(master);
 
-    char welcomeMessage[] = "CMPUT379 Whiteboard Server v0\n";
+    char welcomeMessage[40] = "CMPUT379 Whiteboard Server v0\n";
     int welcomeLength = strlen(welcomeMessage);
-
+    char numToString[9];
+    int size;
+    
+     size = sprintf(numToString,"%d",getWhiteboardSize());
+     if(size > 0){
+         int i = 0;
+         for(i = 0; i< size; ++i){
+             welcomeMessage[30+i] = numToString[i];
+         }
+         welcomeMessage[30+i+1] = '\n';
+     }
     int first = 1;
     int length = 0;
     
@@ -77,7 +87,7 @@ int main(int argc, char * argv[]){
     query* responseMessage = malloc(sizeof(query));
     
     while(1){
-        listen (sock, 5);
+        listen (sock, 128);
         fromlength = 0;
         snew = accept (sock, (struct sockaddr*) & from, (socklen_t *) &fromlength);
         if (snew < 0) {
@@ -97,18 +107,18 @@ int main(int argc, char * argv[]){
 
        
         printf("Incoming request: %s\n",message);
-
-        newMessage = parseMessage(message, 1024);
         
-        handleMessage(newMessage, Whiteboard, responseMessage); // not implemented yet
-        message = buildStringFromQuery(responseMessage, &length);
         //Send the first five bytes of character array c back to the client
         //The client, however, wants to receive 7 bytes.
 
         if(first){
             first = 0;
-            send(snew, welcomeMessage, welcomeLength, 0);
+            send(snew, welcomeMessage, 40, 0);
         } else {
+            newMessage = parseMessage(message, 1024);
+            handleMessage(newMessage, Whiteboard, responseMessage); // not implemented yet
+            message = buildStringFromQuery(responseMessage, &length);
+            
             send(snew,message,length,0);
         }
         close (snew);
