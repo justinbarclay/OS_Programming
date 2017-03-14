@@ -12,13 +12,13 @@ int main(int argc, char * argv[]){
     query *newQuery = parseMessage(message1,18);
     fflush(stdout); // Will now print everything in the stdout buffer
 
-    printf("\nType: %d\n", newQuery->type);
-    printf("Column: %d\n", newQuery->column);
-    printf("Encryption type: %d\n", newQuery->encryption);
-    printf("messageLength: %d\n", newQuery->messageLength);
-    printf("message: %s\n", newQuery->message);
+    /* printf("\nType: %d\n", newQuery->type); */
+    /* printf("Column: %d\n", newQuery->column); */
+    /* printf("Encryption type: %d\n", newQuery->encryption); */
+    /* printf("messageLength: %d\n", newQuery->messageLength); */
+    /* printf("message: %s\n", newQuery->message); */
 
-    fflush(stdout); // Will now print everything in the stdout buffer
+    /* fflush(stdout); // Will now print everything in the stdout buffer */
     
     message = buildStringFromQuery(newQuery, &length);
     printf("Message Length = %d\n", length);
@@ -37,12 +37,12 @@ int main(int argc, char * argv[]){
     newQuery = parseMessage(message2,27);
     fflush(stdout); // Will now print everything in the stdout buffer
     
-    printf("\nType: %d\n", newQuery->type);
-    printf("Column: %d\n", newQuery->column);
-    printf("Encryption type: %d \n", newQuery->encryption);
-    printf("messageLength: %d\n", newQuery->messageLength);
-    printf("message: %s\n", newQuery->message);
-    fflush(stdout); // Will now print everything in the stdout buffer
+    /* printf("\nType: %d\n", newQuery->type); */
+    /* printf("Column: %d\n", newQuery->column); */
+    /* printf("Encryption type: %d \n", newQuery->encryption); */
+    /* printf("messageLength: %d\n", newQuery->messageLength); */
+    /* printf("message: %s\n", newQuery->message); */
+    /* fflush(stdout); // Will now print everything in the stdout buffer */
     
     message = buildStringFromQuery(newQuery, &length);
     printf("\nMessage Length = %d\n", length);
@@ -60,12 +60,12 @@ int main(int argc, char * argv[]){
     printf("Input message: '%s' \n", message3);
     newQuery = parseMessage(message3,55);
     fflush(stdout); // Will now print everything in the stdout buffer
-    printf("\nType: %d\n", newQuery->type);
-    printf("Column: %d\n", newQuery->column);
-    printf("Encryption type: %d\n", newQuery->encryption);
-    printf("messageLength: %d\n", newQuery->messageLength);
-    printf("message: %s\n", newQuery->message);
-    fflush(stdout); // Will now print everything in the stdout buffer
+    /* printf("\nType: %d\n", newQuery->type); */
+    /* printf("Column: %d\n", newQuery->column); */
+    /* printf("Encryption type: %d\n", newQuery->encryption); */
+    /* printf("messageLength: %d\n", newQuery->messageLength); */
+    /* printf("message: %s\n", newQuery->message); */
+    /* fflush(stdout); // Will now print everything in the stdout buffer */
     
     message = buildStringFromQuery(newQuery, &length);
     printf("\nMessage Length = %d\n", length);
@@ -83,12 +83,12 @@ int main(int argc, char * argv[]){
     printf("Input message: '%s' \n", message4);
     newQuery = parseMessage(message4,39);
     fflush(stdout); // Will now print everything in the stdout buffer
-    printf("\nType: %d\n", newQuery->type);
-    printf("Column: %d\n", newQuery->column);
-    printf("Encryption type: %d\n", newQuery->encryption);
-    printf("messageLength: %d\n", newQuery->messageLength);
-    printf("message: %s\n", newQuery->message);
-    fflush(stdout); // Will now print everything in the stdout buffer
+    /* printf("\nType: %d\n", newQuery->type); */
+    /* printf("Column: %d\n", newQuery->column); */
+    /* printf("Encryption type: %d\n", newQuery->encryption); */
+    /* printf("messageLength: %d\n", newQuery->messageLength); */
+    /* printf("message: %s\n", newQuery->message); */
+    /* fflush(stdout); // Will now print everything in the stdout buffer */
     
     message = buildStringFromQuery(newQuery, &length);
     printf("\nMessage Length = %d\n", length);
@@ -105,12 +105,12 @@ int main(int argc, char * argv[]){
     printf("Input message: '%s' \n", message5);
     newQuery = parseMessage(message5,4);
     fflush(stdout); // Will now print everything in the stdout buffer
-    printf("\nType: %d\n", newQuery->type);
-    printf("Column: %d\n", newQuery->column);
+    /* printf("\nType: %d\n", newQuery->type); */
+    /* printf("Column: %d\n", newQuery->column); */
     printf("Encryption type: %d\n", newQuery->encryption);
-    printf("messageLength: %d\n", newQuery->messageLength);
-    printf("message: %s\n", newQuery->message);
-    fflush(stdout); // Will now print everything in the stdout buffer
+    /* printf("messageLength: %d\n", newQuery->messageLength); */
+    /* printf("message: %s\n", newQuery->message); */
+    /* fflush(stdout); // Will now print everything in the stdout buffer */
     
     message = buildStringFromQuery(newQuery, &length);
     printf("\nMessage Length = %d\n", length);

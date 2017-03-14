@@ -17,6 +17,7 @@ query* parseMessage(char *input, int inputSize){
     newMessage->column = getNumberFromMessage(copiedInput, &bytesRead);
 
     totalBytesRead += bytesRead;
+    newMessage->encryption = -1; //Default value
     if(newMessage->type > 0){
         
         newMessage->encryption = getEncryptionType(input[totalBytesRead]);
@@ -51,15 +52,12 @@ query* parseMessage(char *input, int inputSize){
 
 // Plaintext is 0 and encryption is 1
 int getEncryptionType(char encryption){
-    printf("Encryption: ");
-    fflush(stdout);
-    printf("%c\n", encryption);
     if(encryption == 'p'){
         return 0;
     } else if(encryption == 'c') {
         return 1;
     } else {
-        exit(-1);
+        return -1;
     }
 }
 
@@ -117,27 +115,26 @@ char* buildStringFromQuery(query * newQuery, int* size){
     // Get column as a string
     length = sprintf(numToString,"%d", newQuery->column);
     if(length > 0){
-
         for(i = 0; i< length; ++i){
             message[index+i] = numToString[i];
         }
         index += length;
     }
-    if(newQuery->type > 0){
-        message[index++] = returnEncryptionTypeChar(newQuery->encryption);
+    message[index++] = returnEncryptionTypeChar(newQuery->encryption);
 
-        // Get messageLength as a string
-        length = sprintf(numToString,"%d", newQuery->messageLength);
-        if(length > 0){
-            for(i = 0; i< length; ++i){
-                message[index+i] = numToString[i];
-            }
-            index += length;
+    // Get messageLength as a string
+    length = sprintf(numToString,"%d", newQuery->messageLength);
+    if(length > 0){
+        for(i = 0; i< length; ++i){
+            message[index+i] = numToString[i];
         }
+        index += length;
+    }
+    message[index++]='\n';
+    if(newQuery->type > 0){
         // Add seperating newline character
-        message[index++]='\n';
     
-        for(i = 0; i < newQuery->messageLength+1; ++i){
+        for(i = 0; i < newQuery->messageLength; ++i){
             message[index+i] = newQuery->message[i];
         }
         index += newQuery->messageLength;
