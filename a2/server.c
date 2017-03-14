@@ -1,14 +1,3 @@
-/*******************************************************************
- * CMPUT 379 Assignment 2
- * Due:
- *
- * Group: Mackenzie Bligh & Justin Barclay
- * CCIDs: bligh & jbarclay
- * *****************************************************************
- * Notes: this section should be removed
- *   */
-
-/*  Imports*/
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -16,50 +5,129 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include "parser.h"
 
 #define	MY_PORT	2222
 
-int main(int argc, char *argv[]){
-    int s, snew, fromlength, number, outnum;
-    char message[512];
-    memcpy(message, "hello", 5);
-    struct sockaddr_in master, from;
+/* ---------------------------------------------------------------------
+   This	is  a sample server which opens a stream socket and then awaits
+   requests coming from client processes.
+   --------------------------------------------------------------------- */
+void getSocket(int *s);
+int startServer(struct sockaddr_in master);
 
-    // Intitalize variables
-    number = 0;
+int main(int argc, char * argv[])
+{
+    char* message = calloc(1024, sizeof(char));
+    int	sock, snew, fromlength, number, outnum;
+    struct	sockaddr_in	master, from;
 
-    s = socket(AF_INET, SOCK_STREAM, 0);
-    if(s < 0){
+    sock = startServer(master);
+    int i = 0;
+
+    char welcomeMessage[] = "CMPUT379 Whiteboard Server v0\n";
+    int welcomeLength = strlen(welcomeMessage);
+    int first = 1;
+    query* newMessage;
+    while(1){
+	listen (sock, 5);
+        fromlength = 0;
+	snew = accept (sock, (struct sockaddr*) & from, (socklen_t *) &fromlength);
+	if (snew < 0) {
+            perror ("Server: accept failed");
+            exit (1);
+	}
+        
+	outnum = htonl (number);
+	
+	// Zero out all of the bytes in character array c
+	bzero(message,1024);
+        
+	// Here we print off the values of character array c to show that
+	// each byte has an intial value of zero before receiving anything
+	// from the client.
+
+	// Now we receive from the client, we specify that we would like 11 bytes
+	recv(snew,message,1024,0);
+        
+        	// Print off the received bytes from the client as a string. 
+	// Next, print off the value of each byte to showcase that indeed
+	// 11 bytes were received from the client
+	printf("\nAfter receiving from client\n-------------------------\n");
+	printf("Printing character array c as a string is: %s\n",message);
+
+        newMessage = parseMessage(message, 1024);
+	//copy the string "Stevens" into character array c
+	//strncpy(c,steve,7);
+	sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
+        
+        printf("%s", message);
+	//Send the first five bytes of character array c back to the client
+	//The client, however, wants to receive 7 bytes.
+        if(first){
+            first = 0;
+            send(snew, welcomeMessage, welcomeLength, 0);
+        } else {
+        send(snew,message,1024,0);
+        }
+
+	close (snew);
+	sleep(1);
+    }
+    if(message != NULL){
+        free(message);
+    }
+}
+
+
+
+void getSocket(int *s){
+    struct	sockaddr_in	server;
+
+    struct	hostent		*host;
+
+    host = gethostbyname ("localhost");
+
+    if (host == NULL) {
+        perror ("Client: cannot get host description");
+        exit (1);
+    }
+
+
+    *s = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (*s < 0) {
+        perror ("Client: cannot open socket");
+        exit (1);
+    }
+
+    bzero (&server, sizeof (server));
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server.sin_port = htons (MY_PORT);
+
+    if (connect (*s, (struct sockaddr*) & server, sizeof (server))) {
+        perror("Client: cannot connect to server");
+        exit (1);
+    }
+}
+
+int startServer(struct sockaddr_in master){
+    int sock;
+    sock = socket (AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
         perror ("Server: cannot open master socket");
-        exit (-1);
+        exit (1);
     }
 
     master.sin_family = AF_INET;
-    master.sin_addr.s_addr = INADDR_ANY;
+    master.sin_addr.s_addr = inet_addr("127.0.0.1");
     master.sin_port = htons (MY_PORT);
 
-    if(bind (s, (struct sockaddr*) &master, sizeof (master))){
-        perror("Server: cannot bind master socket");
+    if (bind (sock, (struct sockaddr*) &master, sizeof (master))) {
+        perror ("Server: cannot bind master socket");
         exit (1);
     }
-    // Start listening for socket
-    listen(s, 5);
-
-    while (1) {
-        fromlength = sizeof (from);
-        snew = accept(s, (struct sockaddr*) &from, (unsigned int*)&fromlength);
-        if (snew < 0) {
-            perror("Server: accept failed");
-            exit(-1);
-        }
-        // Setup for next listen
-        outnum = htonl(number);
-//        write(snew, &outnum, sizeof (outnum));
-        send(snew, "hello", 512, 0);
-        close(snew);
-        number++;
-    }
-
-
-    return 0;
+    return sock;
 }
+
