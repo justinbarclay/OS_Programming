@@ -27,4 +27,4 @@ test3: testHandleMessage
 	./testHandleMessage
 
 clean:
-	rm *.o testWhiteboard testHandeMessage parsingTest
+	rm *.o testWhiteboard testHandleMessage parsingTest
