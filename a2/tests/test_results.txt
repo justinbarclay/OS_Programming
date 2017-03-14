@@ -1,9 +1,7 @@
 Input message: !12p12
 HelloWorld
  
-totalBytesread 6
-Input size 18
-totalParsed Size 18
+
 Type: 0
 Column: 12
 Encryption type: 0 
@@ -14,9 +12,7 @@ HelloWorld
 Input message: ?12p21
 HelloWorlddasdgcesd
  
-totalBytesread 6
-Input size 27
-totalParsed Size 27
+
 Type: 1
 Column: 12
 Encryption type: 0 
@@ -27,9 +23,7 @@ HelloWorlddasdgcesd
 Input message: '@12p49
 HelloWorlddjfldskflaskdjasldj's;fldsfnc;lask'd;
 ' 
-totalBytesread 6
-Input size 55
-totalParsed Size 55
+
 Type: 2
 Column: 12
 Encryption type: 0

@@ -22,7 +22,7 @@ query* parseMessage(char *input, int inputSize){
     totalBytesRead += bytesRead;
 
     if(inputSize >= newMessage->messageLength + totalBytesRead){
-        newMessage->message = calloc(newMessage->messageLength, sizeof(char));
+        newMessage->message = calloc(1024, sizeof(char));
         memcpy(newMessage->message, input+totalBytesRead, 1024);
 
         //Sanity check to make sure we've parsed the message correctly
@@ -33,6 +33,7 @@ query* parseMessage(char *input, int inputSize){
     } else {
         perror("Size does not match up");
     }
+    free(copiedInput);
     return newMessage;
 }
 

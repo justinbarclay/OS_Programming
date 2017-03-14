@@ -16,8 +16,10 @@ testWhiteboard: whiteboard.o testWhiteboard.c
 
 test1: testParser
 	./parsingTest > test_results.txt
+
 test2: testWhiteboard
 	./testWhiteboard
+
 all: testParser
 	./parsingTest > test_results.txt
 
