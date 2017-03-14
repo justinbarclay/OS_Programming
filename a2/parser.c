@@ -11,30 +11,35 @@ query* parseMessage(char *input, int inputSize){
     // Find column type
     memcpy(copiedInput, input+1, 20);
     newMessage->column = getNumberFromMessage(copiedInput, &bytesRead);
+
+    if(newMessage->type > 1){
+        totalBytesRead += bytesRead;
+        newMessage->encryption = getEncryptionType(input[totalBytesRead]);
+        totalBytesRead++;
     
-    totalBytesRead += bytesRead;
-    newMessage->encryption = getEncryptionType(input[totalBytesRead]);
-    totalBytesRead++;
-    
-    memcpy(copiedInput, input+totalBytesRead, 20);
-    newMessage->messageLength = getNumberFromMessage(copiedInput, &bytesRead);
+        memcpy(copiedInput, input+totalBytesRead, 20);
+        newMessage->messageLength = getNumberFromMessage(copiedInput, &bytesRead);
 
-    totalBytesRead += bytesRead;
+        totalBytesRead += bytesRead;
 
-    // We have constant plus two here because of the encasing '\n'
-    if(inputSize >= newMessage->messageLength + totalBytesRead + 2){
-        newMessage->message = calloc(1024, sizeof(char));
-        memcpy(newMessage->message, input+totalBytesRead, 1024);
+        // We have constant plus two here because of the encasing '\n'
+        if(inputSize >= newMessage->messageLength + totalBytesRead + 2){
+            newMessage->message = calloc(1024, sizeof(char));
+            memcpy(newMessage->message, input+totalBytesRead, 1024);
 
-        //Sanity check to make sure we've parsed the message correctly
-        //Need to subtract 1 because messageLength is not 0 based
-        /* if(newMessage->message[newMessage->messageLength] != '\n'){ */
-        /*     perror("Message not parsed properly\n"); */
-        /* } */
+            //Sanity check to make sure we've parsed the message correctly
+            //Need to subtract 1 because messageLength is not 0 based
+            /* if(newMessage->message[newMessage->messageLength] != '\n'){ */
+            /*     perror("Message not parsed properly\n"); */
+            /* } */
+        } else {
+            perror("Size does not match up");
+        }
+        free(copiedInput);
     } else {
-        perror("Size does not match up");
+        newMessage->messageLength = 0;
+        newMessage->message = NULL;
     }
-    free(copiedInput);
     return newMessage;
 }
 

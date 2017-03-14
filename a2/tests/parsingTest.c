@@ -5,6 +5,8 @@ int main(int argc, char * argv[]){
     char message2[] = "?12p19\nHelloWorlddasdgcesd\n";
     char message3[] = "@12p47\nHelloWorlddjfldskflaskdjasldj's;fldsfnc;lask'd;\n";
     char message4[] = "!12p30\nthisisaresponsetodemothelength\n";
+    char message5[] = "?12\n";
+    
     printf("Input message: %s \n", message1);
     query *newQuery = parseMessage(message1,18);
     fflush(stdout); // Will now print everything in the stdout buffer
@@ -59,6 +61,18 @@ int main(int argc, char * argv[]){
     free(newQuery->message);
     free(newQuery);
 
+    printf("Input message: '%s' \n", message5);
+    newQuery = parseMessage(message5,4);
+    fflush(stdout); // Will now print everything in the stdout buffer
+    printf("\nType: %d\n", newQuery->type);
+    printf("Column: %d\n", newQuery->column);
+    printf("Encryption type: %d\n", newQuery->encryption);
+    printf("messageLength: %d\n", newQuery->messageLength);
+    printf("message: %s\n", newQuery->message);
+    fflush(stdout); // Will now print everything in the stdout buffer
+
+    free(newQuery->message);
+    free(newQuery);
     
     return 0;
 }

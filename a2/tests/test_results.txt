@@ -4,22 +4,18 @@ HelloWorld
 
 Type: 0
 Column: 12
-Encryption type: 0 
-messageLength: 10
-message: 
-HelloWorld
-
+Encryption type: 1342177280 
+messageLength: 0
+message: (null)
 Input message: ?12p19
 HelloWorlddasdgcesd
  
 
 Type: 1
 Column: 12
-Encryption type: 0 
-messageLength: 19
-message: 
-HelloWorlddasdgcesd
-
+Encryption type: 1342177280 
+messageLength: 0
+message: (null)
 Input message: '@12p47
 HelloWorlddjfldskflaskdjasldj's;fldsfnc;lask'd;
 ' 
@@ -38,7 +34,13 @@ thisisaresponsetodemothelength
 Type: 0
 Column: 12
 Encryption type: 0
-messageLength: 30
-message: 
-thisisaresponsetodemothelength
+messageLength: 0
+message: (null)
+Input message: '?12
+' 
 
+Type: 1
+Column: 12
+Encryption type: 0
+messageLength: 0
+message: (null)

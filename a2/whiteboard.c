@@ -91,7 +91,7 @@ void addMessageToWhiteboard(char* message, int size, whiteboard* head){
     unlockWhiteboard();
 }
 
-int updateWhiteboardNode(whiteboard* head, int depth,char* message, int size){
+int updateWhiteboardNode(whiteboard* head, int depth,char* message,int encryption, int size){
     lockWhiteboard();
     whiteboard* currentNode = findNode(head, depth);
     int returnVal = 0;
@@ -101,6 +101,7 @@ int updateWhiteboardNode(whiteboard* head, int depth,char* message, int size){
     }else{
         free(currentNode->message);
         currentNode->message = message;
+        currentNode->encryption = encryption
         currentNode->size = size;
         returnVal =  0;
     }
