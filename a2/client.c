@@ -34,156 +34,82 @@ struct charBuffer {
 static charBuffer *output;
 static charBuffer *input;
 static query * newQuery;
-static WINDOW *w1;
+
 static int Quit;
+int handleNetworkCalls();
+void exampleSendRcv();
 
-WINDOW *create_newwin(int height, int width, int starty, int startx);
-void destroy_win(WINDOW *local_win);
-
-void * handleNetworkCalls();
-void exampleSendRcv(WINDOW *w1, WINDOW *w2);
-
-void readFromSocket(int s, charBuffer *output);
+void readFromSocket(int s);
 void getSocket(int *s);
 
-int getNumber(char* input,int* bytesRead);
-char* parseUserInput(charBuffer * input, int *size);
-int addToMessage(char* message, int length, char* newMessage);
-
-int getColumn(WINDOW *w1);
-int getType(WINDOW *w1);
-int getEncryption(WINDOW *w1);
+void freeQuery();
+int getMessage();
+int getColumn();
+int getType();
+int getEncryption();
 // This structure contains the current element that needs to be printed to screen
 
 int main(){
     
     // Set up the charBuffers
-    output = malloc(sizeof(charBuffer));
-    output->buffer = malloc(sizeof(char)*1024);
-    output->size = 1024;
-    input = malloc(sizeof(charBuffer));
-    input->buffer = malloc(sizeof(char)*1024);
-    input->size = 1024;
 
     newQuery = malloc(sizeof(query));
+    newQuery->message = calloc(1024, sizeof(char));
 
-    // Set quit
-    Quit = 0;
-
-    WINDOW *w2;
-    int row, column;
-    pthread_t thread;
-    // Begin nCruses Mode
-    if (initscr() == NULL) {
-        fprintf(stderr, "Error: initscr()\n");
-        exit(EXIT_FAILURE);
-    }
-
-    keypad(stdscr, TRUE);  
-    noecho();              // Disable echoing of keyboard input
-    cbreak();              // disable line-buffering
-    timeout(100);          // wait 100 milliseconds for input
+    // Init query object
+    newQuery->column = 0;
+    newQuery->messageLength = -1;
+    newQuery->type = 0;
+    newQuery->encryption = 0;
     
-    getmaxyx(stdscr, row, column);
-    w1 = create_newwin(row-2, column, 0, 0);
-    w2 = create_newwin(2, column, row-2, 0);
-
     // This should be split off into two segments/ screen rendering and input
     // network send recieve
     // The network send recieve should be a pull interface, the system pulls whenever it is ready to send new stuff
+    exampleSendRcv();
 
-    pthread_create(&thread, NULL, handleNetworkCalls, NULL);
-    exampleSendRcv(w1, w2);
 
-    // Clean up
-    pthread_join(thread, NULL);
-    destroy_win(w1);
-    destroy_win(w2);
-
-    free(newQuery->message);
-    free(newQuery);
-    free(output);
-    free(input);
+    freeQuery();
     exit(1);
 }
 
-void exampleSendRcv(WINDOW *w1, WINDOW *w2){
-    
-    
-    /* Vars for ncurses */
-    char buf[1024] = {0}, *bufPointer = buf;
-    int ch, cnt = 0, n = 1, state = 0;
+void freeQuery(){
+    free(newQuery->message);
+    free(newQuery);
+}
 
+void exampleSendRcv(){
+    int state = 0;
     // Send all 11 bytes of character array c to the server
     // It is important to note that even the null terminating (zero valued) bytes
     // are sent to the server.
-    
     while(1){
-        // Handle drawing of then window
-        wborder(w2, ' ', ' ', '_', ' ', ' ', ' ', ' ', ' ');
-        mvwprintw(w1, 0, 0, "%s\n", output->buffer);       
-        mvwprintw(w2, 1, 0, "Message: %s", buf);
-
-        wnoutrefresh(w1);
-        wnoutrefresh(w2);
-        doupdate();
-        
-        if ((ch = getch()) != ERR) {
-            if(state == 0){
-                //Query Type
-                state = getType(w1);
-            }else if(state == 1){
-                state = getColumn(w1);
-            }else if(state == 2){
-                state = getEncryption(w1);
-            } else if(state == 3){
-                // Get message
-                if(ch == '\n') {
-
-                    *bufPointer++ = ch;
-                    *bufPointer = 0;
-                    cnt++;
-                
-                    memcpy(input->buffer, buf, cnt);
-                    input->size = cnt; // Once the size is greater than 0 network will send
-                
-                    *bufPointer = 0; // Set current char to 0
-                    sscanf(buf, "%d", &n); //0 out buffer
-                    bufPointer = buf;
-                    *bufPointer = 0;
-
-                    cnt = 0; //Size of buffer is 0
-                    state = 0;
-                } else if (ch == 127) {
-                    if (bufPointer > buf){
-                        *--bufPointer = 0;
-                        cnt--;
-                    }
-                } else if(ch == 'q') {
-                    Quit = 1;
-                    break;
-                } else if (bufPointer - buf < (long)sizeof buf - 1) {
-                    *bufPointer++ = ch;
-                    *bufPointer = 0;
-                    cnt++;
-                }
-            }
-            // Erase the screen
-            // werase(w1);
-            werase(w2);
+        if(state == 0){
+            //Query Type
+            state = getType();
+        }else if(state == 1){
+            state = getColumn();
+        }else if(state == 2){
+            state = getEncryption();
+        } else if(state == 3){
+            // Get message
+            state = getMessage();
+        } else if(state == 4){
+            state = handleNetworkCalls();
+        } else if(state == -1){
+            break;
         }
-        return;
     }
+    return;
 }
 
 
-void readFromSocket(int s, charBuffer *output){
-    // zero out each byte of the array before receiving from the server
-    bzero(output->buffer, output->size);
 
+void readFromSocket(int s){
+    char output[1024] = {0};
     // Here the client wants to receive 7 bytes from the server, but the server
     // only sends 5 bytes
-    recv(s, output->buffer, 1024, 0);
+    recv(s, output, 1024, 0);
+    printf("Response:\n%s\n", output);
 }
 
 void getSocket(int *s){
@@ -197,7 +123,6 @@ void getSocket(int *s){
         perror ("Client: cannot get host description");
         exit (1);
     }
-
 
     *s = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -217,207 +142,119 @@ void getSocket(int *s){
     }
 }
 
-void * handleNetworkCalls(){
+int handleNetworkCalls(){
     int s;
     // Initial implementation to handle network.
     // Run in a continuous loop and check every second for input or output;
     int size = 0;
     int sent;
     char* message;
-    while(Quit != 1){
-        /* getSocket(&s); // Get new socket */
-        if(input->size > 0) {
-            /* message = buildStringFromQuery(newQuery, &size); */
-            /* //printf("%s", message); */
-            /* getSocket(&s); // Get new socket */
+    /* getSocket(&s); // Get new socket */
+    if (newQuery->messageLength > -1){
+    message = buildStringFromQuery(newQuery, &size);
+    printf("%s\n", message);
+    //printf("%s", message);
+    getSocket(&s); // Get new socket
+    
+    sent =  send(s, message, size, 0);
 
-            /* sent =  send(s, message, size, 0); */
-
-            /* bzero(input->buffer, input->size); */
-            /* input->size = 0; */
-            /* /\* output->buffer = message; *\/ */
-            /* /\* output->size = size; *\/ */
-            /* readFromSocket(s, output); */
-            /* close (s); */
-            /* free(message); */
-        }
-    }
+    readFromSocket(s);
+    close (s);
     free(message);
+    
+    newQuery->column = 0;
+    newQuery->messageLength = -1;
+    newQuery->type = 0;
+    newQuery->encryption = 0;
+    bzero(newQuery->message, 1024);
+    }
+
     return 0;
 }
 
-WINDOW *create_newwin(int height, int width, int starty, int startx){
-    WINDOW *local_win;
 
-    local_win = newwin(height, width, starty, startx);
-    /* 0, 0 gives default characters 
-     * for the vertical and horizontal
-     * lines			*/
-        
-    //wrefresh(local_win);		/* Show that box 		*/
-
-    return local_win;
-}
-
-void destroy_win(WINDOW *local_win){	
-    /* box(local_win, ' ', ' '); : This won't produce the desired
-     * result of erasing the window. It will leave it's four corners 
-     * and so an ugly remnant of window. 
-     */
-    wborder(local_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
-    /* The parameters taken are 
-     * 1. win: the window on which to operate
-     * 2. ls: character to be used for the left side of the window 
-     * 3. rs: character to be used for the right side of the window 
-     * 4. ts: character to be used for the top side of the window 
-     * 5. bs: character to be used for the bottom side of the window 
-     * 6. tl: character to be used for the top left corner of the window 
-     * 7. tr: character to be used for the top right corner of the window 
-     * 8. bl: character to be used for the bottom left corner of the window 
-     * 9. br: character to be used for the bottom right corner of the window
-     */
-    wrefresh(local_win);
-    delwin(local_win);
-}
-
-int getNumber(char* input,int* index){
-    //Naive implementation of getNumberFromMessage
-    
-    char charAsNumber[20];
-    int number=0; // number to return
-    while((input[*index] != ' ') && (input[*index] != '\n')){ //Could do this while input[i] is greater than 47 and less than 58
-        charAsNumber[*index] = input[*index];
-        *index += 1;
-       
-        /* if(i > 20){ */
-        /*     perror("Parsing number failed, larger than 20 bytes"); */
-        /*     exit(-1); */
-        /* } */
-    }
-
-    charAsNumber[*index] = '\0';
-
-    sscanf(charAsNumber, "%d", &number);
-    
-    return number;
-}
-
-int getType(WINDOW *w){
+int getType(){
     char ch;
     const int goodState = 1; // Transition to state 1
     const int badState = 0;
 
-    mvwprintw(w, 0, 0, "%s\n", "Please query type:");
-    mvwprintw(w, 0, 0, "%s\n", "g: Get(?)");
-    mvwprintw(w, 0, 0, "%s\n", "u: Update(@)");
-    mvwprintw(w, 0, 0, "%s\n", "q: Quit");
-    wnoutrefresh(w1);
-    doupdate();
-    if((ch = getch()) != ERR){
-        if(ch == 'u'){
-            newQuery->type = 2;
-        }
-        if(ch == 'g'){
-            newQuery->type = 0;
-        }
-        if(ch == 'q'){
-            Quit = 1;
-        } else {
-            return badState;
-        }
+    printf("Please query type:\n");
+    printf("g: Get(?)\n");
+    printf("u: Update(@)\n");
+    printf("q: Quit\n");
+
+    scanf(" %c", &ch);
+    if(ch == 'u'){
+        newQuery->type = 2;
+    } else if(ch == 'g'){
+        newQuery->type = 0;
+    } else if(ch == 'q'){
+        return -1;
+    } else {
+        return badState;
     }
     return goodState;
 }
 
-int getEncryption(WINDOW *w){
+int getEncryption(){
     char ch;
     const int goodState = 3; // Transition to state 1
     const int badState = 2;
 
-    mvwprintw(w, 0, 0, "%s\n", "Do you wish to encrypt the message?");
-    mvwprintw(w, 0, 0, "%s\n", "y: Yes");
-    mvwprintw(w, 0, 0, "%s\n", "n: No");
-    mvwprintw(w, 0, 0, "%s\n", "q: Quit");
-    wnoutrefresh(w1);
-    doupdate();
-    if((ch = getch()) != ERR){
-        if(ch == 'y'){
-            newQuery->encryption = 1;
-        }
-        if(ch == 'n'){
-            newQuery->encryption = 0;
-        }
-        if(ch == 'q'){
-            Quit = 1;
-        } else {
-            return badState;
-        }
+    printf("Do you wish to encrypt the message?\n");
+    printf("y: Yes\n");
+    printf("n: No\n");
+    printf("q: Quit\n");
+
+    scanf(" %cn", &ch);
+    if(ch == 'y'){
+        newQuery->encryption = 1;
+    } else if(ch == 'n'){
+        newQuery->encryption = 0;
+    } else if(ch == 'q'){
+        return -1;
+    } else {
+        return badState;
     }
     return goodState;
 }
 
-int getColumn(WINDOW *w1){
+int getColumn(){
     const int goodState = 2; // Transition to state 1
     const int badState = 1;
     int nitems, num;
-    mvwprintw(w1, 0, 0, "%s\n", "Please enter the row you would like to query");
-    wnoutrefresh(w1);
-    doupdate();
+    printf("Please enter the row you would like to query\n");
 
     nitems = scanf("%d", &num);
     if (nitems == EOF) {
         return badState;
     } else if (nitems == 0) {
-        return goodState;
+        return badState;
     } else {
         newQuery->column = num;
+    }
+    if(newQuery->type == 0){
+        newQuery->messageLength = 0;
+        return 4;
     }
     return goodState;
 }
 
-
-
-
-char * parseUserInput(charBuffer * input, int *size){
-    int index = 0;
-    query * newQuery = malloc(sizeof(query));
-    if(index > input->size ){
-
-    }
-    newQuery->type = input->buffer[index++];
-    
-    if(input->buffer[index++] != ' '){
-        printf("Parsing error");
-    }
-
-    newQuery->column = getNumber(input->buffer, &index);
-
-    if(input->buffer[index++] != ' '){
-        printf("Parsing error");
+int getMessage(){
+    // Grab characters from buffer until you reach a null bit or new line
+    int size = 0;
+    char ch;
+    ch = getchar();// Learn how to clear buffer
+    printf("Please enter your message?\n");
+    while((ch = getchar())) {   
+        if(ch == '\n'||ch == '\0' || size > 1023){
+            break;
+        }
+        newQuery->message[size] = ch;
+        size++;
     }
 
-    if(input->buffer[index] =='1'){
-        newQuery->encryption = 1;
-    } else if(input->buffer[index] == '0'){
-        newQuery->encryption = 0;
-    } else {
-        printf("Parsing error");
-    }
-    index++;
-
-    if(input->buffer[index++] != ' '){
-        printf("Parsing error");
-    }
-    int count = 0;
-    newQuery->message = malloc(sizeof(char)*(input->size - index));
-    while(input->buffer[index] != '\n'){
-        count++;
-        newQuery->message[count] = input->buffer[index];
-        index++;
-            
-    }
-    newQuery->message[count+1] = '\n';
-    printf("%s\n", newQuery->message);
-    return buildStringFromQuery(newQuery, size);
-    //    return NULL;
+    newQuery->message[size+1] = '\0';
+    newQuery->messageLength = size;
+    return 4;
 }
