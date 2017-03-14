@@ -16,8 +16,7 @@
 void getSocket(int *s);
 int startServer(struct sockaddr_in master);
 
-int main(int argc, char * argv[])
-{
+int main(int argc, char * argv[]){
     char* message = calloc(1024, sizeof(char));
     int	sock, snew, fromlength, number, outnum;
     struct	sockaddr_in	master, from;
@@ -30,56 +29,54 @@ int main(int argc, char * argv[])
     int first = 1;
     query* newMessage;
     while(1){
-	listen (sock, 5);
+        listen (sock, 5);
         fromlength = 0;
-	snew = accept (sock, (struct sockaddr*) & from, (socklen_t *) &fromlength);
-	if (snew < 0) {
+        snew = accept (sock, (struct sockaddr*) & from, (socklen_t *) &fromlength);
+        if (snew < 0) {
             perror ("Server: accept failed");
             exit (1);
-	}
-        
-	outnum = htonl (number);
-	
-	// Zero out all of the bytes in character array c
-	bzero(message,1024);
-        
-	// Here we print off the values of character array c to show that
-	// each byte has an intial value of zero before receiving anything
-	// from the client.
+        }
 
-	// Now we receive from the client, we specify that we would like 11 bytes
-	recv(snew,message,1024,0);
-        
-        	// Print off the received bytes from the client as a string. 
-	// Next, print off the value of each byte to showcase that indeed
-	// 11 bytes were received from the client
-	printf("\nAfter receiving from client\n-------------------------\n");
-	printf("Printing character array c as a string is: %s\n",message);
+        outnum = htonl (number);
+
+        // Zero out all of the bytes in character array c
+        bzero(message,1024);
+
+        // Here we print off the values of character array c to show that
+        // each byte has an intial value of zero before receiving anything
+        // from the client.
+
+        // Now we receive from the client, we specify that we would like 11 bytes
+        recv(snew,message,1024,0);
+
+        // Print off the received bytes from the client as a string.
+        // Next, print off the value of each byte to showcase that indeed
+        // 11 bytes were received from the client
+        printf("\nAfter receiving from client\n-------------------------\n");
+        printf("Printing character array c as a string is: %s\n",message);
 
         newMessage = parseMessage(message, 1024);
-	//copy the string "Stevens" into character array c
-	//strncpy(c,steve,7);
-	sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
-        
+        //copy the string "Stevens" into character array c
+        //strncpy(c,steve,7);
+        sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
+
         printf("%s", message);
-	//Send the first five bytes of character array c back to the client
-	//The client, however, wants to receive 7 bytes.
+        //Send the first five bytes of character array c back to the client
+        //The client, however, wants to receive 7 bytes.
         if(first){
             first = 0;
             send(snew, welcomeMessage, welcomeLength, 0);
         } else {
-        send(snew,message,1024,0);
+            send(snew,message,1024,0);
         }
 
-	close (snew);
-	sleep(1);
+        close (snew);
+        sleep(1);
     }
     if(message != NULL){
         free(message);
     }
 }
-
-
 
 void getSocket(int *s){
     struct	sockaddr_in	server;
