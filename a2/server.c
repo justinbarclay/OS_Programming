@@ -23,7 +23,6 @@ void getSocket(int *s);
 int startServer(struct sockaddr_in master);
 int handleStateFile(const char *statefile, struct whiteboard *wb);
 int isEncrypted(char *line, size_t len);
-int fetchSize(char *line, size_t len);
 
 int main(int argc, char * argv[]){
     char* message = calloc(1024, sizeof(char));
@@ -51,8 +50,9 @@ int main(int argc, char * argv[]){
             }
         }
     }
+
     char* m = malloc(sizeof(char));
-    
+
     int boardsize = getWhiteboardSize();
     for(int i = 1; i <= boardsize; i++){
         readNode(Whiteboard, i, m);
@@ -139,28 +139,18 @@ int handleStateFile(const char *statefile, struct whiteboard *wb){
     while ((c = fgetc(fp)) != EOF){
         message[i++]  = (char) c;
         messageSize++;
-        if( (char) c == '\n') newlineCounter++; 
+        if( (char) c == '\n') newlineCounter++;
         if(newlineCounter == 2 ){
             message[i+1] = '\0';
-            printf("message %s\n", message);
             addMessageToWhiteboard(message, isEncrypted(message,messageSize ), sizeof(message), wb);
-            messageSize =0; 
+            messageSize =0;
             memset(&message[0],0, sizeof(message));
             i =0;
             newlineCounter = 0;
         }
     }
-    
+
     return 1;
-}
-int fetchSize(char *line, size_t len){
-    int i = 0; 
-    int result = 0;
-    while(i < len && isdigit(line[i])){
-       result *= 10; 
-       result += atoi(&line[i]);
-    }
-    return result;
 }
 int isEncrypted(char *line, size_t len){
     int i;
