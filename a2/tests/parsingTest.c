@@ -1,9 +1,10 @@
 #include "../parser.h"
 
 int main(int argc, char * argv[]){
-    char message1[] = "!12p12\nHelloWorld\n";
-    char message2[] = "?12p21\nHelloWorlddasdgcesd\n";
-    char message3[] = "@12p49\nHelloWorlddjfldskflaskdjasldj's;fldsfnc;lask'd;\n";
+    char message1[] = "!12p10\nHelloWorld\n";
+    char message2[] = "?12p19\nHelloWorlddasdgcesd\n";
+    char message3[] = "@12p47\nHelloWorlddjfldskflaskdjasldj's;fldsfnc;lask'd;\n";
+    char message4[] = "!12p30\nthisisaresponsetodemothelength\n";
     printf("Input message: %s \n", message1);
     query *newQuery = parseMessage(message1,18);
     fflush(stdout); // Will now print everything in the stdout buffer
@@ -44,5 +45,7 @@ int main(int argc, char * argv[]){
 
     free(newQuery->message);
     free(newQuery);
+
+    
     return 0;
 }

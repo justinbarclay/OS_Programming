@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "parser.h"
+#include "whiteboard.h"
 
 #define	MY_PORT	2222
 
@@ -13,6 +14,7 @@
    This	is  a sample server which opens a stream socket and then awaits
    requests coming from client processes.
    --------------------------------------------------------------------- */
+int handleMessage(query * newQuery, whiteboard * Whiteboard, char* returnMessage, int* messageSize);
 void getSocket(int *s);
 int startServer(struct sockaddr_in master);
 
@@ -21,7 +23,8 @@ int main(int argc, char * argv[])
     char* message = calloc(1024, sizeof(char));
     int	sock, snew, fromlength, number, outnum;
     struct	sockaddr_in	master, from;
-
+    whiteboard * Whiteboard = newWhiteboard();
+    
     sock = startServer(master);
     int i = 0;
 
@@ -60,8 +63,8 @@ int main(int argc, char * argv[])
 	//copy the string "Stevens" into character array c
 	//strncpy(c,steve,7);
 	sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
-        
-        printf("%s", message);
+
+        handldeMessage(newMessage, Whiteboard);
 	//Send the first five bytes of character array c back to the client
 	//The client, however, wants to receive 7 bytes.
         if(first){
@@ -131,3 +134,14 @@ int startServer(struct sockaddr_in master){
     return sock;
 }
 
+int handleMessage(query * newQuery, whiteboard * Whiteboard, char* returnMessage, int *messageSize){
+    int status;
+    if(newQuery->type == 1 && newQuery->column < getWhiteboardSize()){
+        
+        *messageSize = readNode(Whiteboard, newQuery->column, returnMessage);
+        status = *messageSize > 0;
+    } else if(newQuery->type == 2 && newQuery->column < getWhiteboardSize()){
+        status= updateWhiteboardNode(Whiteboard, newQuery->column, newQuery->message, newQuery->messageLength);
+    }
+    return status;
+}
