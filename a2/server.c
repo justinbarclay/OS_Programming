@@ -18,7 +18,12 @@ extern int h_errno;
 static int portnumber = 2222;
 struct whiteboard *Whiteboard;
 char* welcomeMessage;
-char** clients;
+char* clients[14];
+int *first = 0;
+struct connection{
+    char address[14];
+    int socket;
+} typedef connection;
 
 /* ---------------------------------------------------------------------
    This	is  a sample server which opens a stream socket and then awaits
@@ -29,6 +34,8 @@ void getSocket(int *s);
 int startServer(struct sockaddr_in master);
 int handleCreateState(const char *statefile, struct whiteboard *wb);
 int isEncrypted(char *line, size_t len);
+void respondToMessage(void *connection_info);
+int firstCommunication();
 void handleSigTerm(int num);
 
 int main(int argc, char * argv[]){
@@ -91,33 +98,44 @@ int main(int argc, char * argv[]){
         welcomeMessage[30+i+1] = '\n';
     }
 
+
+    
     // Fork here
     int	sock, snew, fromlength;
     struct	sockaddr_in	master, from;
+    pthread_t whiteboard_id;
+    connection info;
     sock = startServer(master);
     while(1){
         listen (sock, 128);
         
         fromlength = 0;
         snew = accept (sock, (struct sockaddr*) & from, (socklen_t *) &fromlength);
+        info.socket = snew;
         if (snew < 0) {
             perror ("Server: accept failed");
-            exit (1);
+            continue;
         }
+        pthread_create(&whiteboard_id, NULL, &respondToMessage, &info);
     }
     if(statefile != NULL){
         free((void *)statefile);
     }
 }
-void respondToMessage(int snew){
+
+
+void respondToMessage(void *connection_info){
     query* newMessage;
     query* responseMessage = malloc(sizeof(query));
     char* message = calloc(1024, sizeof(char));
+    int length;
+
+    connection *info = (connection *) connection_info;
     // Zero out all of the bytes in message
     bzero(message,1024);
 
     // Now we receive from the client, we specify that we would like, it can be up to 1024 bytes
-    recv(snew,message,1024,0);
+    recv(info->socket,message,1024,0);
 
        
     printf("Incoming request: %s\n",message);
@@ -127,20 +145,25 @@ void respondToMessage(int snew){
 
     if(first){
         first = 0;
-        send(snew, welcomeMessage, 40, 0);
+        send(info->socket, welcomeMessage, 40, 0);
     } else {
         newMessage = parseMessage(message, 1024);
         handleMessage(newMessage, Whiteboard, responseMessage); // not implemented yet
         message = buildStringFromQuery(responseMessage, &length);
             
-        send(snew,message,length,0);
+        send(info->socket,message,length,0);
     }
-    close (snew);
+    close (info->socket);
     sleep(1);
     if(message != NULL){
         free(message);
     }
+    free(newMessage->message);
+    free(newMessage);
+    free(responseMessage->message);
+    free(newMessage);
 }
+
 void handleSigTerm(int num){
     // Does this need to be threadable?
     // how to pass in wb
