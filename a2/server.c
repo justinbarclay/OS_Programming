@@ -123,10 +123,7 @@ int main(int argc, char * argv[]){
 
 int handleStateFile(const char *statefile, struct whiteboard *wb){
     FILE *fp;
-    char *line;
     int c;
-    size_t len = 0;
-    ssize_t read;
     int i = 0,newlineCounter =0;
     int messageSize = 0;
     char message[1024];
