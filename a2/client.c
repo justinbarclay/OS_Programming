@@ -45,6 +45,14 @@ int main(){
     newQuery->messageLength = -1;
     newQuery->type = 0;
     newQuery->encryption = 0;
+
+
+    /*
+     * Parse Command line arguments
+     *
+     *
+     */
+
     
     // This should be split off into two segments/ screen rendering and input
     // network send recieve

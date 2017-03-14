@@ -12,8 +12,9 @@
 #include <ctype.h>
 #include <signal.h>
 extern int h_errno;
-#define	MY_PORT	2222
 
+// Globals
+static int portnumber = 2222;
 struct whiteboard *Whiteboard;
 
 /* ---------------------------------------------------------------------
@@ -29,9 +30,14 @@ void handleSigTerm(int num);
 
 int main(int argc, char * argv[]){
     char* message = calloc(1024, sizeof(char));
-
-    int	sock, snew, fromlength, number, outnum;
+    int boardSize = 40; //default value
+    int	sock, snew, fromlength;
     int z;
+    int first = 1;
+    int length = 0;
+    query* newMessage;
+    query* responseMessage = malloc(sizeof(query));
+    
     const char *statefile;
     struct	sockaddr_in	master, from;
     //Set up signal handler
@@ -39,9 +45,11 @@ int main(int argc, char * argv[]){
     act.sa_handler = handleSigTerm;
     sigemptyset(&act.sa_mask);
     sigaction(SIGTERM, &act, NULL);
-
+    
     // Search for statefile
     if(argc > 1){
+        printf("%s\n", argv[1]);
+        portnumber = atoi(argv[1]);
         for(z = 0; z < argc; z++){
             if(strcmp("-f", argv[z]) == 0){
                 statefile = (const char *) malloc(strlen(argv[z+1]));
@@ -59,17 +67,25 @@ int main(int argc, char * argv[]){
                 fflush(stdout);
                 break;
             }
+            if(strcmp("-n", argv[z]) == 0){
+                boardSize = atoi(argv[z+1]);
+                break;
+            }
+            //We can only specify either boardSize of statefile, not both. We tiebreak by doing the first one we see
         }
+    } else {
+        printf("Failure to specifiy parameters");
+        return -1;
     }
+    
+    printf("Port number %d", portnumber);
     if(Whiteboard == NULL){
-        printf("Whitboard = NULL");
-        Whiteboard  = newWhiteboard(20);
+        Whiteboard  = newWhiteboard(boardSize);
     }
     sock = startServer(master);
 
     char welcomeMessage[40] = "CMPUT379 Whiteboard Server v0\n";
-    int welcomeLength = strlen(welcomeMessage);
-    char numToString[9];
+    char numToString[9]; // Buffer to conver number to string
     int size;
     
      size = sprintf(numToString,"%d",getWhiteboardSize());
@@ -80,11 +96,6 @@ int main(int argc, char * argv[]){
          }
          welcomeMessage[30+i+1] = '\n';
      }
-    int first = 1;
-    int length = 0;
-    
-    query* newMessage;
-    query* responseMessage = malloc(sizeof(query));
     
     while(1){
         listen (sock, 128);
@@ -217,7 +228,7 @@ void getSocket(int *s){
     bzero (&server, sizeof (server));
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = inet_addr("127.0.0.1");
-    server.sin_port = htons (MY_PORT);
+    server.sin_port = htons (portnumber);
 
     if (connect (*s, (struct sockaddr*) & server, sizeof (server))) {
         perror("Client: cannot connect to server");
@@ -235,7 +246,7 @@ int startServer(struct sockaddr_in master){
 
     master.sin_family = AF_INET;
     master.sin_addr.s_addr = inet_addr("127.0.0.1");
-    master.sin_port = htons (MY_PORT);
+    master.sin_port = htons (portnumber);
 
     if (bind (sock, (struct sockaddr*) &master, sizeof (master))) {
         perror ("Server: cannot bind master socket");
