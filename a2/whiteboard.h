@@ -14,5 +14,5 @@ whiteboard * newWhiteboard(int size);
 void addMessageToWhiteboard(char* message, int encryption,int size, whiteboard* head);
 int updateWhiteboardNode(whiteboard* node, int depth, char* message, int encryption, int size);
 void deleteWhiteboard(whiteboard* node);
-char* readNode(whiteboard* node, int depth, int* size);
+char* readNode(whiteboard* node, int depth,int *encryption, int* size);
 int getWhiteboardSize();

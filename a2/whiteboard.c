@@ -115,7 +115,7 @@ int updateWhiteboardNode(whiteboard* head, int depth,char* message, int encrypti
     return returnVal;
 }
 
-char* readNode(whiteboard* head, int depth, int * size){
+char* readNode(whiteboard* head, int depth, int * encryption, int * size){
     lockWhiteboard();
     whiteboard* currentNode = findNode(head, depth);
     char* message = NULL;
