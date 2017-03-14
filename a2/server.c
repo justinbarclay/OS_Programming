@@ -34,8 +34,6 @@ int main(int argc, char * argv[]){
     int z;
     const char *statefile;
     struct	sockaddr_in	master, from;
-
-    Whiteboard  = newWhiteboard();
     //Set up signal handler
     struct sigaction act;
     act.sa_handler = handleSigTerm;
@@ -51,20 +49,28 @@ int main(int argc, char * argv[]){
                     printf("Failed mallocing statefile name\n");
                 }
                 strcpy((char *)statefile, argv[z+1]);
-
+                Whiteboard  = newWhiteboard(0);
                 z  = handleCreateState(statefile, Whiteboard);
+                
                 if(!z){
                     printf("Failed reading statefile\n");
                 }
+                printf("Loaded state file");
+                fflush(stdout);
                 break;
             }
         }
+    }
+    if(Whiteboard == NULL){
+        printf("Whitboard = NULL");
+        Whiteboard  = newWhiteboard(20);
     }
     sock = startServer(master);
 
     char welcomeMessage[] = "CMPUT379 Whiteboard Server v0\n";
     int welcomeLength = strlen(welcomeMessage);
     int first = 1;
+    int length;
     query* newMessage;
     query* responseMessage = malloc(sizeof(query));
     
@@ -96,32 +102,23 @@ int main(int argc, char * argv[]){
         printf("Printing character array c as a string is: %s\n",message);
 
         newMessage = parseMessage(message, 1024);
-
-        <<<<<<< HEAD
-                    //copy the string "Stevens" into character array c
-                    //strncpy(c,steve,7);
-                    sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
+        //copy the string "Stevens" into character array c
+        //strncpy(c,steve,7);
+        sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
 
         handleMessage(newMessage, Whiteboard, responseMessage); // not implemented yet
         message = buildStringFromQuery(responseMessage, &length);
-        =======
-            //copy the string "Stevens" into character array c
-            //strncpy(c,steve,7);
-            sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
-            //   handleMessage(newMessage, Whiteboard); // not implemented yet
-            >>>>>>> 6cac19837e9515d9669e81618bb3c370e6f0a230
-                        //Send the first five bytes of character array c back to the client
-                        //The client, however, wants to receive 7 bytes.
+        //Send the first five bytes of character array c back to the client
+        //The client, however, wants to receive 7 bytes.
 
-                        if(first){
-                            first = 0;
-                            send(snew, welcomeMessage, welcomeLength, 0);
-                        } else {
-                            send(snew,message,1024,0);
-                        }
-
-            close (snew);
-            sleep(1);
+        if(first){
+            first = 0;
+            send(snew, welcomeMessage, welcomeLength, 0);
+        } else {
+            send(snew,message,length,0);
+        }
+        close (snew);
+        sleep(1);
     }
     if(message != NULL){
         free(message);
@@ -138,8 +135,9 @@ void handleSigTerm(int num){
     char* message = malloc(sizeof(char));
 
     int boardsize = getWhiteboardSize();
+    
     for(int i = 1; i <= boardsize; i++){
-        readNode(Whiteboard, i, message);
+        message = readNode(Whiteboard, i, NULL, NULL);
         fprintf(fp,"%s", message);
     }
     free(message);
