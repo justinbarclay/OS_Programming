@@ -54,25 +54,37 @@ int main (){
     char keyfile[] = "keys.txt";
 
     unsigned char plaintext[] = "hail satan ahalahsdklfhasl";
-    unsigned char encryptedOutput[1024];
-    int ciph_len = encrypt(plaintext, sizeof(plaintext), encryptedOutput, keyfile);
+    char str[1500];
+    int len = prepForEncryptedSend(keyfile, plaintext,str );
 
-    size_t *bEncodeLen = malloc(sizeof(size_t));
-    char *encoded ;
-    encoded = (char *)base64_encode(encryptedOutput, ciph_len, bEncodeLen);
+    
+    unsigned char out[1024];
+    encryptedRecieveAndConvert(keyfile, str, len, out);
 
-    size_t *bDecodeLen = malloc(sizeof(size_t));
-    char *decoded;
-    decoded = (char*)base64_decode(encoded, *bEncodeLen, bDecodeLen);
-
-    unsigned char decryptedOutput[1024];
-    decrypt((unsigned char *)decoded, *bDecodeLen, decryptedOutput,keyfile);
-    printf("Decrypted output: %s\n", decryptedOutput);
+    printf("\nDecrypted text: %s\n", out);
 }
 
 
 
 /*  Function bodies */
+int prepForEncryptedSend(char *keyfile, unsigned char *plaintext, char *sendStr){
+    unsigned char encryptedOutput[1024];
+    int ciph_len = encrypt(plaintext, sizeof(plaintext), encryptedOutput, keyfile);
+
+    size_t bEncodeLen = 0;
+    sendStr =  (char *)base64_encode(encryptedOutput, ciph_len, &bEncodeLen);
+    printf("bEncodeLen %lu\n", bEncodeLen);
+    return bEncodeLen; 
+}
+
+int encryptedRecieveAndConvert(char *keyfile, char *base64Text, int base64TextLen, unsigned char *outputStr){
+    int decodedLen = 0;
+    char *decoded;
+    decoded = (char*)base64_decode(base64Text, base64TextLen, (size_t *) &decodedLen);
+    printf("decoded %s", decoded);
+    int decrypted = decrypt((unsigned char *)decoded, strlen(decoded) , outputStr, keyfile);
+    return decrypted;
+}
 int encrypt(unsigned char *plain, int plaintext_len, unsigned char *ciphertext, char *keyfile){
     // Encrypts a block of text of size plaintext_len bytes. Prepends the HEADER_TEXT
     // before plain is encrypted to conform to message spec. Returns the size of the
@@ -206,7 +218,6 @@ char *base64_encode(const unsigned char *data,
 
     *output_length = 4 * ((input_length + 2) / 3);
 
-    printf("BANG\n");
     char *encoded_data = malloc(*output_length);
 
     if (encoded_data == NULL) return NULL;
@@ -261,7 +272,7 @@ unsigned char *base64_decode(const char *data,
         if (j < *output_length) decoded_data[j++] = (triple >> 1 * 8) & 0xFF;
         if (j < *output_length) decoded_data[j++] = (triple >> 0 * 8) & 0xFF;
     }
-
+    printf("DECODED: %s\n", decoded_data);
     return decoded_data;
 }
 

@@ -36,3 +36,5 @@ char *base64_encode(const unsigned char *data,
 unsigned char *base64_decode(const char *data,
                              size_t input_length,
                              size_t *output_length);
+int prepForEncryptedSend(char *keyfile, unsigned char *plaintext, char *sendStr);
+int encryptedRecieveAndConvert(char *keyfile, char *base64Text, int base64TextLen, unsigned char *outputStr);
