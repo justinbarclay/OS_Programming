@@ -4,7 +4,7 @@ HelloWorld
 
 Type: 0
 Column: 12
-Encryption type: 1342177280 
+Encryption type: -1342177280 
 messageLength: 0
 message: (null)
 Input message: ?12p19
@@ -13,7 +13,7 @@ HelloWorlddasdgcesd
 
 Type: 1
 Column: 12
-Encryption type: 1342177280 
+Encryption type: -1342177280 
 messageLength: 0
 message: (null)
 Input message: '@12p47

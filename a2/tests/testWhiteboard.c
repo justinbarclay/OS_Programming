@@ -4,13 +4,13 @@ int main(){
     whiteboard* Whiteboard = newWhiteboard();
     printf("%d\n", getWhiteboardSize());
     
-    addMessageToWhiteboard( "Hello\n", 6, Whiteboard);
+    addMessageToWhiteboard( "Hello\n",0, 5, Whiteboard);
     printf("%d\n", getWhiteboardSize());
 
-    addMessageToWhiteboard( "World\n", 6, Whiteboard);
+    addMessageToWhiteboard( "World\n", 0, 5, Whiteboard);
     printf("%d\n", getWhiteboardSize());
 
-    addMessageToWhiteboard( "Kowabunga\n", 10, Whiteboard);
+    addMessageToWhiteboard( "Kowabunga\n",1, 9, Whiteboard);
     printf("%d\n", getWhiteboardSize());
 
     char* message = malloc(sizeof(char));

@@ -67,13 +67,13 @@ void deleteWhiteboard(whiteboard*  node){
     unlockWhiteboard();
 }
 
-void addMessageToWhiteboard(char* message, int size, whiteboard* head){
+void addMessageToWhiteboard(char* message, int encryption, int size, whiteboard* head){
     //Adds a message node to the tail of a linked list, after walking through
     // a head node or a node that is ahead of the tail node
     lockWhiteboard();
     boardSize++;
     
-    char* newMessage = malloc(sizeof(char) * size);
+    char* newMessage = malloc(sizeof(char) * size + 1);
     memcpy(newMessage, message, size);
     
     whiteboard* currentNode = head;
@@ -81,6 +81,7 @@ void addMessageToWhiteboard(char* message, int size, whiteboard* head){
 
     newNode->message = newMessage;
     newNode->size = size;
+    newNode->encryption = encryption;
     newNode->next = NULL;
 
     while(currentNode->next != NULL){
@@ -91,7 +92,7 @@ void addMessageToWhiteboard(char* message, int size, whiteboard* head){
     unlockWhiteboard();
 }
 
-int updateWhiteboardNode(whiteboard* head, int depth,char* message,int encryption, int size){
+int updateWhiteboardNode(whiteboard* head, int depth,char* message, int encryption, int size){
     lockWhiteboard();
     whiteboard* currentNode = findNode(head, depth);
     int returnVal = 0;
@@ -101,7 +102,7 @@ int updateWhiteboardNode(whiteboard* head, int depth,char* message,int encryptio
     }else{
         free(currentNode->message);
         currentNode->message = message;
-        currentNode->encryption = encryption
+        currentNode->encryption = encryption;
         currentNode->size = size;
         returnVal =  0;
     }
@@ -120,9 +121,9 @@ int readNode(whiteboard* head, int depth, char* message){
         perror("Could not find node");
         returnVal = -1;
     }else{
-        message = malloc(sizeof(char) * currentNode->size);
-        memcpy(message, currentNode->message, currentNode->size);
-        returnVal =  currentNode->size;
+        message = malloc(sizeof(char) * currentNode->size+1);
+        memcpy(message, currentNode->message, currentNode->size+1);
+        returnVal =  currentNode->size+1;
     }
 
     unlockWhiteboard();
