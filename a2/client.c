@@ -7,8 +7,6 @@
 #include <stdlib.h>
 #include <strings.h>
 #include <arpa/inet.h>
-#include <ncurses.h>
-#include <pthread.h>
 #include "parser.h"
 
 #define	 MY_PORT  2222
@@ -18,21 +16,6 @@
    the server need to run on the same machine.
    --------------------------------------------------------------------- */
 
-/* inspiration for how to use ncurses stolen from:
-   https://cboard.cprogramming.com/c-programming/172122-using-ncurses-1-output-window-updating-1-input-keyboard.html */
-/* more ncruses */
-/* http://www.tldp.org/HOWTO/html_single/NCURSES-Programming-HOWTO/#LETBEWINDOW */
-
-
-struct charBuffer {
-    char* buffer;
-    int size;
-    int ready;
-} typedef charBuffer;
-
-// Global variables
-static charBuffer *output;
-static charBuffer *input;
 static query * newQuery;
 
 static int Quit;
