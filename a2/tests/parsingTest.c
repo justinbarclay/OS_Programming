@@ -46,6 +46,19 @@ int main(int argc, char * argv[]){
     free(newQuery->message);
     free(newQuery);
 
+    printf("Input message: '%s' \n", message4);
+    newQuery = parseMessage(message4,39);
+    fflush(stdout); // Will now print everything in the stdout buffer
+    printf("\nType: %d\n", newQuery->type);
+    printf("Column: %d\n", newQuery->column);
+    printf("Encryption type: %d\n", newQuery->encryption);
+    printf("messageLength: %d\n", newQuery->messageLength);
+    printf("message: %s\n", newQuery->message);
+    fflush(stdout); // Will now print everything in the stdout buffer
+
+    free(newQuery->message);
+    free(newQuery);
+
     
     return 0;
 }

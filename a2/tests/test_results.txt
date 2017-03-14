@@ -1,33 +1,44 @@
-Input message: !12p12
+Input message: !12p10
 HelloWorld
  
 
 Type: 0
 Column: 12
 Encryption type: 0 
-messageLength: 12
+messageLength: 10
 message: 
 HelloWorld
 
-Input message: ?12p21
+Input message: ?12p19
 HelloWorlddasdgcesd
  
 
 Type: 1
 Column: 12
 Encryption type: 0 
-messageLength: 21
+messageLength: 19
 message: 
 HelloWorlddasdgcesd
 
-Input message: '@12p49
+Input message: '@12p47
 HelloWorlddjfldskflaskdjasldj's;fldsfnc;lask'd;
 ' 
 
 Type: 2
 Column: 12
 Encryption type: 0
-messageLength: 49
+messageLength: 47
 message: 
 HelloWorlddjfldskflaskdjasldj's;fldsfnc;lask'd;
+
+Input message: '!12p30
+thisisaresponsetodemothelength
+' 
+
+Type: 0
+Column: 12
+Encryption type: 0
+messageLength: 30
+message: 
+thisisaresponsetodemothelength
 

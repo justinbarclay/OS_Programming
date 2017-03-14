@@ -21,7 +21,8 @@ query* parseMessage(char *input, int inputSize){
 
     totalBytesRead += bytesRead;
 
-    if(inputSize >= newMessage->messageLength + totalBytesRead){
+    // We have constant plus two here because of the encasing '\n'
+    if(inputSize >= newMessage->messageLength + totalBytesRead + 2){
         newMessage->message = calloc(1024, sizeof(char));
         memcpy(newMessage->message, input+totalBytesRead, 1024);
 
@@ -66,7 +67,6 @@ int getNumberFromMessage(char* input,int* bytesRead){
     int i=0; // Assume we've already
     char charAsNumber[20];
     int number; // number to return
-
     while((input[i] != 'p') && (input[i] != '\n')){ //Could do this while input[i] is greater than 47 and less than 58
         charAsNumber[i] = input[i];
         i++;
