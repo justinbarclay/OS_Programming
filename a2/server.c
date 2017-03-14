@@ -20,9 +20,9 @@ int startServer(struct sockaddr_in master);
 
 int main(int argc, char * argv[]){
     char* message = calloc(1024, sizeof(char));
-    int	sock, snew, fromlength, number, outnum;
+    int	sock, snew, fromlength, number, outnum, length;
     struct	sockaddr_in	master, from;
-    whiteboard * Whiteboard = newWhiteboard();
+    whiteboard * Whiteboard = newWhiteboard(30);
     
     sock = startServer(master);
     int i = 0;
@@ -66,7 +66,7 @@ int main(int argc, char * argv[]){
 	sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
 
         handleMessage(newMessage, Whiteboard, responseMessage); // not implemented yet
-        message = buildStringFromQuery(responseMessage);
+        message = buildStringFromQuery(responseMessage, &length);
         //Send the first five bytes of character array c back to the client
 	//The client, however, wants to receive 7 bytes.
 

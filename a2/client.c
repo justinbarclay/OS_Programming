@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <ncurses.h>
 #include <pthread.h>
+#include "parser.h"
 
 #define	 MY_PORT  2222
 
@@ -32,6 +33,7 @@ struct charBuffer {
 // Global variables
 static charBuffer *output;
 static charBuffer *input;
+static query * newQuery;
 static WINDOW *w1;
 static int Quit;
 
@@ -44,7 +46,13 @@ void exampleSendRcv(WINDOW *w1, WINDOW *w2);
 void readFromSocket(int s, charBuffer *output);
 void getSocket(int *s);
 
+int getNumber(char* input,int* bytesRead);
+char* parseUserInput(charBuffer * input, int *size);
 int addToMessage(char* message, int length, char* newMessage);
+
+int getColumn(WINDOW *w1);
+int getType(WINDOW *w1);
+int getEncryption(WINDOW *w1);
 // This structure contains the current element that needs to be printed to screen
 
 int main(){
@@ -56,6 +64,8 @@ int main(){
     input = malloc(sizeof(charBuffer));
     input->buffer = malloc(sizeof(char)*1024);
     input->size = 1024;
+
+    newQuery = malloc(sizeof(query));
 
     // Set quit
     Quit = 0;
@@ -90,17 +100,19 @@ int main(){
     destroy_win(w1);
     destroy_win(w2);
 
+    free(newQuery->message);
+    free(newQuery);
     free(output);
     free(input);
     exit(1);
 }
 
 void exampleSendRcv(WINDOW *w1, WINDOW *w2){
-    int	s, number;
+    
     
     /* Vars for ncurses */
     char buf[1024] = {0}, *bufPointer = buf;
-    int ch, cnt = 0, n = 1;
+    int ch, cnt = 0, n = 1, state = 0;
 
     // Send all 11 bytes of character array c to the server
     // It is important to note that even the null terminating (zero valued) bytes
@@ -117,41 +129,53 @@ void exampleSendRcv(WINDOW *w1, WINDOW *w2){
         doupdate();
         
         if ((ch = getch()) != ERR) {
-            if (ch == '\n') {
+            if(state == 0){
+                //Query Type
+                state = getType(w1);
+            }else if(state == 1){
+                state = getColumn(w1);
+            }else if(state == 2){
+                state = getEncryption(w1);
+            } else if(state == 3){
+                // Get message
+                if(ch == '\n') {
 
-                *bufPointer++ = ch;
-                *bufPointer = 0;
-                cnt++;
+                    *bufPointer++ = ch;
+                    *bufPointer = 0;
+                    cnt++;
                 
-                memcpy(input->buffer, buf, cnt);
-                input->size = cnt; // Once the size is greater than 0 network will send
+                    memcpy(input->buffer, buf, cnt);
+                    input->size = cnt; // Once the size is greater than 0 network will send
                 
-                *bufPointer = 0; // Set current char to 0
-                sscanf(buf, "%d", &n); //0 out buffer
-                bufPointer = buf;
-                *bufPointer = 0;
+                    *bufPointer = 0; // Set current char to 0
+                    sscanf(buf, "%d", &n); //0 out buffer
+                    bufPointer = buf;
+                    *bufPointer = 0;
 
-                cnt = 0; //Size of buffer is 0
-            } else if (ch == 127) {
-                if (bufPointer > buf){
-                    *--bufPointer = 0;
-                    cnt--;
+                    cnt = 0; //Size of buffer is 0
+                    state = 0;
+                } else if (ch == 127) {
+                    if (bufPointer > buf){
+                        *--bufPointer = 0;
+                        cnt--;
+                    }
+                } else if(ch == 'q') {
+                    Quit = 1;
+                    break;
+                } else if (bufPointer - buf < (long)sizeof buf - 1) {
+                    *bufPointer++ = ch;
+                    *bufPointer = 0;
+                    cnt++;
                 }
-            } else if(ch == 'q') {
-                Quit = 1;
-                break;
-            } else if (bufPointer - buf < (long)sizeof buf - 1) {
-                *bufPointer++ = ch;
-                *bufPointer = 0;
-                cnt++;
             }
+            // Erase the screen
+            // werase(w1);
+            werase(w2);
         }
-        // Erase the screen
-        // werase(w1);
-        werase(w2);
+        return;
     }
-    return;
 }
+
 
 void readFromSocket(int s, charBuffer *output){
     // zero out each byte of the array before receiving from the server
@@ -193,48 +217,29 @@ void getSocket(int *s){
     }
 }
 
-int addToMessage(char* message, int length, char* newMessage){
-    char starter[7] = "@12p14\n";
-    int starterSize = 7;
-    /* if(newMessage == NULL){ */
-    /*     newMessage = calloc(length+7, sizeof(char)); */
-    /* } else if (!realloc(newMessage, sizeof(char) * (length + st))){ */
-    /*     printf("Failure to allocate memory"); */
-    /*     return -1; */
-    /* }; */
-    bzero(newMessage, 1024);
-    int i=0;
-    for(i = 0; i<starterSize; ++i){
-        newMessage[i] = starter[i];
-    }
-    for(i = 0; i<length; ++i){
-        newMessage[starterSize + i] = message[i];
-    }
-    return length+7;
-}
-
 void * handleNetworkCalls(){
     int s;
     // Initial implementation to handle network.
     // Run in a continuous loop and check every second for input or output;
-    char *message = calloc(1024, sizeof(char));
-    int size;
+    int size = 0;
     int sent;
+    char* message;
     while(Quit != 1){
         /* getSocket(&s); // Get new socket */
         if(input->size > 0) {
-            size = addToMessage(input->buffer, input->size, message);
-            //printf("%s", message);
-            getSocket(&s); // Get new socket
+            /* message = buildStringFromQuery(newQuery, &size); */
+            /* //printf("%s", message); */
+            /* getSocket(&s); // Get new socket */
 
-            sent =  send(s, message, size, 0);
+            /* sent =  send(s, message, size, 0); */
 
-            bzero(input->buffer, input->size);
-            input->size = 0;
-            /* output->buffer = message; */
-            /* output->size = size; */
-            readFromSocket(s, output);
-            close (s);
+            /* bzero(input->buffer, input->size); */
+            /* input->size = 0; */
+            /* /\* output->buffer = message; *\/ */
+            /* /\* output->size = size; *\/ */
+            /* readFromSocket(s, output); */
+            /* close (s); */
+            /* free(message); */
         }
     }
     free(message);
@@ -275,7 +280,144 @@ void destroy_win(WINDOW *local_win){
     delwin(local_win);
 }
 
-/* char* parseResponse(char* response){ */
-/*     char hi[10]; */
-/*     return hi;    */
-/* } */
+int getNumber(char* input,int* index){
+    //Naive implementation of getNumberFromMessage
+    
+    char charAsNumber[20];
+    int number=0; // number to return
+    while((input[*index] != ' ') && (input[*index] != '\n')){ //Could do this while input[i] is greater than 47 and less than 58
+        charAsNumber[*index] = input[*index];
+        *index += 1;
+       
+        /* if(i > 20){ */
+        /*     perror("Parsing number failed, larger than 20 bytes"); */
+        /*     exit(-1); */
+        /* } */
+    }
+
+    charAsNumber[*index] = '\0';
+
+    sscanf(charAsNumber, "%d", &number);
+    
+    return number;
+}
+
+int getType(WINDOW *w){
+    char ch;
+    const int goodState = 1; // Transition to state 1
+    const int badState = 0;
+
+    mvwprintw(w, 0, 0, "%s\n", "Please query type:");
+    mvwprintw(w, 0, 0, "%s\n", "g: Get(?)");
+    mvwprintw(w, 0, 0, "%s\n", "u: Update(@)");
+    mvwprintw(w, 0, 0, "%s\n", "q: Quit");
+    wnoutrefresh(w1);
+    doupdate();
+    if((ch = getch()) != ERR){
+        if(ch == 'u'){
+            newQuery->type = 2;
+        }
+        if(ch == 'g'){
+            newQuery->type = 0;
+        }
+        if(ch == 'q'){
+            Quit = 1;
+        } else {
+            return badState;
+        }
+    }
+    return goodState;
+}
+
+int getEncryption(WINDOW *w){
+    char ch;
+    const int goodState = 3; // Transition to state 1
+    const int badState = 2;
+
+    mvwprintw(w, 0, 0, "%s\n", "Do you wish to encrypt the message?");
+    mvwprintw(w, 0, 0, "%s\n", "y: Yes");
+    mvwprintw(w, 0, 0, "%s\n", "n: No");
+    mvwprintw(w, 0, 0, "%s\n", "q: Quit");
+    wnoutrefresh(w1);
+    doupdate();
+    if((ch = getch()) != ERR){
+        if(ch == 'y'){
+            newQuery->encryption = 1;
+        }
+        if(ch == 'n'){
+            newQuery->encryption = 0;
+        }
+        if(ch == 'q'){
+            Quit = 1;
+        } else {
+            return badState;
+        }
+    }
+    return goodState;
+}
+
+int getColumn(WINDOW *w1){
+    const int goodState = 2; // Transition to state 1
+    const int badState = 1;
+    int nitems, num;
+    mvwprintw(w1, 0, 0, "%s\n", "Please enter the row you would like to query");
+    wnoutrefresh(w1);
+    doupdate();
+
+    nitems = scanf("%d", &num);
+    if (nitems == EOF) {
+        return badState;
+    } else if (nitems == 0) {
+        return goodState;
+    } else {
+        newQuery->column = num;
+    }
+    return goodState;
+}
+
+
+
+
+char * parseUserInput(charBuffer * input, int *size){
+    int index = 0;
+    query * newQuery = malloc(sizeof(query));
+    if(index > input->size ){
+
+    }
+    newQuery->type = input->buffer[index++];
+    
+    if(input->buffer[index++] != ' '){
+        printf("Parsing error");
+    }
+
+    newQuery->column = getNumber(input->buffer, &index);
+
+    if(input->buffer[index++] != ' '){
+        printf("Parsing error");
+    }
+
+    if(input->buffer[index] =='1'){
+        newQuery->encryption = 1;
+    } else if(input->buffer[index] == '0'){
+        newQuery->encryption = 0;
+    } else {
+        printf("Parsing error");
+    }
+    index++;
+
+    if(input->buffer[index++] != ' '){
+        printf("Parsing error");
+    }
+    int count = 0;
+    newQuery->message = malloc(sizeof(char)*(input->size - index));
+    while(input->buffer[index] != '\n'){
+        count++;
+        newQuery->message[count] = input->buffer[index];
+        index++;
+            
+    }
+    newQuery->message[count+1] = '\n';
+    printf("%s\n", newQuery->message);
+    return buildStringFromQuery(newQuery, size);
+    //    return NULL;
+}

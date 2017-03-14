@@ -120,25 +120,27 @@ char* buildStringFromQuery(query * newQuery, int* size){
         }
         index += length;
     }
-    message[index++] = returnEncryptionTypeChar(newQuery->encryption);
-
-    // Get messageLength as a string
-    length = sprintf(numToString,"%d", newQuery->messageLength);
-    if(length > 0){
-        for(i = 0; i< length; ++i){
-            message[index+i] = numToString[i];
-        }
-        index += length;
-    }
-    message[index++]='\n';
     if(newQuery->type > 0){
-        // Add seperating newline character
-    
-        for(i = 0; i < newQuery->messageLength; ++i){
-            message[index+i] = newQuery->message[i];
+        message[index++] = returnEncryptionTypeChar(newQuery->encryption);
+
+        // Get messageLength as a string
+        length = sprintf(numToString,"%d", newQuery->messageLength);
+        if(length > 0){
+            for(i = 0; i< length; ++i){
+                message[index+i] = numToString[i];
+            }
+            index += length;
         }
-        index += newQuery->messageLength;
-        message[index++] = '\n';
+        message[index++]='\n';
+        if(newQuery->type > 0){
+            // Add seperating newline character
+    
+            for(i = 0; i < newQuery->messageLength; ++i){
+                message[index+i] = newQuery->message[i];
+            }
+            index += newQuery->messageLength;
+            message[index++] = '\n';
+        }
     }
     message[index++] = '\n';
     *size = index;

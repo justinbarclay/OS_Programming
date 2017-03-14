@@ -9,8 +9,8 @@ whiteboard.o: whiteboard.h whiteboard.c
 server: server.c parser.o whiteboard.o
 	gcc -o server server.c parser.o whiteboard.o
 
-client: client.c
-	gcc -o client client.c -lncurses -lpthread
+client: client2.c parser.o
+	gcc -o client client2.c parser.o -lncurses -lpthread
 
 
 tests:$(SUBDIRS)
