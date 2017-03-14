@@ -11,11 +11,14 @@
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <signal.h>
+#include <pthread.h>
 extern int h_errno;
 
 // Globals
 static int portnumber = 2222;
 struct whiteboard *Whiteboard;
+char* welcomeMessage;
+char** clients;
 
 /* ---------------------------------------------------------------------
    This	is  a sample server which opens a stream socket and then awaits
@@ -31,15 +34,12 @@ void handleSigTerm(int num);
 int main(int argc, char * argv[]){
     char* message = calloc(1024, sizeof(char));
     int boardSize = 40; //default value
-    int	sock, snew, fromlength;
+    
     int z;
-    int first = 1;
     int length = 0;
-    query* newMessage;
-    query* responseMessage = malloc(sizeof(query));
+
     
     const char *statefile;
-    struct	sockaddr_in	master, from;
     //Set up signal handler
     struct sigaction act;
     act.sa_handler = handleSigTerm;
@@ -68,6 +68,7 @@ int main(int argc, char * argv[]){
             }
             if(strcmp("-n", argv[z]) == 0){
                 boardSize = atoi(argv[z+1]);
+                Whiteboard  = newWhiteboard(boardSize);
                 break;
             }
             //We can only specify either boardSize of statefile, not both. We tiebreak by doing the first one we see
@@ -76,69 +77,68 @@ int main(int argc, char * argv[]){
         printf("Failure to specifiy parameters");
         return -1;
     }
-    
-    printf("Port number %d", portnumber);
-    if(Whiteboard == NULL){
-        Whiteboard  = newWhiteboard(boardSize);
-    }
-    sock = startServer(master);
 
+    // Get whiteboard size
     char welcomeMessage[40] = "CMPUT379 Whiteboard Server v0\n";
     char numToString[9]; // Buffer to conver number to string
     int size;
-    
-     size = sprintf(numToString,"%d",getWhiteboardSize());
-     if(size > 0){
-         int i = 0;
-         for(i = 0; i< size; ++i){
-             welcomeMessage[30+i] = numToString[i];
-         }
-         welcomeMessage[30+i+1] = '\n';
-     }
-    
+    size = sprintf(numToString,"%d",getWhiteboardSize());
+    if(size > 0){
+        int i = 0;
+        for(i = 0; i< size; ++i){
+            welcomeMessage[30+i] = numToString[i];
+        }
+        welcomeMessage[30+i+1] = '\n';
+    }
+
+    // Fork here
+    int	sock, snew, fromlength;
+    struct	sockaddr_in	master, from;
+    sock = startServer(master);
     while(1){
         listen (sock, 128);
+        
         fromlength = 0;
         snew = accept (sock, (struct sockaddr*) & from, (socklen_t *) &fromlength);
         if (snew < 0) {
             perror ("Server: accept failed");
             exit (1);
         }
-
-        // Zero out all of the bytes in character array c
-        bzero(message,1024);
-
-        // Here we print off the values of character array c to show that
-        // each byte has an intial value of zero before receiving anything
-        // from the client.
-
-        // Now we receive from the client, we specify that we would like 11 bytes
-        recv(snew,message,1024,0);
-
-       
-        printf("Incoming request: %s\n",message);
-        
-        //Send the first five bytes of character array c back to the client
-        //The client, however, wants to receive 7 bytes.
-
-        if(first){
-            first = 0;
-            send(snew, welcomeMessage, 40, 0);
-        } else {
-            newMessage = parseMessage(message, 1024);
-            handleMessage(newMessage, Whiteboard, responseMessage); // not implemented yet
-            message = buildStringFromQuery(responseMessage, &length);
-            
-            send(snew,message,length,0);
-        }
-        close (snew);
-        sleep(1);
-    }
-    if(message != NULL){
-        free(message);
     }
     if(statefile != NULL){
         free((void *)statefile);
+    }
+}
+void respondToMessage(int snew){
+    query* newMessage;
+    query* responseMessage = malloc(sizeof(query));
+    char* message = calloc(1024, sizeof(char));
+    // Zero out all of the bytes in message
+    bzero(message,1024);
+
+    // Now we receive from the client, we specify that we would like, it can be up to 1024 bytes
+    recv(snew,message,1024,0);
+
+       
+    printf("Incoming request: %s\n",message);
+        
+    //Send the first five bytes of character array c back to the client
+    //The client, however, wants to receive 7 bytes.
+
+    if(first){
+        first = 0;
+        send(snew, welcomeMessage, 40, 0);
+    } else {
+        newMessage = parseMessage(message, 1024);
+        handleMessage(newMessage, Whiteboard, responseMessage); // not implemented yet
+        message = buildStringFromQuery(responseMessage, &length);
+            
+        send(snew,message,length,0);
+    }
+    close (snew);
+    sleep(1);
+    if(message != NULL){
+        free(message);
     }
 }
 void handleSigTerm(int num){
@@ -188,7 +188,7 @@ int handleCreateState(const char *statefile, struct whiteboard *wb){
 }
 int isEncrypted(char *line, size_t len){
     int i;
-    for(i = 0; i< len; i++){
+    for(i = 0; i < len; i++){
         if(isalpha(line[i])){
             if(line[i] == 'c'){
                 return 1;
