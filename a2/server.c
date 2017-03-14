@@ -48,7 +48,6 @@ int main(int argc, char * argv[]){
     
     // Search for statefile
     if(argc > 1){
-        printf("%s\n", argv[1]);
         portnumber = atoi(argv[1]);
         for(z = 0; z < argc; z++){
             if(strcmp("-f", argv[z]) == 0){

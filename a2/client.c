@@ -9,14 +9,15 @@
 #include <arpa/inet.h>
 #include "parser.h"
 
-#define	 MY_PORT  2222
-
 /* ---------------------------------------------------------------------
    This is a sample client program for the number server. The client and
    the server need to run on the same machine.
    --------------------------------------------------------------------- */
 
 static query * newQuery;
+static int portnumber;
+static char* hostname;
+static char* keyfile;
 
 int handleNetworkCalls();
 void exampleSendRcv();
@@ -33,7 +34,7 @@ int getType();
 int getEncryption();
 // This structure contains the current element that needs to be printed to screen
 
-int main(){
+int main(int argc, char* argv[]){
     
     // Set up the charBuffers
 
@@ -46,22 +47,26 @@ int main(){
     newQuery->type = 0;
     newQuery->encryption = 0;
 
-
     /*
      * Parse Command line arguments
-     *
-     *
      */
-
+    if(argc == 4){
+        portnumber = atoi(argv[1]);
+        hostname = argv[2];
+        keyfile = argv[3];
+    }  else {
+        printf("Failure to specifiy parameters");
+        return -1;
+    }
     
-    // This should be split off into two segments/ screen rendering and input
-    // network send recieve
-    // The network send recieve should be a pull interface, the system pulls whenever it is ready to send new stuff
-    exampleSendRcv();
+// This should be split off into two segments/ screen rendering and input
+// network send recieve
+// The network send recieve should be a pull interface, the system pulls whenever it is ready to send new stuff
+exampleSendRcv();
 
 
-    freeQuery();
-    exit(1);
+freeQuery();
+exit(1);
 }
 
 void freeQuery(){
@@ -130,20 +135,21 @@ int getSocket(int *s){
 
     if (host == NULL) {
         perror ("Client: cannot get host description");
-       return 0;
+        return 0;
     }
 
     *s = socket(AF_INET, SOCK_STREAM, 0);
 
     if (*s < 0) {
         perror ("Client: cannot open socket");
-       return 0;
+        return 0;
     }
 
     bzero (&server, sizeof (server));
     server.sin_family = AF_INET;
-    server.sin_addr.s_addr = inet_addr("127.0.0.1");
-    server.sin_port = htons (MY_PORT);
+
+    server.sin_addr.s_addr = inet_addr(hostname);
+    server.sin_port = htons (portnumber);
 
     if (connect (*s, (struct sockaddr*) & server, sizeof (server))) {
         perror("Client: cannot connect to server");
@@ -162,22 +168,22 @@ int handleNetworkCalls(){
     char* message;
     /* getSocket(&s); // Get new socket */
     if (newQuery->messageLength > -1){
-    message = buildStringFromQuery(newQuery, &size);
-    printf("%s\n", message);
-    //printf("%s", message);
-    getSocket(&s); // Get new socket
+        message = buildStringFromQuery(newQuery, &size);
+        printf("%s\n", message);
+        //printf("%s", message);
+        getSocket(&s); // Get new socket
     
-    sent =  send(s, message, size, 0);
+        sent =  send(s, message, size, 0);
 
-    readFromSocket(s);
-    close (s);
-    free(message);
+        readFromSocket(s);
+        close (s);
+        free(message);
     
-    newQuery->column = 0;
-    newQuery->messageLength = -1;
-    newQuery->type = 0;
-    newQuery->encryption = 0;
-    bzero(newQuery->message, 1024);
+        newQuery->column = 0;
+        newQuery->messageLength = -1;
+        newQuery->type = 0;
+        newQuery->encryption = 0;
+        bzero(newQuery->message, 1024);
     }
 
     return 0;
