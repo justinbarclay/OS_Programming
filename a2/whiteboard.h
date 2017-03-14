@@ -10,9 +10,9 @@ struct whiteboard{
     struct whiteboard* next;
 } typedef whiteboard;
 
-whiteboard * newWhiteboard();
+whiteboard * newWhiteboard(int size);
 void addMessageToWhiteboard(char* message, int encryption,int size, whiteboard* head);
 int updateWhiteboardNode(whiteboard* node, int depth, char* message, int encryption, int size);
 void deleteWhiteboard(whiteboard* node);
-int readNode(whiteboard* node, int depth, char* message);
+char* readNode(whiteboard* node, int depth, int* size);
 int getWhiteboardSize();

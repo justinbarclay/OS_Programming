@@ -1,9 +1,5 @@
 #include "whiteboard.h"
-/* struct whiteboard{ */
-/*     char* message; */
-/*     int size; */
-/*     struct whiteboard* node; */
-/* } typedef whiteboard; */
+
 #define LOCKED 1
 #define UNLOCKED 0
 static int readWriteState = UNLOCKED;
@@ -44,11 +40,20 @@ int unlockWhiteboard(){
     return 0;
 };
 
-whiteboard * newWhiteboard(){
+whiteboard * newWhiteboard(int size){
     whiteboard *tail = malloc(sizeof(whiteboard));
     tail->message = NULL;
     tail->size = 0;
     tail->next = NULL;
+
+    if(size > 0){
+
+        int i=0;
+        for(i = 0; i < size; ++i){
+            addMessageToWhiteboard(NULL, 0, 0, tail);
+        }
+    }
+    
     return tail;
 }
 
@@ -110,24 +115,22 @@ int updateWhiteboardNode(whiteboard* head, int depth,char* message, int encrypti
     return returnVal;
 }
 
-int readNode(whiteboard* head, int depth, char* message){
+char* readNode(whiteboard* head, int depth, int * size){
     lockWhiteboard();
     whiteboard* currentNode = findNode(head, depth);
-    if(message != NULL){
-        free(message);
-    }
+    char* message = NULL;
     int returnVal = 0;
     if(currentNode == NULL){
         perror("Could not find node");
         returnVal = -1;
-    }else{
-        message = malloc(sizeof(char) * currentNode->size+1);
-        memcpy(message, currentNode->message, currentNode->size+1);
-        returnVal =  currentNode->size+1;
+    }else {
+        message = calloc(currentNode->size, sizeof(char));
+        memcpy(message, currentNode->message, currentNode->size);
+        *size =  currentNode->size;
     }
 
     unlockWhiteboard();
-    return returnVal;
+    return message;
 }
 
 int getWhiteboardSize(){

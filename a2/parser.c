@@ -17,6 +17,7 @@ query* parseMessage(char *input, int inputSize){
     newMessage->column = getNumberFromMessage(copiedInput, &bytesRead);
 
     totalBytesRead += bytesRead;
+    newMessage->encryption = -1; //Default value
     if(newMessage->type > 0){
         
         newMessage->encryption = getEncryptionType(input[totalBytesRead]);
@@ -30,7 +31,8 @@ query* parseMessage(char *input, int inputSize){
         // We have constant plus two here because of the encasing '\n'
         if(inputSize >= newMessage->messageLength + totalBytesRead + 2){
             newMessage->message = calloc(1024, sizeof(char));
-            memcpy(newMessage->message, input+totalBytesRead, 1024);
+            // inout + totalbytesread = \n thefore + 1 = beginning of message
+            memcpy(newMessage->message, input+totalBytesRead+1, newMessage->messageLength);
 
             //Sanity check to make sure we've parsed the message correctly
             //Need to subtract 1 because messageLength is not 0 based
@@ -50,15 +52,12 @@ query* parseMessage(char *input, int inputSize){
 
 // Plaintext is 0 and encryption is 1
 int getEncryptionType(char encryption){
-    printf("Encryption: ");
-    fflush(stdout);
-    printf("%c\n", encryption);
     if(encryption == 'p'){
         return 0;
     } else if(encryption == 'c') {
         return 1;
     } else {
-        exit(-1);
+        return -1;
     }
 }
 
@@ -103,43 +102,47 @@ int getNumberFromMessage(char* input,int* bytesRead){
 }
 
 // Returns total message size
-int buildStringFromQuery(query * newQuery, char* message){
-    message = calloc(1024, sizeof(char));
+char* buildStringFromQuery(query * newQuery, int* size){
+    //message = calloc(1024, sizeof(char));
     char numToString[10]; //Assumption never going to have columns greater than 10 digits
     int i=0;
     int length = 0;
     int index = 0;
-    /* message[index++] = returnQueryTypeChar(newQuery->type); */
+    char* message = calloc(1024, sizeof(char));
+    memset(message, 0, 1024);
+    message[index++] = returnQueryTypeChar(newQuery->type);
 
-    /* // Get column as a string */
-    /* length = sprintf(numToString,"%d", newQuery->column); */
-    /* if(length > 0){ */
+    // Get column as a string
+    length = sprintf(numToString,"%d", newQuery->column);
+    if(length > 0){
+        for(i = 0; i< length; ++i){
+            message[index+i] = numToString[i];
+        }
+        index += length;
+    }
+    message[index++] = returnEncryptionTypeChar(newQuery->encryption);
 
-    /*     for(i = 0; i< length; ++i){ */
-    /*         message[index+i] = numToString[i]; */
-    /*     } */
-    /*     index += length; */
-    /* } */
+    // Get messageLength as a string
+    length = sprintf(numToString,"%d", newQuery->messageLength);
+    if(length > 0){
+        for(i = 0; i< length; ++i){
+            message[index+i] = numToString[i];
+        }
+        index += length;
+    }
+    message[index++]='\n';
+    if(newQuery->type > 0){
+        // Add seperating newline character
     
-    /* message[index++] = returnEncryptionTypeChar(newQuery->encryption); */
-
-    /* // Get messageLength as a string */
-    /* length = sprintf(numToString,"%d", newQuery->messageLength); */
-    /* if(length > 0){ */
-    /*     for(i = 0; i< length; ++i){ */
-    /*         message[index+i] = numToString[i]; */
-    /*     } */
-    /*     index += length; */
-    /* } */
-    /* // Add seperating newline character */
-    /* message[index++]='\n'; */
-    
-    /* for(i = 0; i <= newQuery->messageLength; ++i){ */
-    /*     message[index+i] = newQuery->message[i]; */
-    /* } */
-    /* index += newQuery->messageLength + 1; */
-
-    return index;
+        for(i = 0; i < newQuery->messageLength; ++i){
+            message[index+i] = newQuery->message[i];
+        }
+        index += newQuery->messageLength;
+        message[index++] = '\n';
+    }
+    message[index++] = '\n';
+    *size = index;
+    return message;
 }
 
 char returnQueryTypeChar(int type){

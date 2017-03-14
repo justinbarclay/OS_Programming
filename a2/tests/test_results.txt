@@ -1,54 +1,38 @@
 Input message: !12p10
 HelloWorld
  
-Encryption: p
-
-Type: 1
-Column: 12
-Encryption type: 0 
-messageLength: 10
-message: 
+Message Length = 19
+Message = !12p10
 HelloWorld
 
-Message Length = 0
-Message (null)Input message: ?12p19
+Input message: @12p19
 HelloWorlddasdgcesd
  
 
-Type: 0
-Column: 12
-Encryption type: 0 
-messageLength: 0
-message: (null)
+Message Length = 28
+Message = @12p19
+HelloWorlddasdgcesd
+
 Input message: '@12c47
 HelloWorlddjfldskflaskdjasldj's;fldsfnc;lask'd;
 ' 
-Encryption: c
 
-Type: 2
-Column: 12
-Encryption type: 1
-messageLength: 47
-message: 
+Message Length = 56
+Message = @12c47
 HelloWorlddjfldskflaskdjasldj's;fldsfnc;lask'd;
 
 Input message: '!12c30
 thisisaresponsetodemothelength
 ' 
-Encryption: c
 
-Type: 1
-Column: 12
-Encryption type: 1
-messageLength: 30
-message: 
+Message Length = 39
+Message = !12c30
 thisisaresponsetodemothelength
 
 Input message: '?12
 ' 
+Encryption type: -1
 
-Type: 0
-Column: 12
-Encryption type: 1
-messageLength: 0
-message: (null)
+Message Length = 7
+Message = ?12e0
+
