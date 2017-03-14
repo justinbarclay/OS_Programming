@@ -70,7 +70,8 @@ int main(int argc, char * argv[]){
     char welcomeMessage[] = "CMPUT379 Whiteboard Server v0\n";
     int welcomeLength = strlen(welcomeMessage);
     int first = 1;
-    int length;
+    int length = 0;
+    
     query* newMessage;
     query* responseMessage = malloc(sizeof(query));
     

@@ -18,14 +18,15 @@
 
 static query * newQuery;
 
-static int Quit;
 int handleNetworkCalls();
 void exampleSendRcv();
 
 void readFromSocket(int s);
-void getSocket(int *s);
+int getSocket(int *s);
 
 void freeQuery();
+int connectToServer();
+
 int getMessage();
 int getColumn();
 int getType();
@@ -65,6 +66,9 @@ void exampleSendRcv(){
     // Send all 11 bytes of character array c to the server
     // It is important to note that even the null terminating (zero valued) bytes
     // are sent to the server.
+    if(!connectToServer()){
+        return;
+    }
     while(1){
         if(state == 0){
             //Query Type
@@ -94,8 +98,21 @@ void readFromSocket(int s){
     recv(s, output, 1024, 0);
     printf("Response:\n%s\n", output);
 }
+int connectToServer(){
+    int s;
+    int sent;
+    int success;
+    success = getSocket(&s); // Get new socket
+    if(success){
+        sent =  send(s, "", 0, 0);
 
-void getSocket(int *s){
+        readFromSocket(s);
+        close (s);
+    }
+    return success;
+}
+
+int getSocket(int *s){
     struct	sockaddr_in	server;
 
     struct	hostent		*host;
@@ -104,14 +121,14 @@ void getSocket(int *s){
 
     if (host == NULL) {
         perror ("Client: cannot get host description");
-        exit (1);
+       return 0;
     }
 
     *s = socket(AF_INET, SOCK_STREAM, 0);
 
     if (*s < 0) {
         perror ("Client: cannot open socket");
-        exit (1);
+       return 0;
     }
 
     bzero (&server, sizeof (server));
@@ -121,8 +138,10 @@ void getSocket(int *s){
 
     if (connect (*s, (struct sockaddr*) & server, sizeof (server))) {
         perror("Client: cannot connect to server");
-        exit (1);
+        return 0;
     }
+
+    return 1;
 }
 
 int handleNetworkCalls(){
