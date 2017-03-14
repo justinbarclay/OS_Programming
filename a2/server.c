@@ -14,7 +14,7 @@
    This	is  a sample server which opens a stream socket and then awaits
    requests coming from client processes.
    --------------------------------------------------------------------- */
-int handleMessage(query * newQuery, whiteboard * Whiteboard, char* returnMessage, int* messageSize);
+void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQuery);
 void getSocket(int *s);
 int startServer(struct sockaddr_in master);
 
@@ -134,14 +134,33 @@ int startServer(struct sockaddr_in master){
     return sock;
 }
 
-int handleMessage(query * newQuery, whiteboard * Whiteboard, char* returnMessage, int *messageSize){
+void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQuery){
     int status;
+    responseQuery = malloc(sizeof(query));
     if(newQuery->type == 1 && newQuery->column < getWhiteboardSize()){
         
-        *messageSize = readNode(Whiteboard, newQuery->column, returnMessage);
-        status = *messageSize > 0;
+        responseQuery->messageLength = readNode(Whiteboard, newQuery->column, responseQuery->message);
     } else if(newQuery->type == 2 && newQuery->column < getWhiteboardSize()){
-        status= updateWhiteboardNode(Whiteboard, newQuery->column, newQuery->message, newQuery->messageLength);
+
+        updateWhiteboardNode(Whiteboard, newQuery->column, newQuery->message, newQuery->encryption, newQuery->messageLength);
+        
+        responseQuery->type = 0;
+        responseQuery->column = newQuery->column;
+        responseQuery->encryption = -1;
+        responseQuery->messageLength = 0;
+        responseQuery->message = NULL;
+    } else {
+        char message[]="No such entry!\n";
+        responseQuery->type = 0;
+        responseQuery->column = newQuery->column;
+        responseQuery->encryption = -1;
+        responseQuery->messageLength = 14;
+        responseQuery->message = calloc(15, sizeof(char));
+
+        int i=0;
+        for(i=0; i < 15; ++i){
+            responseQuery->message[i] = message[i];
+        }
+        
     }
-    return status;
 }
