@@ -7,7 +7,10 @@
 #include <string.h>
 #include "parser.h"
 #include "whiteboard.h"
+#include <netdb.h>
+#include <arpa/inet.h>
 
+extern int h_errno;
 #define	MY_PORT	2222
 
 /* ---------------------------------------------------------------------
@@ -21,9 +24,17 @@ int startServer(struct sockaddr_in master);
 int main(int argc, char * argv[]){
     char* message = calloc(1024, sizeof(char));
     int	sock, snew, fromlength, number, outnum;
+    int z;
     struct	sockaddr_in	master, from;
     whiteboard * Whiteboard = newWhiteboard();
-    
+   
+    for(z = 0; z < argc; z++){
+        if(strcmp("-f", argv[z]) == 0){
+            printf("found %s\n", argv[z]); 
+            exit(0);
+        }
+    }
+
     sock = startServer(master);
     int i = 0;
 
@@ -60,14 +71,14 @@ int main(int argc, char * argv[]){
 
         newMessage = parseMessage(message, 1024);
 
-	//copy the string "Stevens" into character array c
-	//strncpy(c,steve,7);
-	sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
+        //copy the string "Stevens" into character array c
+        //strncpy(c,steve,7);
+        sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
 
         //handleMessage(newMessage, Whiteboard); // not implemented yet
-        
+
         //Send the first five bytes of character array c back to the client
-	//The client, however, wants to receive 7 bytes.
+        //The client, however, wants to receive 7 bytes.
 
         if(first){
             first = 0;
@@ -138,12 +149,12 @@ void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQu
     int status;
     responseQuery = malloc(sizeof(query));
     if(newQuery->type == 1 && newQuery->column < getWhiteboardSize()){
-        
+
         responseQuery->messageLength = readNode(Whiteboard, newQuery->column, responseQuery->message);
     } else if(newQuery->type == 2 && newQuery->column < getWhiteboardSize()){
 
         updateWhiteboardNode(Whiteboard, newQuery->column, newQuery->message, newQuery->encryption, newQuery->messageLength);
-        
+
         responseQuery->type = 0;
         responseQuery->column = newQuery->column;
         responseQuery->encryption = -1;
@@ -161,6 +172,6 @@ void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQu
         for(i=0; i < 15; ++i){
             responseQuery->message[i] = message[i];
         }
-        
+
     }
 }
