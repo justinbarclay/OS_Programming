@@ -10,7 +10,7 @@ server: server.c parser.o whiteboard.o
 	gcc -o server server.c parser.o whiteboard.o
 
 client: client.c parser.o
-	gcc -o client client.c parser.o
+	gcc -o client client.c parser.o -lcrypto 
 
 
 tests:$(SUBDIRS)

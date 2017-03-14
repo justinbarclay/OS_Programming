@@ -8,6 +8,7 @@
 #include <strings.h>
 #include <arpa/inet.h>
 #include "parser.h"
+#include "encryption.h"
 
 /* ---------------------------------------------------------------------
    This is a sample client program for the number server. The client and
@@ -35,7 +36,7 @@ int getEncryption();
 // This structure contains the current element that needs to be printed to screen
 
 int main(int argc, char* argv[]){
-    
+
     // Set up the charBuffers
 
     newQuery = malloc(sizeof(query));
@@ -58,7 +59,7 @@ int main(int argc, char* argv[]){
         printf("Failure to specifiy parameters");
         return -1;
     }
-    
+
 // This should be split off into two segments/ screen rendering and input
 // network send recieve
 // The network send recieve should be a pull interface, the system pulls whenever it is ready to send new stuff
@@ -116,7 +117,7 @@ int connectToServer(){
     int sent;
     int success;
     success = getSocket(&s); // Get new socket
-    
+
     if(success){
         sent =  send(s, "1", 1, 0);
 
@@ -167,18 +168,24 @@ int handleNetworkCalls(){
     int sent;
     char* message;
     /* getSocket(&s); // Get new socket */
+    if(newQuery->encryption){
+        unsigned char enc[1000];
+        newQuery->messageLength = encrypt((unsigned char*)newQuery->message, \
+                newQuery->messageLength, enc, keyfile);
+        printf("ENCRYPTED: %s", newQuery->message);
+    }
     if (newQuery->messageLength > -1){
         message = buildStringFromQuery(newQuery, &size);
         printf("%s\n", message);
         //printf("%s", message);
         getSocket(&s); // Get new socket
-    
+
         sent =  send(s, message, size, 0);
 
         readFromSocket(s);
         close (s);
         free(message);
-    
+
         newQuery->column = 0;
         newQuery->messageLength = -1;
         newQuery->type = 0;
@@ -263,7 +270,7 @@ int getMessage(){
     char ch;
     ch = getchar();// Learn how to clear buffer
     printf("Please enter your message?\n");
-    while((ch = getchar())) {   
+    while((ch = getchar())) {
         if(ch == '\n'||ch == '\0' || size > 1023){
             break;
         }
