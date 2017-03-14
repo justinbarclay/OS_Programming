@@ -10,9 +10,11 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <ctype.h>
-
+#include <signal.h>
 extern int h_errno;
 #define	MY_PORT	2222
+
+struct whiteboard *Whiteboard;
 
 /* ---------------------------------------------------------------------
    This	is  a sample server which opens a stream socket and then awaits
@@ -21,8 +23,9 @@ extern int h_errno;
 void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQuery);
 void getSocket(int *s);
 int startServer(struct sockaddr_in master);
-int handleStateFile(const char *statefile, struct whiteboard *wb);
+int handleCreateState(const char *statefile, struct whiteboard *wb);
 int isEncrypted(char *line, size_t len);
+void handleSigTerm(int num);
 
 int main(int argc, char * argv[]){
     char* message = calloc(1024, sizeof(char));
@@ -30,7 +33,13 @@ int main(int argc, char * argv[]){
     int z;
     const char *statefile;
     struct	sockaddr_in	master, from;
-    struct whiteboard *Whiteboard = newWhiteboard();
+
+    Whiteboard  = newWhiteboard();
+    //Set up signal handler
+    struct sigaction act;
+    act.sa_handler = handleSigTerm;
+    sigemptyset(&act.sa_mask);
+    sigaction(SIGTERM, &act, NULL);
 
     // Search for statefile
     if(argc > 1){
@@ -42,7 +51,7 @@ int main(int argc, char * argv[]){
                 }
                 strcpy((char *)statefile, argv[z+1]);
 
-                z  = handleStateFile(statefile, Whiteboard);
+                z  = handleCreateState(statefile, Whiteboard);
                 if(!z){
                     printf("Failed reading statefile\n");
                 }
@@ -51,20 +60,12 @@ int main(int argc, char * argv[]){
         }
     }
 
-    char* m = malloc(sizeof(char));
-
-    int boardsize = getWhiteboardSize();
-    for(int i = 1; i <= boardsize; i++){
-        readNode(Whiteboard, i, m);
-        printf("BOARD MESSAGE:%s\n", m);
-    }
-    exit(0);
     sock = startServer(master);
 
     char welcomeMessage[] = "CMPUT379 Whiteboard Server v0\n";
     int welcomeLength = strlen(welcomeMessage);
     int first = 1;
-    query* newMessage;
+    query *newMessage;
     while(1){
         listen (sock, 5);
         fromlength = 0;
@@ -97,9 +98,7 @@ int main(int argc, char * argv[]){
         //copy the string "Stevens" into character array c
         //strncpy(c,steve,7);
         sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
-
-        //handleMessage(newMessage, Whiteboard); // not implemented yet
-
+     //   handleMessage(newMessage, Whiteboard); // not implemented yet
         //Send the first five bytes of character array c back to the client
         //The client, however, wants to receive 7 bytes.
 
@@ -120,8 +119,23 @@ int main(int argc, char * argv[]){
         free((void *)statefile);
     }
 }
+void handleSigTerm(int num){
+    // Does this need to be threadable?
+    // how to pass in wb
+    FILE *fp = fopen("whiteboard.all", "w+");
 
-int handleStateFile(const char *statefile, struct whiteboard *wb){
+    char* message = malloc(sizeof(char));
+
+    int boardsize = getWhiteboardSize();
+    for(int i = 1; i <= boardsize; i++){
+        readNode(Whiteboard, i, message);
+        fprintf(fp,"%s", message);
+    }
+    free(message);
+    fclose(fp);
+}
+
+int handleCreateState(const char *statefile, struct whiteboard *wb){
     FILE *fp;
     int c;
     int i = 0,newlineCounter =0;
@@ -146,7 +160,7 @@ int handleStateFile(const char *statefile, struct whiteboard *wb){
             newlineCounter = 0;
         }
     }
-
+    fclose(fp);
     return 1;
 }
 int isEncrypted(char *line, size_t len){
