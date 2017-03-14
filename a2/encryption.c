@@ -49,7 +49,7 @@ void build_decoding_table();
 void handleErrors(void);
 
 
-/*  Main bodr for testing */
+/*  Main bodr for testing 
 int main (){
 
     char keyfile[] = "keys.txt";
@@ -74,7 +74,7 @@ int main (){
     decrypt((unsigned char *)decoded, *bDecodeLen, decryptedOutput,keyfile);
 
     printf("Decrypted output: %s\n", decryptedOutput);
- }
+ }*/
 
 
 

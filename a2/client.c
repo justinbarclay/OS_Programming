@@ -107,9 +107,23 @@ void exampleSendRcv(){
 
 void readFromSocket(int s){
     char output[1024] = {0};
+    struct query *q; 
     // Here the client wants to receive 7 bytes from the server, but the server
     // only sends 5 bytes
     recv(s, output, 1024, 0);
+  /* 
+    //Convert back from b64
+    printf("bang\n");
+    q = parseMessage(output, strlen(output));
+    q->message = (char *)base64_decode(q->message, q->messageLength, (size_t *)&q->messageLength);
+
+    if(q->encryption){
+        if(0 == (decrypt((unsigned char*)q->message, q->messageLength, \
+                        (unsigned char *)q->message, keyfile))){
+           printf("Decryption Failed\n"); 
+           return;
+        }
+    }*/
     printf("Response:\n%s\n", output);
 }
 int connectToServer(){
@@ -168,12 +182,15 @@ int handleNetworkCalls(){
     int sent;
     char* message;
     /* getSocket(&s); // Get new socket */
+    //Encrypts new query
     if(newQuery->encryption){
-        unsigned char enc[1000];
         newQuery->messageLength = encrypt((unsigned char*)newQuery->message, \
-                newQuery->messageLength, enc, keyfile);
-        printf("ENCRYPTED: %s", newQuery->message);
+                newQuery->messageLength, (unsigned char*)newQuery->message, keyfile);
     }
+
+    newQuery->message = (char *)base64_encode((const unsigned char*)newQuery->message, \
+            newQuery->messageLength,(size_t *) &newQuery->messageLength);
+
     if (newQuery->messageLength > -1){
         message = buildStringFromQuery(newQuery, &size);
         printf("%s\n", message);
