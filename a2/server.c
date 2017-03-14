@@ -69,6 +69,7 @@ int main(int argc, char * argv[]){
 
     char welcomeMessage[] = "CMPUT379 Whiteboard Server v0\n";
     int welcomeLength = strlen(welcomeMessage);
+
     int first = 1;
     int length = 0;
     
@@ -84,8 +85,6 @@ int main(int argc, char * argv[]){
             exit (1);
         }
 
-        outnum = htonl (number);
-
         // Zero out all of the bytes in character array c
         bzero(message,1024);
 
@@ -96,17 +95,11 @@ int main(int argc, char * argv[]){
         // Now we receive from the client, we specify that we would like 11 bytes
         recv(snew,message,1024,0);
 
-        // Print off the received bytes from the client as a string.
-        // Next, print off the value of each byte to showcase that indeed
-        // 11 bytes were received from the client
-        printf("\nAfter receiving from client\n-------------------------\n");
-        printf("Printing character array c as a string is: %s\n",message);
+       
+        printf("Incoming request: %s\n",message);
 
         newMessage = parseMessage(message, 1024);
-        //copy the string "Stevens" into character array c
-        //strncpy(c,steve,7);
-        sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
-
+        
         handleMessage(newMessage, Whiteboard, responseMessage); // not implemented yet
         message = buildStringFromQuery(responseMessage, &length);
         //Send the first five bytes of character array c back to the client
@@ -271,3 +264,4 @@ void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQu
         responseQuery->message = NULL;
     }
 }
+
