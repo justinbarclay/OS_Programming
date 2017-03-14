@@ -270,7 +270,9 @@ int getMessage(){
         newQuery->message[size] = ch;
         size++;
     }
-
+    if(strcmp("exit", newQuery->message)==0){
+        return -1;
+    }
     newQuery->message[size+1] = '\0';
     newQuery->messageLength = size;
     return 4;
