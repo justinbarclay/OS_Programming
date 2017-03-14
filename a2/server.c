@@ -164,6 +164,7 @@ int handleCreateState(const char *statefile, struct whiteboard *wb){
     int i = 0,newlineCounter =0;
     int messageSize = 0;
     char message[1024];
+    query* readQueries;
     fp = fopen(statefile, "r");
     if(fp == NULL){
         fp = fopen(statefile, "w");
@@ -176,7 +177,8 @@ int handleCreateState(const char *statefile, struct whiteboard *wb){
         if( (char) c == '\n') newlineCounter++;
         if(newlineCounter == 2 ){
             message[i+1] = '\0';
-            addMessageToWhiteboard(message, isEncrypted(message,messageSize ), sizeof(message), wb);
+            readQueries = parseMessage(message, 1024);
+            addMessageToWhiteboard(readQueries->message, readQueries->encryption, readQueries->messageLength, wb);
             messageSize =0;
             memset(&message[0],0, sizeof(message));
             i =0;
