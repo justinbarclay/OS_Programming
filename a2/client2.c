@@ -42,6 +42,7 @@ void exampleSendRcv();
 void readFromSocket(int s);
 void getSocket(int *s);
 
+void freeQuery()
 int getMessage();
 int getColumn();
 int getType();
@@ -66,12 +67,15 @@ int main(){
     // The network send recieve should be a pull interface, the system pulls whenever it is ready to send new stuff
     exampleSendRcv();
 
-    free(newQuery->message);
-    free(newQuery);
-    
+
+    freeQuery();
     exit(1);
 }
 
+void freeQuery(){
+    free(newQuery->message);
+    free(newQuery);
+}
 void exampleSendRcv(){
     int state = 0;
     // Send all 11 bytes of character array c to the server
@@ -119,7 +123,6 @@ void getSocket(int *s){
         perror ("Client: cannot get host description");
         exit (1);
     }
-
 
     *s = socket(AF_INET, SOCK_STREAM, 0);
 
