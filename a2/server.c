@@ -31,6 +31,7 @@ int main(int argc, char * argv[]){
     int welcomeLength = strlen(welcomeMessage);
     int first = 1;
     query* newMessage;
+    query* responseMessage = malloc(sizeof(query));
     while(1){
         listen (sock, 5);
         fromlength = 0;
@@ -64,8 +65,8 @@ int main(int argc, char * argv[]){
 	//strncpy(c,steve,7);
 	sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
 
-        //handleMessage(newMessage, Whiteboard); // not implemented yet
-        
+        handleMessage(newMessage, Whiteboard, responseMessage); // not implemented yet
+        message = buildStringFromQuery(responseMessage);
         //Send the first five bytes of character array c back to the client
 	//The client, however, wants to receive 7 bytes.
 
@@ -133,25 +134,10 @@ int startServer(struct sockaddr_in master){
     }
     return sock;
 }
-
 void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQuery){
-    int status;
-    responseQuery = malloc(sizeof(query));
-    if(newQuery->type == 1 && newQuery->column < getWhiteboardSize()){
-        
-        responseQuery->messageLength = readNode(Whiteboard, newQuery->column, responseQuery->message);
-    } else if(newQuery->type == 2 && newQuery->column < getWhiteboardSize()){
-
-        updateWhiteboardNode(Whiteboard, newQuery->column, newQuery->message, newQuery->encryption, newQuery->messageLength);
-        
-        responseQuery->type = 0;
-        responseQuery->column = newQuery->column;
-        responseQuery->encryption = -1;
-        responseQuery->messageLength = 0;
-        responseQuery->message = NULL;
-    } else {
+    if(newQuery->column < 1 || newQuery->column > getWhiteboardSize()){
         char message[]="No such entry!\n";
-        responseQuery->type = 0;
+        responseQuery->type = 1;
         responseQuery->column = newQuery->column;
         responseQuery->encryption = -1;
         responseQuery->messageLength = 14;
@@ -160,7 +146,20 @@ void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQu
         int i=0;
         for(i=0; i < 15; ++i){
             responseQuery->message[i] = message[i];
-        }
+        }   
+    } else if(newQuery->type == 0 && newQuery->column < getWhiteboardSize()){
         
+        responseQuery->message = readNode(Whiteboard, newQuery->column, &responseQuery->messageLength);
+        responseQuery->column = newQuery->column;
+        responseQuery->type = 1;
+        
+    } else if(newQuery->type == 2 && newQuery->column < getWhiteboardSize()){
+
+        updateWhiteboardNode(Whiteboard, newQuery->column, newQuery->message, newQuery->encryption, newQuery->messageLength);
+        responseQuery->type = 1;
+        responseQuery->column = newQuery->column;
+        responseQuery->encryption = -1;
+        responseQuery->messageLength = 0;
+        responseQuery->message = NULL;
     }
 }
