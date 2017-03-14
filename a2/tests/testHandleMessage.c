@@ -42,6 +42,39 @@ void updateNode12(whiteboard * head){
     free(responseQuery);
 }
 
+void updateNode10(whiteboard * head){
+    query * newQuery = malloc(sizeof(query));
+    query * responseQuery = malloc(sizeof(query));
+    char* message;
+    int size;
+    char message5[] = "@10p30\nthisisaresponsetodemothelength\n";
+    newQuery = parseMessage(message5, 40);
+    handleMessage(newQuery, head, responseQuery);
+    message = buildStringFromQuery(responseQuery, &size);
+    printf("\nUpdate from node: %s", message);
+    free(message);
+    free(newQuery->message);
+    free(newQuery);
+    free(responseQuery->message);
+    free(responseQuery);
+}
+
+void readNode10(whiteboard * head){
+    query * newQuery = malloc(sizeof(query));
+    query * responseQuery = malloc(sizeof(query));
+    char* message;
+    int size;
+    char message5[] = "?10\n";
+    newQuery = parseMessage(message5, 4);
+    handleMessage(newQuery, head, responseQuery);
+    message = buildStringFromQuery(responseQuery, &size);
+    printf("\nRead from node: %s", message);
+    free(message);
+    // free(newQuery->message);
+    free(newQuery);
+    free(responseQuery->message);
+    free(responseQuery);
+}
 void errorUpdateNode(whiteboard * head){
     query * newQuery = malloc(sizeof(query));
     query * responseQuery = malloc(sizeof(query));
@@ -106,6 +139,11 @@ int main() {
     printAllNodes(head);
     
     readNode12(head);
+
+    updateNode10(head);
+    printAllNodes(head);
+    
+    readNode10(head);
 
     errorUpdateNode(head);
     errorReadNodeLarge(head);
