@@ -236,8 +236,6 @@ void * handleNetworkCalls(){
             readFromSocket(s, output);
             close (s);
         }
-        /* close (s); */
-        sleep(1);
     }
     free(message);
     return 0;
