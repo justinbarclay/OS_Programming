@@ -9,6 +9,7 @@
 #include "whiteboard.h"
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <ctype.h>
 
 extern int h_errno;
 #define	MY_PORT	2222
@@ -20,23 +21,35 @@ extern int h_errno;
 void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQuery);
 void getSocket(int *s);
 int startServer(struct sockaddr_in master);
+int handleStateFile(const char *statefile, struct whiteboard *wb);
+int isEncrypted(char *line, size_t len);
+int fetchSize(char *line, size_t len);
 
 int main(int argc, char * argv[]){
     char* message = calloc(1024, sizeof(char));
     int	sock, snew, fromlength, number, outnum;
     int z;
+    const char *statefile;
     struct	sockaddr_in	master, from;
-    whiteboard * Whiteboard = newWhiteboard();
-   
-    for(z = 0; z < argc; z++){
-        if(strcmp("-f", argv[z]) == 0){
-            printf("found %s\n", argv[z]); 
-            exit(0);
+    struct whiteboard *Whiteboard = newWhiteboard();
+
+    // Search for statefile
+    if(argc > 1){
+        for(z = 0; z < argc; z++){
+            printf("iteration %d\n", z);
+            if(strcmp("-f", argv[z]) == 0){
+                statefile = (const char *) malloc(strlen(argv[z+1]));
+                if(statefile == NULL){
+                    printf("Failed mallocing statefile name\n");
+                }
+                strcpy((char *)statefile, argv[z+1]);
+                break;
+            }
         }
     }
-
+    z  = handleStateFile(statefile, Whiteboard);
+    exit(0);
     sock = startServer(master);
-    int i = 0;
 
     char welcomeMessage[] = "CMPUT379 Whiteboard Server v0\n";
     int welcomeLength = strlen(welcomeMessage);
@@ -93,6 +106,55 @@ int main(int argc, char * argv[]){
     if(message != NULL){
         free(message);
     }
+    if(statefile != NULL){
+        free((void *)statefile);
+    }
+}
+
+int handleStateFile(const char *statefile, struct whiteboard *wb){
+    FILE *fp;
+    char *line;
+    size_t len = 0;
+    ssize_t read;
+    int i = 0;
+    fp = fopen(statefile, "r");
+    if(fp == NULL){
+        fp = fopen(statefile, "w");
+    }
+
+    // Read a key from file
+    while ((read = getline(&line, &len, fp)) != -1){
+        // Copy to data store
+        //addMessageToWhiteboard(line, isEncrypted(line, len), fetchSize(line, len), wb);
+       }
+
+    return 1;
+}
+int fetchSize(char *line, size_t len){
+    int i = 0; 
+    int result = 0;
+    while(i < len && isdigit(line[i])){
+       result *= 10; 
+       result += atoi(&line[i]);
+    }
+    return result;
+}
+int isEncrypted(char *line, size_t len){
+    int i;
+    for(i = 0; i< len; i++){
+        if(isalpha(line[i])){
+            if(line[i] == 'c'){
+                return 1;
+            }else if (line[i] == 'p'){
+                return 0;
+            }else{
+                printf("Non standard query encountered in statefile\n");
+                exit(-1);
+            }
+            break;
+        }
+    }
+    return 0;
 }
 
 void getSocket(int *s){
