@@ -10,12 +10,15 @@ query* parseMessage(char *input, int inputSize){
     char* copiedInput = malloc(sizeof(char) * 20); // Copying the first 20 chars from our message the important 
     newMessage->type = getMessageType(input[0]); // We know query type
     totalBytesRead++;
+    
     // Find column type
+    // Don't need to parse all of input
     memcpy(copiedInput, input+1, 20);
     newMessage->column = getNumberFromMessage(copiedInput, &bytesRead);
 
-    if(newMessage->type > 1){
-        totalBytesRead += bytesRead;
+    totalBytesRead += bytesRead;
+    if(newMessage->type > 0){
+        
         newMessage->encryption = getEncryptionType(input[totalBytesRead]);
         totalBytesRead++;
     
@@ -47,6 +50,9 @@ query* parseMessage(char *input, int inputSize){
 
 // Plaintext is 0 and encryption is 1
 int getEncryptionType(char encryption){
+    printf("Encryption: ");
+    fflush(stdout);
+    printf("%c\n", encryption);
     if(encryption == 'p'){
         return 0;
     } else if(encryption == 'c') {
@@ -57,11 +63,12 @@ int getEncryptionType(char encryption){
 }
 
 int getMessageType(char indicator){
-    if(indicator == '!'){
+    if(indicator == '?'){
         return 0;
+        // Query is int 0
     }
-    else if(indicator == '?'){
-        // Query is int 1
+    else if(indicator == '!'){
+        // Response is 1
         return 1;
     } else if (indicator == '@'){
         // Update entry
@@ -77,7 +84,7 @@ int getNumberFromMessage(char* input,int* bytesRead){
     int i=0; // Assume we've already
     char charAsNumber[20];
     int number; // number to return
-    while((input[i] != 'p') && (input[i] != '\n')){ //Could do this while input[i] is greater than 47 and less than 58
+    while((input[i] != 'p') && (input[i] != '\n') && (input[i] != 'c')){ //Could do this while input[i] is greater than 47 and less than 58
         charAsNumber[i] = input[i];
         i++;
        
@@ -96,49 +103,55 @@ int getNumberFromMessage(char* input,int* bytesRead){
 }
 
 // Returns total message size
-int buildStringFromMessage(query * newQuery, char* message){
+int buildStringFromQuery(query * newQuery, char* message){
     message = calloc(1024, sizeof(char));
     char numToString[10]; //Assumption never going to have columns greater than 10 digits
     int i=0;
     int length = 0;
     int index = 0;
-    message[index++] = returnQueryTypeChar(newQuery->type);
+    /* message[index++] = returnQueryTypeChar(newQuery->type); */
 
-    // Get column as a string
-    length = sprintf(numToString,"%d", newQuery->column);
-    if(length > 0){
+    /* // Get column as a string */
+    /* length = sprintf(numToString,"%d", newQuery->column); */
+    /* if(length > 0){ */
 
-        for(i = 0; i< length; ++i){
-            message[index+i] = numToString[i];
-        }
-        index += length;
-    }
+    /*     for(i = 0; i< length; ++i){ */
+    /*         message[index+i] = numToString[i]; */
+    /*     } */
+    /*     index += length; */
+    /* } */
     
-    message[index++] = returnEncryptionTypeChar(newQuery->encryption);
+    /* message[index++] = returnEncryptionTypeChar(newQuery->encryption); */
 
-    // Get messageLength as a string
-    length = sprintf(numToString,"%d", newQuery->messageLength);
-    if(length > 0){
-        for(i = 0; i< length; ++i){
-            message[index+i] = numToString[i];
-        }
-        index += length;
-    }
-
-    for(i = 0; i <= newQuery->messageLength; ++i){
-        message[index+i] = newQuery->message[i];
-    }
+    /* // Get messageLength as a string */
+    /* length = sprintf(numToString,"%d", newQuery->messageLength); */
+    /* if(length > 0){ */
+    /*     for(i = 0; i< length; ++i){ */
+    /*         message[index+i] = numToString[i]; */
+    /*     } */
+    /*     index += length; */
+    /* } */
+    /* // Add seperating newline character */
+    /* message[index++]='\n'; */
     
+    /* for(i = 0; i <= newQuery->messageLength; ++i){ */
+    /*     message[index+i] = newQuery->message[i]; */
+    /* } */
+    /* index += newQuery->messageLength + 1; */
+
+    return index;
 }
 
 char returnQueryTypeChar(int type){
     if(type == 0)
-        return '!';
-    else if(type == 1){
         return '?';
+    else if(type == 1){
+        return '!';
     }
     else if(type == 2){
-        return '!';
+        return '@';
+    } else {
+        return 'e';
     }
 }
 
@@ -147,8 +160,7 @@ char returnEncryptionTypeChar(int type){
         return 'p';
     else if(type == 1){
         return 'c';
-    }
-    else if(type == -1){
+    } else {
         return 'e';
     }
 }

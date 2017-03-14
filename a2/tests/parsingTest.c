@@ -3,10 +3,11 @@
 int main(int argc, char * argv[]){
     char message1[] = "!12p10\nHelloWorld\n";
     char message2[] = "?12p19\nHelloWorlddasdgcesd\n";
-    char message3[] = "@12p47\nHelloWorlddjfldskflaskdjasldj's;fldsfnc;lask'd;\n";
-    char message4[] = "!12p30\nthisisaresponsetodemothelength\n";
+    char message3[] = "@12c47\nHelloWorlddjfldskflaskdjasldj's;fldsfnc;lask'd;\n";
+    char message4[] = "!12c30\nthisisaresponsetodemothelength\n";
     char message5[] = "?12\n";
-    
+    char* message = NULL;
+    int length = 0;
     printf("Input message: %s \n", message1);
     query *newQuery = parseMessage(message1,18);
     fflush(stdout); // Will now print everything in the stdout buffer
@@ -16,6 +17,11 @@ int main(int argc, char * argv[]){
     printf("Encryption type: %d \n", newQuery->encryption);
     printf("messageLength: %d\n", newQuery->messageLength);
     printf("message: %s\n", newQuery->message);
+    length = buildStringFromQuery(newQuery, message);
+    printf("Message Length = %d\n", length);
+    printf("Message %s", message);
+    free(message);
+    
     
     fflush(stdout); // Will now print everything in the stdout buffer
     free(newQuery->message);

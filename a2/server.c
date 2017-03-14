@@ -64,8 +64,9 @@ int main(int argc, char * argv[])
 	//strncpy(c,steve,7);
 	sprintf(message, "Query: %d Encrypted: %d Column: %d MessageLength: %d Message: %s", newMessage->type, newMessage->encryption, newMessage->column, newMessage->messageLength, newMessage->message);
 
-        handldeMessage(newMessage, Whiteboard);
-	//Send the first five bytes of character array c back to the client
+        //handleMessage(newMessage, Whiteboard); // not implemented yet
+        
+        //Send the first five bytes of character array c back to the client
 	//The client, however, wants to receive 7 bytes.
         if(first){
             first = 0;

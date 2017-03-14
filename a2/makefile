@@ -3,8 +3,11 @@ p=hihello
 parser.o: parser.h parser.c
 	gcc -c parser.c parser.h
 
-server: server.c parser.o
-	gcc -o server server.c parser.o
+whiteboard.o: whiteboard.h whiteboard.c
+	gcc -c whiteboard.c whiteboard.h
+
+server: server.c parser.o whiteboard.o
+	gcc -o server server.c parser.o whiteboard.o
 
 client: client.c
 	gcc -o client client.c -lncurses -lpthread
