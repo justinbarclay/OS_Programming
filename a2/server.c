@@ -15,13 +15,15 @@
 extern int h_errno;
 
 // Globals
-static int portnumber = 2222;
-struct whiteboard *Whiteboard;
-char* welcomeMessage;
-char* clients[14];
-int *first = 0;
+static int portnumber = 2222; // Default value
+struct whiteboard *Whiteboard; // Globally accessible
+static char welcomeMessage[40] = "CMPUT379 Whiteboard Server v0\n"; // Default welcome message
+static unsigned long clients[100] = {0}; // A structure to hold all clients that have connected to the server since boot.
+static int totalClients = 0;
+
+// Custom struct to pass into a thread
 struct connection{
-    char address[14];
+    unsigned long ip;
     int socket;
 } typedef connection;
 
@@ -35,25 +37,24 @@ int startServer(struct sockaddr_in master);
 int handleCreateState(const char *statefile, struct whiteboard *wb);
 int isEncrypted(char *line, size_t len);
 void respondToMessage(void *connection_info);
-int firstCommunication();
+int checkAndSet(unsigned long ip);
 void handleSigTerm(int num);
 
 int main(int argc, char * argv[]){
-    char* message = calloc(1024, sizeof(char));
     int boardSize = 40; //default value
-    
     int z;
-    int length = 0;
-
-    
     const char *statefile;
+    
     //Set up signal handler
     struct sigaction act;
     act.sa_handler = handleSigTerm;
     sigemptyset(&act.sa_mask);
     sigaction(SIGTERM, &act, NULL);
     
-    // Search for statefile
+
+    /*
+     * Parse parameters passed into program
+     */
     if(argc > 1){
         portnumber = atoi(argv[1]);
         for(z = 0; z < argc; z++){
@@ -85,10 +86,11 @@ int main(int argc, char * argv[]){
         return -1;
     }
 
-    // Get whiteboard size
-    char welcomeMessage[40] = "CMPUT379 Whiteboard Server v0\n";
+   /*
+    * Build white board message
+    */
     char numToString[9]; // Buffer to conver number to string
-    int size;
+    int size; // size of new string
     size = sprintf(numToString,"%d",getWhiteboardSize());
     if(size > 0){
         int i = 0;
@@ -101,69 +103,84 @@ int main(int argc, char * argv[]){
 
     
     // Fork here
-    int	sock, snew, fromlength;
+    int sock,snew, fromlength;
     struct	sockaddr_in	master, from;
     pthread_t whiteboard_id;
-    connection info;
+   
     sock = startServer(master);
     while(1){
         listen (sock, 128);
-        
+
         fromlength = 0;
         snew = accept (sock, (struct sockaddr*) & from, (socklen_t *) &fromlength);
-        info.socket = snew;
         if (snew < 0) {
             perror ("Server: accept failed");
             continue;
         }
-        pthread_create(&whiteboard_id, NULL, &respondToMessage, &info);
+        connection* info = calloc(1, sizeof(connection));
+        info->ip = from.sin_addr.s_addr;
+        info->socket = snew+0;
+        printf("%d\n", snew);
+        pthread_create(&whiteboard_id, NULL, &respondToMessage, info);
     }
     if(statefile != NULL){
         free((void *)statefile);
     }
 }
 
-
-void respondToMessage(void *connection_info){
+// This is threadable code to handle parsing and responding to messages from clients
+// It requires the ip address of the client and the socket, passed into as a struct connection
+void respondToMessage(void *socket){
     query* newMessage;
     query* responseMessage = malloc(sizeof(query));
     char* message = calloc(1024, sizeof(char));
-    int length;
-
-    connection *info = (connection *) connection_info;
+    int length; 
+    connection * info = (connection *) socket;
+    int snew = info->socket;
     // Zero out all of the bytes in message
+    printf("%Socket d\n", &info->socket);
+    fflush(stdout);
     bzero(message,1024);
+    printf("Created\n");
 
     // Now we receive from the client, we specify that we would like, it can be up to 1024 bytes
-    recv(info->socket,message,1024,0);
-
-       
-    printf("Incoming request: %s\n",message);
-        
+    recv(snew,message,1024,0);
     //Send the first five bytes of character array c back to the client
     //The client, however, wants to receive 7 bytes.
-
-    if(first){
-        first = 0;
-        send(info->socket, welcomeMessage, 40, 0);
+    
+    if(checkAndSet(info->ip) || strcmp(message, "") == 0){
+        printf("Broken\n");
+        send(snew, welcomeMessage, 40, 0);
+        printf("Done\n");
     } else {
-        newMessage = parseMessage(message, 1024);
-        handleMessage(newMessage, Whiteboard, responseMessage); // not implemented yet
+        newMessage = parseMessage(message, 1024); 
+        handleMessage(newMessage, Whiteboard, responseMessage);  // Handle the message and build the approrpiate response
         message = buildStringFromQuery(responseMessage, &length);
-            
-        send(info->socket,message,length,0);
+
+        // Send to client
+        send(snew,message,length,0);
+
+        /*
+         * Free Stuff
+         */
+        if(newMessage->message != NULL){
+            free(newMessage->message);
+        }
+        free(newMessage);
     }
-    close (info->socket);
-    sleep(1);
+
     if(message != NULL){
         free(message);
     }
-    free(newMessage->message);
-    free(newMessage);
-    free(responseMessage->message);
-    free(newMessage);
+    
+    close (snew);
+    
+    //free(responseMessage->message);
+    free(responseMessage);
 }
 
+
+// Handle SIGTERM
 void handleSigTerm(int num){
     // Does this need to be threadable?
     // how to pass in wb
@@ -209,6 +226,29 @@ int handleCreateState(const char *statefile, struct whiteboard *wb){
     fclose(fp);
     return 1;
 }
+
+// This checks to see if a client has visited before
+// either as one of the last 100 clients or since server start
+// returns 1 if new and 0 if visited
+int checkAndSet(unsigned long ip){
+    int i;
+    printf("Here");
+    for(i = 0; i < totalClients; ++i){
+        printf("%d\n", ip);
+        if(clients[i] == ip){
+            return 0;
+        }
+    }
+    if(totalClients == 100){
+        totalClients = 0;
+        clients[totalClients++] = ip;
+    } else{
+        clients[totalClients++] = ip;
+     }
+    return 1;
+}
+
+// A function that p
 int isEncrypted(char *line, size_t len){
     int i;
     for(i = 0; i < len; i++){
