@@ -24,7 +24,7 @@ static char* keyfile = NULL;
 int handleNetworkCalls();
 void exampleSendRcv();
 
-void readFromSocket(int s);
+int readFromSocket(int s);
 int getSocket(int *s);
 
 void freeQuery();
@@ -115,9 +115,7 @@ void exampleSendRcv(){
     return;
 }
 
-
-
-void readFromSocket(int s){
+int readFromSocket(int s){
     char output[1024] = {0};
     int i;
     int validString = 0;
@@ -129,6 +127,12 @@ void readFromSocket(int s){
         if(output[i] == 'c' || output[i] == 'p'){
            if(atoi(&output[i+1]) != 0){
                 validString = 1;
+           }else if(output[i] == 'e'){
+                if(output[i+1] != '0'){
+                    //Non successful update message
+                    printf("ERROR: %s\n", output);
+                    return -1;
+                }
            }
            break;
         }
@@ -142,13 +146,14 @@ void readFromSocket(int s){
             if(0 == (decrypt((unsigned char*)q->message, q->messageLength, \
                             (unsigned char *)q->message, keyfile))){
                printf("Decryption Failed\n");
-               return;
+               return -1;
             }
         }
         printf("Response:\n%s\n", buildStringFromQuery(q, &q->messageLength));
-        return;
+        return 0;
     }
     printf("Response:\n%s\n", output);
+    return 0;
 }
 int connectToServer(){
     int s;
@@ -199,7 +204,7 @@ int getSocket(int *s){
 }
 
 int handleNetworkCalls(){
-    int s;
+    int s, check;
     // Initial implementation to handle network.
     // Run in a continuous loop and check every second for input or output;
     int size = 0;
@@ -223,7 +228,10 @@ int handleNetworkCalls(){
 
         sent =  send(s, message, size, 0);
 
-        readFromSocket(s);
+        check = readFromSocket(s);
+        if(check == -1){
+            return -1;
+        }
         close (s);
         free(message);
 
@@ -236,7 +244,6 @@ int handleNetworkCalls(){
 
     return 0;
 }
-
 
 int getType(){
     char ch;
