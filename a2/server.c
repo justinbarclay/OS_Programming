@@ -1,3 +1,11 @@
+/*******************************************************************
+ * CMPUT 379 Assignment 2
+ * Due:
+ *
+ * Group: Mackenzie Bligh & Justin Barclay
+ * CCIDs: bligh & jbarclay
+ * *****************************************************************/
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -19,20 +27,15 @@ extern int h_errno;
 static int portnumber = 2222; // Default value
 struct whiteboard *Whiteboard; // Globally accessible
 static char welcomeMessage[40] = "CMPUT379 Whiteboard Server v0\n"; // Default welcome message
-static unsigned long clients[100] = {0}; // A structure to hold all clients that have connected to the server since boot.
-static int totalClients = 0;
 static FILE *log= NULL;
 
 // Custom struct to pass into a thread
-struct connection{
-    unsigned long ip;
-    int socket;
-} typedef connection;
+/* struct connection{ */
+/*     unsigned long ip; */
+/*     int socket; */
+/* } typedef connection; */
+// An idea that didn't work because getting ip was buggy
 
-/* ---------------------------------------------------------------------
-   This	is  a sample server which opens a stream socket and then awaits
-   requests coming from client processes.
-   --------------------------------------------------------------------- */
 void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQuery);
 int startServer(struct sockaddr_in master);
 int handleCreateState(const char *statefile, struct whiteboard *wb);

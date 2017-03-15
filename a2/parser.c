@@ -111,7 +111,7 @@ query* parseMessage(char *input, int inputSize){
         if(inputSize >= newMessage->messageLength + totalBytesRead + 2){
             newMessage->message = calloc(1024, sizeof(char));
             // inout + totalbytesread = \n thefore + 1 = beginning of message
-            memcpy(newMessage->message, input+totalBytesRead+1, newMessage->messageLength);s
+            memcpy(newMessage->message, input+totalBytesRead+1, newMessage->messageLength);
         } else {
             perror("Size does not match up");
         }

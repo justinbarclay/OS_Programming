@@ -1,3 +1,10 @@
+/*******************************************************************
+ * CMPUT 379 Assignment 2
+ * Due:
+ *
+ * Group: Mackenzie Bligh & Justin Barclay
+ * CCIDs: bligh & jbarclay
+ * *****************************************************************/
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -15,27 +22,37 @@
    This is a sample client program for the number server. The client and
    the server need to run on the same machine.
    --------------------------------------------------------------------- */
-
+/*
+ * Globals
+ */
+// This is an artifact back from when the client was threaded and used ncurses
+// They both had to be torn out for easier debugging
 static query * newQuery;
 static int portnumber;
 static char* hostname;
 static char* keyfile = NULL;
 
+// Custom code that does heavy liftong
 int handleNetworkCalls();
 void exampleSendRcv();
 
+// Low level server stuff put into functions from example file
 int readFromSocket(int s);
 int getSocket(int *s);
 
-void freeQuery();
+
 int connectToServer();
 
+// Small helper functions
 int getMessage();
 int getColumn();
 int getType();
 int getEncryption();
+void freeQuery();
+
+//Signal Handler
 void handleSigInt(int num);
-// This structure contains the current element that needs to be printed to screen
+
 
 int main(int argc, char* argv[]){
     /*
@@ -59,10 +76,10 @@ int main(int argc, char* argv[]){
     /*
      * Parse Command line arguments
      */
-    if(argc == 4){
-        portnumber = atoi(argv[1]);
-        hostname = argv[2];
-    }
+    /* if(argc == 4){ */
+    /*     portnumber = atoi(argv[1]); */
+    /*     hostname = argv[2]; */
+    /* } */
     if(argc == 4){
         portnumber = atoi(argv[1]);
         hostname = argv[2];
@@ -78,16 +95,15 @@ int main(int argc, char* argv[]){
         printf("Failure to specifiy parameters");
         return -1;
     }
-    // This should be split off into two segments/ screen rendering and input
-    // network send recieve
-    // The network send recieve should be a pull interface, the system pulls whenever it is ready to send new stuff
+    // Main body of code
     exampleSendRcv();
 
-
+    // Clean up nice
     freeQuery();
     exit(1);
 }
 
+// Clean up our global query object
 void freeQuery(){
     free(newQuery->message);
     free(newQuery);
@@ -122,14 +138,15 @@ void exampleSendRcv(){
     return;
 }
 
+//Here we handle recieving from server and dealing with any errors
 int readFromSocket(int s){
     char output[1024] = {0};
     int i;
     int validString = 0;
     struct query *q;
-    // Here the client wants to receive 7 bytes from the server, but the server
-    // only sends 5 bytes
+
     recv(s, output, 1024, 0);
+    // look for errors
     for(i = 0; i < 1024; i++){
         if(output[i] == 'c' || output[i] == 'p'){
            if(atoi(&output[i+1]) != 0){
@@ -144,11 +161,14 @@ int readFromSocket(int s){
            break;
         }
     }
+
     if(validString){
         //Convert back from b64
+        // Parse query into easy to deal with struct
         q = parseMessage(output, 1024);
+        // Decode
         q->message = (char *)base64_decode(q->message, q->messageLength, (size_t *)&q->messageLength);
-
+        // Decrypt
         if(q->encryption && keyfile != NULL){
             if(0 == (decrypt((unsigned char*)q->message, q->messageLength, \
                             (unsigned char *)q->message, keyfile))){
@@ -162,21 +182,26 @@ int readFromSocket(int s){
     printf("Response:\n%s\n", output);
     return 0;
 }
+
+// Our initial handshake function 
 int connectToServer(){
     int s;
     int sent;
     int success;
     success = getSocket(&s); // Get new socket
-
+    
     if(success){
+        // Send a one to ensure we're communicating
         sent =  send(s, "1\0", 2, 0);
         printf("%d\n", sent);
+        // Print server message to screen
         readFromSocket(s);
         close (s);
     }
     return success;
 }
 
+// Code stolen from lab to get a new socket
 int getSocket(int *s){
     struct	sockaddr_in	server;
 
@@ -210,6 +235,7 @@ int getSocket(int *s){
     return 1;
 }
 
+
 int handleNetworkCalls(){
     int s, check;
     // Initial implementation to handle network.
@@ -217,31 +243,37 @@ int handleNetworkCalls(){
     int size = 0;
     int sent;
     char* message;
-    /* getSocket(&s); // Get new socket */
+    int state = 0;
     //Encrypts new query
     if(newQuery->encryption){
         newQuery->messageLength = encrypt((unsigned char*)newQuery->message, \
                 newQuery->messageLength, (unsigned char*)newQuery->message, keyfile);
     }
-
+    // All queries are base64 encoded
     newQuery->message = (char *)base64_encode((const unsigned char*)newQuery->message, \
             newQuery->messageLength,(size_t *) &newQuery->messageLength);
 
+    // If we have a message
     if (newQuery->messageLength > -1){
+        // build a string
         message = buildStringFromQuery(newQuery, &size);
-        printf("%s\n", message);
-        //printf("%s", message);
+        
+
         getSocket(&s); // Get new socket
 
         sent =  send(s, message, size, 0);
 
+        // Check for errors
         check = readFromSocket(s);
         if(check == -1){
-            return -1;
+            state = -1;
         }
+
+        // Clean up
         close (s);
         free(message);
 
+        // Factory condition query struct
         newQuery->column = 0;
         newQuery->messageLength = -1;
         newQuery->type = 0;
@@ -249,9 +281,10 @@ int handleNetworkCalls(){
         bzero(newQuery->message, 1024);
     }
 
-    return 0;
+    return state;
 }
 
+// Gets user input ensuring they put in either Get or Update
 int getType(){
     char ch;
     const int goodState = 1; // Transition to state 1
@@ -270,11 +303,13 @@ int getType(){
     } else if(ch == 'q'){
         return -1;
     } else {
+        // If not one of the chars we're looking for try again
         return badState;
     }
     return goodState;
 }
 
+// Gets user input ensuring they put P or C
 int getEncryption(){
     char ch;
     const int goodState = 3; // Transition to state 1
@@ -297,17 +332,19 @@ int getEncryption(){
     } else if(ch == 'q'){
         return -1;
     } else {
+        // If they can't follow rules try again
         return badState;
     }
     return goodState;
 }
 
+// Converts user input from string into chars
 int getColumn(){
     const int goodState = 2; // Transition to state 1
     const int badState = 1;
     int nitems, num;
     printf("Please enter the row you would like to query\n");
-
+    // There is a bug here, where if no valid input is enter it enters an infinite loop
     nitems = scanf("%d", &num);
     if (nitems == EOF) {
         return badState;
@@ -322,13 +359,13 @@ int getColumn(){
     }
     return goodState;
 }
-
+// This reads in user input into the query structs message field. If the message is exit, instead of sending to server, the client closes down.
 int getMessage(){
     // Grab characters from buffer until you reach a null bit or new line
     int size = 0;
     char ch;
     ch = getchar();// Learn how to clear buffer
-    printf("Please enter your message?\n");
+    printf("Please enter your message.\n");
     while((ch = getchar())) {
         if(ch == '\n'||ch == '\0' || size > 1023){
             break;
@@ -344,6 +381,7 @@ int getMessage(){
     return 4;
 }
 
+// Clear free global query struct and exit
 void handleSigInt(int num){
     freeQuery();
     exit(1);
