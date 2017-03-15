@@ -30,3 +30,5 @@
      row was successfully updated
 8. Repeat from step 2
 
+* Note:
+    - Server requires that client sends a string less than 3 chars as a handshake. Any larger string will cause errors
