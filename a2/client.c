@@ -76,10 +76,10 @@ int main(int argc, char* argv[]){
     /*
      * Parse Command line arguments
      */
-    /* if(argc == 4){ */
-    /*     portnumber = atoi(argv[1]); */
-    /*     hostname = argv[2]; */
-    /* } */
+    if(argc == 4){
+        portnumber = atoi(argv[1]);
+        hostname = argv[2];
+    }
     if(argc == 4){
         portnumber = atoi(argv[1]);
         hostname = argv[2];
