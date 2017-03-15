@@ -22,9 +22,3 @@ client: client.c parser.o encryption.o
 
 clean:
 	rm *.o wbc379 wbs379
-
-tests:$(SUBDIRS)
-	export
-	cd tests && make all
-
-.PHONY: tests $(SUBDIRS)
