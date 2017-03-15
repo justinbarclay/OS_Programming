@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <signal.h>
 #include <arpa/inet.h>
 #include "parser.h"
 #include "encryption.h"
@@ -18,7 +19,7 @@
 static query * newQuery;
 static int portnumber;
 static char* hostname;
-static char* keyfile;
+static char* keyfile = NULL;
 
 int handleNetworkCalls();
 void exampleSendRcv();
@@ -33,12 +34,25 @@ int getMessage();
 int getColumn();
 int getType();
 int getEncryption();
+void handleSigInt(int num);
 // This structure contains the current element that needs to be printed to screen
 
 int main(int argc, char* argv[]){
+<<<<<<< HEAD
 
     // Set up the charBuffers
 
+=======
+    /*
+     * Signal Handler
+     */
+    struct sigaction act;
+    act.sa_handler = handleSigInt;
+    sigemptyset(&act.sa_mask);
+    sigaction(SIGINT, &act, NULL);
+    
+    // Setup global query object
+>>>>>>> master
     newQuery = malloc(sizeof(query));
     newQuery->message = calloc(1024, sizeof(char));
 
@@ -54,20 +68,32 @@ int main(int argc, char* argv[]){
     if(argc == 4){
         portnumber = atoi(argv[1]);
         hostname = argv[2];
+    }
+    if(argc == 4){
+        portnumber = atoi(argv[1]);
+        hostname = argv[2];
         keyfile = argv[3];
     }  else {
         printf("Failure to specifiy parameters");
         return -1;
     }
+<<<<<<< HEAD
 
 // This should be split off into two segments/ screen rendering and input
 // network send recieve
 // The network send recieve should be a pull interface, the system pulls whenever it is ready to send new stuff
 exampleSendRcv();
+=======
+    
+    // This should be split off into two segments/ screen rendering and input
+    // network send recieve
+    // The network send recieve should be a pull interface, the system pulls whenever it is ready to send new stuff
+    exampleSendRcv();
+>>>>>>> master
 
 
-freeQuery();
-exit(1);
+    freeQuery();
+    exit(1);
 }
 
 void freeQuery(){
@@ -75,11 +101,13 @@ void freeQuery(){
     free(newQuery);
 }
 
+/*
+ * This is the function that handle parsing the message, and when the message is ready
+ * to be sent, state 4, is calls handleNetworkCalls
+ * Any state can repeat itself if it gets invalid input
+ */
 void exampleSendRcv(){
     int state = 0;
-    // Send all 11 bytes of character array c to the server
-    // It is important to note that even the null terminating (zero valued) bytes
-    // are sent to the server.
     if(!connectToServer()){
         return;
     }
@@ -92,7 +120,6 @@ void exampleSendRcv(){
         }else if(state == 2){
             state = getEncryption();
         } else if(state == 3){
-            // Get message
             state = getMessage();
         } else if(state == 4){
             state = handleNetworkCalls();
@@ -113,6 +140,7 @@ void readFromSocket(int s){
     // Here the client wants to receive 7 bytes from the server, but the server
     // only sends 5 bytes
     recv(s, output, 1024, 0);
+<<<<<<< HEAD
     for(i = 0; i < 1024; i++){
         if(output[i] == 'c' || output[i] == 'p'){
            if(atoi(&output[i+1]) != 0){
@@ -149,8 +177,8 @@ int connectToServer(){
     success = getSocket(&s); // Get new socket
 
     if(success){
-        sent =  send(s, "1", 1, 0);
-
+        sent =  send(s, "1\0", 2, 0);
+        printf("%d\n", sent);
         readFromSocket(s);
         close (s);
     }
@@ -316,4 +344,9 @@ int getMessage(){
     newQuery->message[size+1] = '\0';
     newQuery->messageLength = size;
     return 4;
+}
+
+void handleSigInt(int num){
+    freeQuery();
+    exit(1);
 }

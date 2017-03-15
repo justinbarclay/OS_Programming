@@ -100,13 +100,15 @@ void addMessageToWhiteboard(char* message, int encryption, int size, whiteboard*
 int updateWhiteboardNode(whiteboard* head, int depth,char* message, int encryption, int size){
     lockWhiteboard();
     whiteboard* currentNode = findNode(head, depth);
+    char* copiedMessage = calloc(1024, sizeof(char));
     int returnVal = 0;
     if(currentNode == NULL){
         perror("Could not find node");
         returnVal = -1;
     }else{
+        memcpy(copiedMessage, message, 1024);
         free(currentNode->message);
-        currentNode->message = message;
+        currentNode->message = copiedMessage;
         currentNode->encryption = encryption;
         currentNode->size = size;
         returnVal =  0;
@@ -124,11 +126,11 @@ char* readNode(whiteboard* head, int depth, int * encryption, int * size){
         perror("Could not find node");
         returnVal = -1;
     }else {
-        message = calloc(currentNode->size, sizeof(char));
-        memcpy(message, currentNode->message, currentNode->size);
+        *encryption = currentNode->encryption;
+        message = calloc(1024, sizeof(char));
+        memcpy(message, currentNode->message, 1024);
         *size =  currentNode->size;
     }
-
     unlockWhiteboard();
     return message;
 }

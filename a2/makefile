@@ -1,5 +1,7 @@
 SUBDIRS:=$b(wildcard */.)
 p=hihello
+all: server client
+
 parser.o: parser.h parser.c
 	gcc -c parser.c parser.h
 
@@ -13,13 +15,10 @@ whiteboard.o: whiteboard.h whiteboard.c
 	gcc -c whiteboard.c whiteboard.h -g
 
 server: server.c parser.o whiteboard.o
-	gcc -o server server.c parser.o whiteboard.o -g
+	gcc -o wbs379 server.c parser.o whiteboard.o
 
-client: client.c parser.o encryption.o
-	gcc -o client client.c parser.o encryption.o -lcrypto -g
-
-clientMac: client.c parser.o encryptionmac.o
-	gcc -o client client.c parser.o encryption.o -lcrypto -L/usr/local/opt/openssl/lib -I/usr/local/opt/openssl/include
+client: client.c parser.o
+	gcc -o wbc379 client.c parser.o
 
 tests:$(SUBDIRS)
 	export
