@@ -193,7 +193,6 @@ int connectToServer(){
     if(success){
         // Send a one to ensure we're communicating
         sent =  send(s, "1\0", 2, 0);
-        printf("%d\n", sent);
         // Print server message to screen
         readFromSocket(s);
         close (s);
