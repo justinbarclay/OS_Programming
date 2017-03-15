@@ -15,10 +15,10 @@ whiteboard.o: whiteboard.h whiteboard.c
 	gcc -c whiteboard.c whiteboard.h -g
 
 server: server.c parser.o whiteboard.o
-	gcc -o wbs379 server.c parser.o whiteboard.o
+	gcc -o wbs379 server.c parser.o whiteboard.o -lpthread
 
-client: client.c parser.o
-	gcc -o wbc379 client.c parser.o
+client: client.c parser.o encryption.o
+	gcc -o wbc379 client.c parser.o encryption.o -lcrypto
 
 tests:$(SUBDIRS)
 	export

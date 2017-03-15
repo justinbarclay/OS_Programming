@@ -38,11 +38,6 @@ void handleSigInt(int num);
 // This structure contains the current element that needs to be printed to screen
 
 int main(int argc, char* argv[]){
-<<<<<<< HEAD
-
-    // Set up the charBuffers
-
-=======
     /*
      * Signal Handler
      */
@@ -50,9 +45,8 @@ int main(int argc, char* argv[]){
     act.sa_handler = handleSigInt;
     sigemptyset(&act.sa_mask);
     sigaction(SIGINT, &act, NULL);
-    
+
     // Setup global query object
->>>>>>> master
     newQuery = malloc(sizeof(query));
     newQuery->message = calloc(1024, sizeof(char));
 
@@ -77,19 +71,10 @@ int main(int argc, char* argv[]){
         printf("Failure to specifiy parameters");
         return -1;
     }
-<<<<<<< HEAD
-
-// This should be split off into two segments/ screen rendering and input
-// network send recieve
-// The network send recieve should be a pull interface, the system pulls whenever it is ready to send new stuff
-exampleSendRcv();
-=======
-    
     // This should be split off into two segments/ screen rendering and input
     // network send recieve
     // The network send recieve should be a pull interface, the system pulls whenever it is ready to send new stuff
     exampleSendRcv();
->>>>>>> master
 
 
     freeQuery();
@@ -136,11 +121,10 @@ void readFromSocket(int s){
     char output[1024] = {0};
     int i;
     int validString = 0;
-    struct query *q; 
+    struct query *q;
     // Here the client wants to receive 7 bytes from the server, but the server
     // only sends 5 bytes
     recv(s, output, 1024, 0);
-<<<<<<< HEAD
     for(i = 0; i < 1024; i++){
         if(output[i] == 'c' || output[i] == 'p'){
            if(atoi(&output[i+1]) != 0){
@@ -161,11 +145,11 @@ void readFromSocket(int s){
         if(q->encryption){
             if(0 == (decrypt((unsigned char*)q->message, q->messageLength, \
                             (unsigned char *)q->message, keyfile))){
-               printf("Decryption Failed\n"); 
+               printf("Decryption Failed\n");
                return;
             }
         }
-        printf("Responsche:\n%s\n", buildStringFromQuery(q, &q->messageLength)); 
+        printf("Responsche:\n%s\n", buildStringFromQuery(q, &q->messageLength));
         return;
     }
     printf("Response:\n%s\n", output);

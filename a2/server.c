@@ -193,7 +193,7 @@ void respondToMessage(void *socket){
     query* newMessage;
     query* responseMessage = malloc(sizeof(query));
     char* message = calloc(1024, sizeof(char));
-    int length; 
+    int length;
     connection * info = (connection *) socket;
     int snew = info->socket;
     // Zero out all of the bytes in message
@@ -351,7 +351,7 @@ void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQu
         int i=0;
         for(i=0; i < 15; ++i){
             responseQuery->message[i] = message[i];
-        }   
+        }
     } else if(newQuery->type == 0){
         // Read node
         responseQuery->message = readNode(Whiteboard, newQuery->column, &responseQuery->encryption, &responseQuery->messageLength);
