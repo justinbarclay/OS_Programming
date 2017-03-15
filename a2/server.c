@@ -178,12 +178,12 @@ int main(int argc, char * argv[]){
         connection* info = calloc(1, sizeof(connection));
         /* info->ip = from.sin_addr.s_addr; */
         /* // This might be a trouble spot tossing out tons of mallocs */
-        /* info->socket = snew+0; */
+        info->socket = snew+0;
         
         pthread_create(&whiteboard_id, NULL, (void *)respondToMessage, info);
     }
     if(statefile != NULL){
-        free(statefile);
+        free((void *)statefile);
     }
 }
 
@@ -204,7 +204,8 @@ void respondToMessage(void *socket){
 
     // Make sure we haven't seen this IP before or the message isn't a handshake message
     // if(checkAndSet(info->ip) || strlen(message) == 1){
-    if(strlen(message) == 1){
+    fflush(stdout);
+    if(strlen(message) < 3 || message[0] == '1'){
         send(snew, welcomeMessage, 40, 0);
     } else {
         newMessage = parseMessage(message, 1024);
@@ -224,7 +225,7 @@ void respondToMessage(void *socket){
     }
 
     if(message != NULL){
-        free(message);
+       // free(message);
     }
     
     close (snew);

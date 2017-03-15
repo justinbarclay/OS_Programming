@@ -131,8 +131,8 @@ int connectToServer(){
     success = getSocket(&s); // Get new socket
     
     if(success){
-        sent =  send(s, "1", 1, 0);
-
+        sent =  send(s, "1\0", 2, 0);
+        printf("%d\n", sent);
         readFromSocket(s);
         close (s);
     }
