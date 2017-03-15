@@ -44,6 +44,7 @@ int checkAndSet(unsigned long ip);
 void handleSigTerm(int num);
 
 int main(int argc, char * argv[]){
+    
     int boardSize = 40; //default value
     int z;
     const char *statefile;
@@ -105,7 +106,7 @@ int main(int argc, char * argv[]){
     }
 
     /*
-     * Build white board message
+     * Build whiteboard welcome message
      */
     char numToString[9]; // Buffer to conver number to string
     int size; // size of new string
@@ -167,10 +168,12 @@ int main(int argc, char * argv[]){
     /*
      * Daemon Setup done
      */
+    //Grab a socket file descripter
     sock = startServer(master);
     while(1){
         listen (sock, 128);
 
+        // Ensure fromLength set to 0 or sometimes bugs happen
         fromlength = 0;
         snew = accept (sock, (struct sockaddr*) & from, (socklen_t *) &fromlength);
         if (snew < 0) {
@@ -178,12 +181,10 @@ int main(int argc, char * argv[]){
             fflush(log);
             continue;
         }
-        connection* info = calloc(1, sizeof(connection));
-        /* info->ip = from.sin_addr.s_addr; */
-        /* // This might be a trouble spot tossing out tons of mallocs */
-        info->socket = snew+0;
+        // connection* info = calloc(1, sizeof(connection));
+        // info->socket = snew+0;
 
-        pthread_create(&whiteboard_id, NULL, (void *)respondToMessage, info);
+        pthread_create(&whiteboard_id, NULL, (void *)respondToMessage, &snew);
     }
     if(statefile != NULL){
         free((void *)statefile);
@@ -197,8 +198,8 @@ void respondToMessage(void *socket){
     query* responseMessage = malloc(sizeof(query));
     char* message = calloc(1024, sizeof(char));
     int length;
-    connection * info = (connection *) socket;
-    int snew = info->socket;
+//    connection * info = (connection *) socket;
+    int snew = *(int *)socket;
     // Zero out all of the bytes in message
     bzero(message,1024);
 
@@ -206,13 +207,17 @@ void respondToMessage(void *socket){
     recv(snew,message,1024,0);
 
     // Make sure we haven't seen this IP before or the message isn't a handshake message
-    // if(checkAndSet(info->ip) || strlen(message) == 1){
-    fflush(stdout);
+    // If strlen is <3 then another client may be trying to connect for the first time
+    // if message[0] == 1 that is our client connecting
     if(strlen(message) < 3 || message[0] == '1'){
         send(snew, welcomeMessage, 40, 0);
     } else {
+        // Grab message from client
         newMessage = parseMessage(message, 1024);
+
+        // Pass it into our whiteboard handlers
         handleMessage(newMessage, Whiteboard, responseMessage);  // Handle the message and build the approrpiate response
+        // Build response message
         message = buildStringFromQuery(responseMessage, &length);
 
         // Send to client
@@ -227,24 +232,23 @@ void respondToMessage(void *socket){
         free(newMessage);
     }
 
+    /*
+     * General free stuff
+     */
     if(message != NULL){
         // free(message);
     }
-
     close (snew);
-
     if(responseMessage->message!=NULL){
         free(responseMessage->message);
     }
     free(responseMessage);
-    free(info);
+    //free(info);
 }
 
 
 // Handle SIGTERM
 void handleSigTerm(int num){
-    printf("Handling signal\n");
-    // Does this need to be threadable?
     // how to pass in wb
     FILE *fp = fopen("whiteboard.all", "w+");
 
@@ -253,16 +257,21 @@ void handleSigTerm(int num){
     int boardsize = getWhiteboardSize();
     query * output = malloc(sizeof(query));
     printf("Handling signal\n");
+    // For each item in the board, read it as a query
+    // print it as a string and send it to file
     for(i = 1; i <= boardsize; i++){
         output->message = readNode(Whiteboard, i, &output->encryption, &output->messageLength);
         message = buildStringFromQuery(output, &size);
         fprintf(fp,"%s", message);
     }
+    /*
+     * Cleanup
+     */
+    
     fclose(fp);
     fclose(log);
     deleteWhiteboard(Whiteboard);
     exit(1);
-
 }
 
 int handleCreateState(const char *statefile, struct whiteboard *wb){
@@ -284,8 +293,11 @@ int handleCreateState(const char *statefile, struct whiteboard *wb){
         if( (char) c == '\n') newlineCounter++;
         if(newlineCounter == 2 ){
             message[i+1] = '\0';
+            // After two \n we know we have our query
             readQueries = parseMessage(message, 1024);
+            // Load it into whiteboard
             addMessageToWhiteboard(readQueries->message, readQueries->encryption, readQueries->messageLength, wb);
+            // Reset for next loop
             messageSize =0;
             memset(&message[0],0, sizeof(message));
             i =0;
@@ -293,31 +305,15 @@ int handleCreateState(const char *statefile, struct whiteboard *wb){
         }
     }
 
+    /*
+     * Clean up, Aisle 5
+     */
     fclose(fp);
     free(readQueries->message);
     free(readQueries);
     return 1;
 }
-
-// This checks to see if a client has visited before
-// either as one of the last 100 clients or since server start
-// returns 1 if new and 0 if visited
-int checkAndSet(unsigned long ip){
-    int i;
-    for(i = 0; i < totalClients; ++i){;
-        if(clients[i] == ip){
-            return 0;
-        }
-    }
-    if(totalClients == 100){
-        totalClients = 0;
-        clients[totalClients++] = ip;
-    } else{
-        clients[totalClients++] = ip;
-    }
-    return 1;
-}
-
+// Code stolen from lab
 int startServer(struct sockaddr_in master){
     int sock;
     sock = socket (AF_INET, SOCK_STREAM, 0);
@@ -343,6 +339,7 @@ int startServer(struct sockaddr_in master){
  * This function handles all interactions with the whiteboard and returns a responsequery for parsing to the thread
  */
 void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQuery){
+    // If column is outside of boardsize we have an error
     if(newQuery->column < 1 || newQuery->column > getWhiteboardSize()){
         // If message is outside of our boundaries report error
         char message[]="No such entry!\n";
@@ -352,21 +349,24 @@ void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQu
         responseQuery->messageLength = 14;
         responseQuery->message = calloc(15, sizeof(char));
 
+        // Copy error message
         int i=0;
         for(i=0; i < 15; ++i){
             responseQuery->message[i] = message[i];
         }
+        // If it's a get query
     } else if(newQuery->type == 0){
         // Read node
         responseQuery->message = readNode(Whiteboard, newQuery->column, &responseQuery->encryption, &responseQuery->messageLength);
         responseQuery->column = newQuery->column;
         responseQuery->type = 1;
 
+        // If it's an update query
     } else if(newQuery->type == 2){
         // Update node
         updateWhiteboardNode(Whiteboard, newQuery->column, newQuery->message, newQuery->encryption, newQuery->messageLength);
 
-        // Report back with an error with a 0 length message
+        // Report back with an error with a 0 length message aka success
         responseQuery->type = 1;
         responseQuery->column = newQuery->column;
         responseQuery->encryption = -1;
@@ -374,4 +374,3 @@ void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQu
         responseQuery->message = NULL;
     }
 }
-

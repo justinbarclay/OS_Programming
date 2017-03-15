@@ -206,5 +206,3 @@ char* buildStringFromQuery(query * newQuery, int* size){
     *size = index;
     return message;
 }
-
-
