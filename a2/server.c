@@ -339,6 +339,21 @@ int startServer(struct sockaddr_in master){
  * This function handles all interactions with the whiteboard and returns a responsequery for parsing to the thread
  */
 void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQuery){
+
+    
+    if(newQuery->type == -1 || newQuery->column == -1 || newQuery->messageLength == -1){
+        char errorMessage[] = "Error parsing message. Please ensure it is properly formatted and try again.\n";
+        int errorSize = 77;
+        // Build error message
+        responseQuery->type = 1;
+        responseQuery->column = 0;
+        responseQuery->encryption = -1;
+        responseQuery->messageLength = errorSize;
+        
+        responseQuery->message = calloc(1024, sizeof(char));
+        // inout + totalbytesread = \n thefore + 1 = beginning of message
+        memcpy(responseQuery->message, errorMessage, responseQuery->messageLength);
+    }
     // If column is outside of boardsize we have an error
     if(newQuery->column < 1 || newQuery->column > getWhiteboardSize()){
         // If message is outside of our boundaries report error

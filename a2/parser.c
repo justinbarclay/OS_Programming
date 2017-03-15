@@ -82,7 +82,8 @@ query* parseMessage(char *input, int inputSize){
     query* newMessage = malloc(sizeof(query));
     // Non destructively go through the first 20 chars of input
     // Assumption that type, row, enc, and size will be less than 20 chars long
-    char* copiedInput = malloc(sizeof(char) * 20); // Copying the first 20 chars from our message the important 
+    char* copiedInput = malloc(sizeof(char) * 20); // Copying the first 20 chars from our message the important
+    
     newMessage->type = getMessageType(input[0]); // We know query type
     totalBytesRead++;
     
@@ -93,10 +94,19 @@ query* parseMessage(char *input, int inputSize){
     newMessage->column = getNumberFromMessage(copiedInput, &bytesRead);
     // Get new index fork inputs
     totalBytesRead += bytesRead;
-
+    
     // Set encryption to error as default
-    newMessage->encryption = -1; //Default value 
-    if(newMessage->type > 0){ // If not a query
+    newMessage->encryption = -1; //Default value
+    if(newMessage->type == -1 || newMessage->column == -1){
+        // if type of column are parsed improperly
+        newMessage->type = -1;
+        newMessage->column = -1;
+        newMessage->encryption = -1;
+        newMessage->messageLength = -1;
+
+        newMessage->message = NULL;
+            // inout + totalbytesread = \n thefore + 1 = beginning of message
+    } else if(newMessage->type > 0){ // If not a query
         //Get encryption
         newMessage->encryption = getEncryptionType(input[totalBytesRead]);
         totalBytesRead++;
@@ -104,16 +114,21 @@ query* parseMessage(char *input, int inputSize){
         //Parse through for second set of numbers
         memcpy(copiedInput, input+totalBytesRead, 20);
         newMessage->messageLength = getNumberFromMessage(copiedInput, &bytesRead);
+        
         //Get new index again
         totalBytesRead += bytesRead;
-
         // We have constant plus two here because of the encasing '\n'
-        if(inputSize >= newMessage->messageLength + totalBytesRead + 2){
+        if(inputSize >= (newMessage->messageLength + totalBytesRead + 2) && newMessage->column != -1){
             newMessage->message = calloc(1024, sizeof(char));
             // inout + totalbytesread = \n thefore + 1 = beginning of message
             memcpy(newMessage->message, input+totalBytesRead+1, newMessage->messageLength);
-        } else {
-            perror("Size does not match up");
+        } else{
+            // If column can't be parsed
+            newMessage->type = -1;
+            newMessage->column = -1;
+            newMessage->encryption = -1;
+            newMessage->messageLength = -1;
+            newMessage->message = NULL;
         }
         // Free our copied input
         free(copiedInput);
@@ -139,8 +154,8 @@ int getNumberFromMessage(char* input,int* bytesRead){
         i++;
        
         if(i > 20){
-            perror("Parsing number failed, larger than 20 bytes");
-            exit(-1);
+            // perror("Parsing number failed, larger than 20 bytes");
+            return -1;
         }
     }
     
