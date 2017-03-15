@@ -124,6 +124,7 @@ char* readNode(whiteboard* head, int depth, int * encryption, int * size){
         perror("Could not find node");
         returnVal = -1;
     }else {
+        *encryption = currentNode->encryption;
         message = calloc(currentNode->size, sizeof(char));
         memcpy(message, currentNode->message, currentNode->size);
         *size =  currentNode->size;
