@@ -21,6 +21,7 @@ struct whiteboard *Whiteboard; // Globally accessible
 static char welcomeMessage[40] = "CMPUT379 Whiteboard Server v0\n"; // Default welcome message
 static unsigned long clients[100] = {0}; // A structure to hold all clients that have connected to the server since boot.
 static int totalClients = 0;
+static FILE *log= NULL;
 
 // Custom struct to pass into a thread
 struct connection{
@@ -33,10 +34,8 @@ struct connection{
    requests coming from client processes.
    --------------------------------------------------------------------- */
 void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQuery);
-void getSocket(int *s);
 int startServer(struct sockaddr_in master);
 int handleCreateState(const char *statefile, struct whiteboard *wb);
-int isEncrypted(char *line, size_t len);
 void respondToMessage(void *connection_info);
 int checkAndSet(unsigned long ip);
 void handleSigTerm(int num);
@@ -59,7 +58,6 @@ int main(int argc, char * argv[]){
     
     pid_t pid = 0;
     pid_t sid = 0;
-    FILE *fp= NULL;
     /*
      *  Signal handler setup
      */
@@ -87,7 +85,7 @@ int main(int argc, char * argv[]){
                 if(!z){
                     printf("Failed reading statefile\n");
                 }
-                printf("Loaded state file");
+                printf("Loaded state file\n");
                 fflush(stdout);
                 break;
             }
@@ -118,34 +116,54 @@ int main(int argc, char * argv[]){
     }
 
 
-    
     /*
-     * Startup Daemon
+     *Startup Daemon
      */
+    pid = fork();
+
+    if (pid < 0)
+        {
+            printf("fork failed!\n");
+            exit(1);
+        }
+
+    if (pid > 0)
+        {
+            // in the parent
+            printf("pid of child process %d \n", pid);
+            exit(0);
+        }
+
+    umask(0);
+
+    // open a log file
+    log = fopen ("logfile.log", "w+");
+    if(!log){
+    	printf("cannot open log file");
+    }
     
-    /* pid = fork(); */
+    // create new process group -- don't want to look like an orphan
+    sid = setsid();
+    if(sid < 0)
+    {
+    	fprintf(log, "cannot create new process group");
+        exit(1);
+    }
 
-    /* if (pid < 0) */
-    /*     { */
-    /*         printf("fork failed!\n"); */
-    /*         exit(1); */
-    /*     } */
+    /* Change the current working directory */
+    if ((chdir("/")) < 0) {
+      printf("Could not change working directory to /\n");
+      exit(1);
+    }
 
-    /* if (pid > 0) */
-    /*     { */
-    /*         // in the parent */
-    /*         printf("pid of child process %d \n", pid); */
-    /*         exit(0); */
-    /*     } */
+        // close standard fds
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
 
-    /* umask(0); */
-
-    /* // open a log file */
-    /* fp = fopen ("logfile.log", "w+"); */
-    /* if(!fp){ */
-    /* 	printf("cannot open log file"); */
-    /* } */
-    
+    /*
+     * Daemon Setup done
+     */
     sock = startServer(master);
     while(1){
         listen (sock, 128);
@@ -153,17 +171,19 @@ int main(int argc, char * argv[]){
         fromlength = 0;
         snew = accept (sock, (struct sockaddr*) & from, (socklen_t *) &fromlength);
         if (snew < 0) {
-            perror ("Server: accept failed");
+            fprintf(log, "%s ","Server: accept failed\n");
+            fflush(log);
             continue;
         }
         connection* info = calloc(1, sizeof(connection));
-        info->ip = from.sin_addr.s_addr;
-        info->socket = snew+0;
-        printf("%d\n", snew);
-        pthread_create(&whiteboard_id, NULL, &respondToMessage, info);
+        /* info->ip = from.sin_addr.s_addr; */
+        /* // This might be a trouble spot tossing out tons of mallocs */
+        /* info->socket = snew+0; */
+        
+        pthread_create(&whiteboard_id, NULL, (void *)respondToMessage, info);
     }
     if(statefile != NULL){
-        free((void *)statefile);
+        free(statefile);
     }
 }
 
@@ -181,13 +201,13 @@ void respondToMessage(void *socket){
 
     // Now we receive from the client, we specify that we would like, it can be up to 1024 bytes
     recv(snew,message,1024,0);
-    //Send the first five bytes of character array c back to the client
-    //The client, however, wants to receive 7 bytes.
-    
-    if(checkAndSet(info->ip) || strcmp(message, "") == 0){
+
+    // Make sure we haven't seen this IP before or the message isn't a handshake message
+    // if(checkAndSet(info->ip) || strlen(message) == 1){
+    if(strlen(message) == 1){
         send(snew, welcomeMessage, 40, 0);
     } else {
-        newMessage = parseMessage(message, 1024); 
+        newMessage = parseMessage(message, 1024);
         handleMessage(newMessage, Whiteboard, responseMessage);  // Handle the message and build the approrpiate response
         message = buildStringFromQuery(responseMessage, &length);
 
@@ -213,6 +233,7 @@ void respondToMessage(void *socket){
         free(responseMessage->message);
     }
     free(responseMessage);
+    free(info);
 }
 
 
@@ -222,16 +243,21 @@ void handleSigTerm(int num){
     // how to pass in wb
     FILE *fp = fopen("whiteboard.all", "w+");
 
-    char* message = malloc(sizeof(char));
-
+    char* message;
+    int size;
     int boardsize = getWhiteboardSize();
-    
+    query * output = malloc(sizeof(query));
+    printf("Handling signal\n");
     for(int i = 1; i <= boardsize; i++){
-        message = readNode(Whiteboard, i, NULL, NULL);
+        output->message = readNode(Whiteboard, i, &output->encryption, &output->messageLength);
+        message = buildStringFromQuery(output, &size);
         fprintf(fp,"%s", message);
     }
-    free(message);
     fclose(fp);
+    fclose(log);
+    deleteWhiteboard(Whiteboard);
+    exit(1);
+   
 }
 
 int handleCreateState(const char *statefile, struct whiteboard *wb){
@@ -274,9 +300,7 @@ int handleCreateState(const char *statefile, struct whiteboard *wb){
 // returns 1 if new and 0 if visited
 int checkAndSet(unsigned long ip){
     int i;
-    printf("Here");
-    for(i = 0; i < totalClients; ++i){
-        printf("%d\n", ip);
+    for(i = 0; i < totalClients; ++i){;
         if(clients[i] == ip){
             return 0;
         }
@@ -290,61 +314,12 @@ int checkAndSet(unsigned long ip){
     return 1;
 }
 
-// A function that p
-int isEncrypted(char *line, size_t len){
-    int i;
-    for(i = 0; i < len; i++){
-        if(isalpha(line[i])){
-            if(line[i] == 'c'){
-                return 1;
-            }else if (line[i] == 'p'){
-                return 0;
-            }else{
-                printf("Non standard query encountered in statefile\n");
-                exit(-1);
-            }
-            break;
-        }
-    }
-    return 0;
-}
-
-void getSocket(int *s){
-    struct	sockaddr_in	server;
-
-    struct	hostent		*host;
-
-    host = gethostbyname ("localhost");
-
-    if (host == NULL) {
-        perror ("Client: cannot get host description");
-        exit (1);
-    }
-
-
-    *s = socket(AF_INET, SOCK_STREAM, 0);
-
-    if (*s < 0) {
-        perror ("Client: cannot open socket");
-        exit (1);
-    }
-
-    bzero (&server, sizeof (server));
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = inet_addr("127.0.0.1");
-    server.sin_port = htons (portnumber);
-
-    if (connect (*s, (struct sockaddr*) & server, sizeof (server))) {
-        perror("Client: cannot connect to server");
-        exit (1);
-    }
-}
-
 int startServer(struct sockaddr_in master){
     int sock;
     sock = socket (AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
-        perror ("Server: cannot open master socket");
+        fprintf(log, "%s ","Server: cannot open master socket\n");
+        fflush(log);
         exit (1);
     }
 
@@ -353,15 +328,19 @@ int startServer(struct sockaddr_in master){
     master.sin_port = htons (portnumber);
 
     if (bind (sock, (struct sockaddr*) &master, sizeof (master))) {
-        perror ("Server: cannot bind master socket");
+        fprintf(log, "%s ", "Server: cannot bind master socket");
+        fflush(log);
         exit (1);
     }
     return sock;
 }
 
-
+/*
+ * This function handles all interactions with the whiteboard and returns a responsequery for parsing to the thread
+ */
 void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQuery){
     if(newQuery->column < 1 || newQuery->column > getWhiteboardSize()){
+        // If message is outside of our boundaries report error
         char message[]="No such entry!\n";
         responseQuery->type = 1;
         responseQuery->column = newQuery->column;
@@ -374,14 +353,16 @@ void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQu
             responseQuery->message[i] = message[i];
         }   
     } else if(newQuery->type == 0){
-        
+        // Read node
         responseQuery->message = readNode(Whiteboard, newQuery->column, &responseQuery->encryption, &responseQuery->messageLength);
         responseQuery->column = newQuery->column;
         responseQuery->type = 1;
         
     } else if(newQuery->type == 2){
-
+        // Update node
         updateWhiteboardNode(Whiteboard, newQuery->column, newQuery->message, newQuery->encryption, newQuery->messageLength);
+
+        // Report back with an error with a 0 length message
         responseQuery->type = 1;
         responseQuery->column = newQuery->column;
         responseQuery->encryption = -1;
