@@ -51,11 +51,11 @@ int main(int argc, char * argv[]){
     int sock,snew, fromlength;
     struct	sockaddr_in	master, from;
     pthread_t whiteboard_id;
-    
+
     /*
      * Daemon Variables
      */
-    
+
     pid_t pid = 0;
     pid_t sid = 0;
     /*
@@ -65,7 +65,7 @@ int main(int argc, char * argv[]){
     act.sa_handler = handleSigTerm;
     sigemptyset(&act.sa_mask);
     sigaction(SIGTERM, &act, NULL);
-    
+
 
     /*
      * Parse parameters passed into program
@@ -81,7 +81,7 @@ int main(int argc, char * argv[]){
                 strcpy((char *)statefile, argv[z+1]);
                 Whiteboard  = newWhiteboard(0);
                 z  = handleCreateState(statefile, Whiteboard);
-                
+
                 if(!z){
                     printf("Failed reading statefile\n");
                 }
@@ -122,41 +122,41 @@ int main(int argc, char * argv[]){
     pid = fork();
 
     if (pid < 0)
-        {
-            printf("fork failed!\n");
-            exit(1);
-        }
+    {
+        printf("fork failed!\n");
+        exit(1);
+    }
 
     if (pid > 0)
-        {
-            // in the parent
-            printf("pid of child process %d \n", pid);
-            exit(0);
-        }
+    {
+        // in the parent
+        printf("pid of child process %d \n", pid);
+        exit(0);
+    }
 
     umask(0);
 
     // open a log file
     log = fopen ("logfile.log", "w+");
     if(!log){
-    	printf("cannot open log file");
+        printf("cannot open log file");
     }
-    
+
     // create new process group -- don't want to look like an orphan
     sid = setsid();
     if(sid < 0)
     {
-    	fprintf(log, "cannot create new process group");
+        fprintf(log, "cannot create new process group");
         exit(1);
     }
 
     /* Change the current working directory */
     if ((chdir("/")) < 0) {
-      printf("Could not change working directory to /\n");
-      exit(1);
+        printf("Could not change working directory to /\n");
+        exit(1);
     }
 
-        // close standard fds
+    // close standard fds
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
@@ -179,7 +179,7 @@ int main(int argc, char * argv[]){
         /* info->ip = from.sin_addr.s_addr; */
         /* // This might be a trouble spot tossing out tons of mallocs */
         info->socket = snew+0;
-        
+
         pthread_create(&whiteboard_id, NULL, (void *)respondToMessage, info);
     }
     if(statefile != NULL){
@@ -193,7 +193,7 @@ void respondToMessage(void *socket){
     query* newMessage;
     query* responseMessage = malloc(sizeof(query));
     char* message = calloc(1024, sizeof(char));
-    int length; 
+    int length;
     connection * info = (connection *) socket;
     int snew = info->socket;
     // Zero out all of the bytes in message
@@ -225,11 +225,11 @@ void respondToMessage(void *socket){
     }
 
     if(message != NULL){
-       // free(message);
+        // free(message);
     }
-    
+
     close (snew);
-    
+
     if(responseMessage->message!=NULL){
         free(responseMessage->message);
     }
@@ -240,6 +240,7 @@ void respondToMessage(void *socket){
 
 // Handle SIGTERM
 void handleSigTerm(int num){
+    printf("Handling signal\n");
     // Does this need to be threadable?
     // how to pass in wb
     FILE *fp = fopen("whiteboard.all", "w+");
@@ -258,7 +259,7 @@ void handleSigTerm(int num){
     fclose(log);
     deleteWhiteboard(Whiteboard);
     exit(1);
-   
+
 }
 
 int handleCreateState(const char *statefile, struct whiteboard *wb){
@@ -282,7 +283,6 @@ int handleCreateState(const char *statefile, struct whiteboard *wb){
             message[i+1] = '\0';
             readQueries = parseMessage(message, 1024);
             addMessageToWhiteboard(readQueries->message, readQueries->encryption, readQueries->messageLength, wb);
-    
             messageSize =0;
             memset(&message[0],0, sizeof(message));
             i =0;
@@ -352,13 +352,13 @@ void handleMessage(query * newQuery, whiteboard * Whiteboard, query * responseQu
         int i=0;
         for(i=0; i < 15; ++i){
             responseQuery->message[i] = message[i];
-        }   
+        }
     } else if(newQuery->type == 0){
         // Read node
         responseQuery->message = readNode(Whiteboard, newQuery->column, &responseQuery->encryption, &responseQuery->messageLength);
         responseQuery->column = newQuery->column;
         responseQuery->type = 1;
-        
+
     } else if(newQuery->type == 2){
         // Update node
         updateWhiteboardNode(Whiteboard, newQuery->column, newQuery->message, newQuery->encryption, newQuery->messageLength);

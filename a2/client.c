@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <arpa/inet.h>
 #include "parser.h"
+#include "encryption.h"
 
 /* ---------------------------------------------------------------------
    This is a sample client program for the number server. The client and
@@ -23,7 +24,7 @@ static char* keyfile = NULL;
 int handleNetworkCalls();
 void exampleSendRcv();
 
-void readFromSocket(int s);
+int readFromSocket(int s);
 int getSocket(int *s);
 
 void freeQuery();
@@ -44,7 +45,7 @@ int main(int argc, char* argv[]){
     act.sa_handler = handleSigInt;
     sigemptyset(&act.sa_mask);
     sigaction(SIGINT, &act, NULL);
-    
+
     // Setup global query object
     newQuery = malloc(sizeof(query));
     newQuery->message = calloc(1024, sizeof(char));
@@ -66,11 +67,17 @@ int main(int argc, char* argv[]){
         portnumber = atoi(argv[1]);
         hostname = argv[2];
         keyfile = argv[3];
-    }  else {
+    }
+    if(argc == 3){
+        portnumber = atoi(argv[1]);
+        hostname = argv[2];
+        keyfile = NULL;
+        printf("No Keyfile specified. Encryption will not be possible\n");
+    }
+      else {
         printf("Failure to specifiy parameters");
         return -1;
     }
-    
     // This should be split off into two segments/ screen rendering and input
     // network send recieve
     // The network send recieve should be a pull interface, the system pulls whenever it is ready to send new stuff
@@ -115,21 +122,52 @@ void exampleSendRcv(){
     return;
 }
 
-
-
-void readFromSocket(int s){
+int readFromSocket(int s){
     char output[1024] = {0};
+    int i;
+    int validString = 0;
+    struct query *q;
     // Here the client wants to receive 7 bytes from the server, but the server
     // only sends 5 bytes
     recv(s, output, 1024, 0);
-    printf("\n%s\n", output);
+    for(i = 0; i < 1024; i++){
+        if(output[i] == 'c' || output[i] == 'p'){
+           if(atoi(&output[i+1]) != 0){
+                validString = 1;
+           }else if(output[i] == 'e'){
+                if(output[i+1] != '0'){
+                    //Non successful update message
+                    printf("ERROR: %s\n", output);
+                    return -1;
+                }
+           }
+           break;
+        }
+    }
+    if(validString){
+        //Convert back from b64
+        q = parseMessage(output, 1024);
+        q->message = (char *)base64_decode(q->message, q->messageLength, (size_t *)&q->messageLength);
+
+        if(q->encryption && keyfile != NULL){
+            if(0 == (decrypt((unsigned char*)q->message, q->messageLength, \
+                            (unsigned char *)q->message, keyfile))){
+               printf("Decryption Failed\n");
+               return -1;
+            }
+        }
+        printf("Response:\n%s\n", buildStringFromQuery(q, &q->messageLength));
+        return 0;
+    }
+    printf("Response:\n%s\n", output);
+    return 0;
 }
 int connectToServer(){
     int s;
     int sent;
     int success;
     success = getSocket(&s); // Get new socket
-    
+
     if(success){
         sent =  send(s, "1\0", 2, 0);
         printf("%d\n", sent);
@@ -173,25 +211,37 @@ int getSocket(int *s){
 }
 
 int handleNetworkCalls(){
-    int s;
+    int s, check;
     // Initial implementation to handle network.
     // Run in a continuous loop and check every second for input or output;
     int size = 0;
     int sent;
     char* message;
     /* getSocket(&s); // Get new socket */
+    //Encrypts new query
+    if(newQuery->encryption){
+        newQuery->messageLength = encrypt((unsigned char*)newQuery->message, \
+                newQuery->messageLength, (unsigned char*)newQuery->message, keyfile);
+    }
+
+    newQuery->message = (char *)base64_encode((const unsigned char*)newQuery->message, \
+            newQuery->messageLength,(size_t *) &newQuery->messageLength);
+
     if (newQuery->messageLength > -1){
         message = buildStringFromQuery(newQuery, &size);
         printf("%s\n", message);
         //printf("%s", message);
         getSocket(&s); // Get new socket
-    
+
         sent =  send(s, message, size, 0);
 
-        readFromSocket(s);
+        check = readFromSocket(s);
+        if(check == -1){
+            return -1;
+        }
         close (s);
         free(message);
-    
+
         newQuery->column = 0;
         newQuery->messageLength = -1;
         newQuery->type = 0;
@@ -201,7 +251,6 @@ int handleNetworkCalls(){
 
     return 0;
 }
-
 
 int getType(){
     char ch;
@@ -231,6 +280,10 @@ int getEncryption(){
     const int goodState = 3; // Transition to state 1
     const int badState = 2;
 
+    if(keyfile == NULL){
+        newQuery->encryption = 0;
+        return goodState;
+    }
     printf("Do you wish to encrypt the message?\n");
     printf("y: Yes\n");
     printf("n: No\n");
@@ -276,7 +329,7 @@ int getMessage(){
     char ch;
     ch = getchar();// Learn how to clear buffer
     printf("Please enter your message?\n");
-    while((ch = getchar())) {   
+    while((ch = getchar())) {
         if(ch == '\n'||ch == '\0' || size > 1023){
             break;
         }
