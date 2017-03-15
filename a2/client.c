@@ -79,19 +79,13 @@ int main(int argc, char* argv[]){
     if(argc == 4){
         portnumber = atoi(argv[1]);
         hostname = argv[2];
-    }
-    if(argc == 4){
-        portnumber = atoi(argv[1]);
-        hostname = argv[2];
         keyfile = argv[3];
-    }
-    if(argc == 3){
+    } else if(argc == 3){
         portnumber = atoi(argv[1]);
         hostname = argv[2];
         keyfile = NULL;
         printf("No Keyfile specified. Encryption will not be possible\n");
-    }
-      else {
+    } else {
         printf("Failure to specifiy parameters");
         return -1;
     }
