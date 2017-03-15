@@ -67,7 +67,14 @@ int main(int argc, char* argv[]){
         portnumber = atoi(argv[1]);
         hostname = argv[2];
         keyfile = argv[3];
-    }  else {
+    }
+    if(argc == 3){
+        portnumber = atoi(argv[1]);
+        hostname = argv[2];
+        keyfile = NULL;
+        printf("No Keyfile specified. Encryption will not be possible\n");
+    }
+      else {
         printf("Failure to specifiy parameters");
         return -1;
     }
@@ -142,7 +149,7 @@ int readFromSocket(int s){
         q = parseMessage(output, 1024);
         q->message = (char *)base64_decode(q->message, q->messageLength, (size_t *)&q->messageLength);
 
-        if(q->encryption){
+        if(q->encryption && keyfile != NULL){
             if(0 == (decrypt((unsigned char*)q->message, q->messageLength, \
                             (unsigned char *)q->message, keyfile))){
                printf("Decryption Failed\n");
@@ -273,6 +280,10 @@ int getEncryption(){
     const int goodState = 3; // Transition to state 1
     const int badState = 2;
 
+    if(keyfile == NULL){
+        newQuery->encryption = 0;
+        return goodState;
+    }
     printf("Do you wish to encrypt the message?\n");
     printf("y: Yes\n");
     printf("n: No\n");
