@@ -245,11 +245,11 @@ void handleSigTerm(int num){
     FILE *fp = fopen("whiteboard.all", "w+");
 
     char* message;
-    int size;
+    int size, i;
     int boardsize = getWhiteboardSize();
     query * output = malloc(sizeof(query));
     printf("Handling signal\n");
-    for(int i = 1; i <= boardsize; i++){
+    for(i = 1; i <= boardsize; i++){
         output->message = readNode(Whiteboard, i, &output->encryption, &output->messageLength);
         message = buildStringFromQuery(output, &size);
         fprintf(fp,"%s", message);
