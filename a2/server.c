@@ -240,6 +240,7 @@ void respondToMessage(void *socket){
 
 // Handle SIGTERM
 void handleSigTerm(int num){
+    printf("Handling signal\n");
     // Does this need to be threadable?
     // how to pass in wb
     FILE *fp = fopen("whiteboard.all", "w+");

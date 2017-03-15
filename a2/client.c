@@ -128,20 +128,16 @@ void readFromSocket(int s){
     for(i = 0; i < 1024; i++){
         if(output[i] == 'c' || output[i] == 'p'){
            if(atoi(&output[i+1]) != 0){
-               printf("valid\n");
                 validString = 1;
            }
            break;
         }
     }
-    printf("validString: %d\n", validString);
     if(validString){
         //Convert back from b64
-        printf("bang\n");
         q = parseMessage(output, 1024);
         q->message = (char *)base64_decode(q->message, q->messageLength, (size_t *)&q->messageLength);
 
-        printf("Message %s\n", q->message);
         if(q->encryption){
             if(0 == (decrypt((unsigned char*)q->message, q->messageLength, \
                             (unsigned char *)q->message, keyfile))){
@@ -149,7 +145,7 @@ void readFromSocket(int s){
                return;
             }
         }
-        printf("Responsche:\n%s\n", buildStringFromQuery(q, &q->messageLength));
+        printf("Response:\n%s\n", buildStringFromQuery(q, &q->messageLength));
         return;
     }
     printf("Response:\n%s\n", output);

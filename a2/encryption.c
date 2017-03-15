@@ -231,7 +231,6 @@ char *base64_encode(const unsigned char *data,
     for (int i = 0; i < mod_table[input_length % 3]; i++)
         encoded_data[*output_length - 1 - i] = '=';
 
-    printf("ENCODED DATA %s\n", encoded_data);
     return encoded_data;
 }
 
