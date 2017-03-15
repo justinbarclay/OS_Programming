@@ -226,8 +226,6 @@ char *base64_encode(const unsigned char *data,
         encoded_data[j++] = encoding_table[(triple >> 1 * 6) & 0x3F];
         encoded_data[j++] = encoding_table[(triple >> 0 * 6) & 0x3F];
     }
-
-    int i;
     for ( i = 0; i < mod_table[input_length % 3]; i++)
         encoded_data[*output_length - 1 - i] = '=';
 
@@ -248,7 +246,7 @@ unsigned char *base64_decode(const char *data,
 
     unsigned char *decoded_data = malloc(*output_length);
     if (decoded_data == NULL) return NULL;
-    int i;
+    int i, j;
     for (i = 0, j = 0; i < input_length;) {
 
         uint32_t sextet_a = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
