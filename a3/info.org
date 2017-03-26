@@ -1,0 +1,49 @@
+* Command Line Invocation
+- Implement a simulator to study TLB behavior and page eviction policies
+- Simulator invocation: tvm379 pgsize tlbentries { g | p } quantum physpages { f | l } trace1 trace2 . . .  tracen
+- *pgsize*: page size, and power of two
+- *tlbentries*: number of simulated TLB entries
+- *{g|p}*: whether TLB is global (uniform across processes), or process
+  specific
+- If TLB entries are a p they must be "flushed" every context switch
+- *Eviction policy = Strict Least Recently Used*
+- Context switches are simulated by going through the trace of references
+  reading quantum memory references at a time from each file in a cyclical
+  (round robin) order
+- Virtual memory is simulated by assuming we are implementing a global page
+  replacement policy where availible physical memory is assumed to be
+  physpages (max 1 million)
+- *Page eviction policy*: FIFO (f) or LRU (l)
+* Input File processing
+- Must be able to receive an  indeterminate number of  trace files
+    + Each trace file contains a sequence of 32 bit memory references
+    + Files can be really long, so you must read them incrementally/as needed
+- Simulated memory management unit sees memory references arriving quantum at
+  time rotating from each file
+    + The quantum dictates how many entries from each file is processed 
+    + This is simulating the MMU behavior as if a context switch occurs every
+    quantum number of memory addresses
+    + Trace files don't contain any permission info about permission and
+    values of that location
+* Output
+- Upon termination you should produce lines of the following format:
+    + tlbhits1 pf1 pageout1 avs1
+    + These are n lines, as many as the trace files given in the command line
+    + tlbhitsX is the number of TLB hits because of memory references from traceX. 
+    + pfX is the number of page faults caused by the memory references of traceX i.e., of
+    “process”
+    + This being a global page replacement policy, the processes
+    whose behavior caused a page fault (and therefore for which we increased
+    the corresponding pfX) is not necessarily the process whose page will be victimized.)
+    + Hence, you also have to increment the number of evicted pages pageoutX
+    incurred by process X when a page of process X is victimized
+    + finally avsX is the average
+    number of memory-resident pages for process X across the entire simulation
+
+* Questions
+* Requirements
+- Simulator invocation: tvm379 pgsize tlbentries { g | p } quantum physpages { f | l } trace1 trace2 . . .  tracen
+- Read tracefiles incrementally 
+- Upon termination you should produce lines of the following format:
+    + tlbhits1 pf1 pageout1 avs1
+
