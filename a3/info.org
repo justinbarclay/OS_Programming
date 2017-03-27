@@ -20,7 +20,7 @@
     + Files can be really long, so you must read them incrementally/as needed
 - Simulated memory management unit sees memory references arriving quantum at
   time rotating from each file
-    + The quantum dictates how many entries from each file is processed 
+    + The quantum dictates how many entries from each file is processed
     + This is simulating the MMU behavior as if a context switch occurs every
     quantum number of memory addresses
     + Trace files don't contain any permission info about permission and
@@ -29,7 +29,7 @@
 - Upon termination you should produce lines of the following format:
     + tlbhits1 pf1 pageout1 avs1
     + These are n lines, as many as the trace files given in the command line
-    + tlbhitsX is the number of TLB hits because of memory references from traceX. 
+    + tlbhitsX is the number of TLB hits because of memory references from traceX.
     + pfX is the number of page faults caused by the memory references of traceX i.e., of
     “process”
     + This being a global page replacement policy, the processes
@@ -43,7 +43,52 @@
 * Questions
 * Requirements
 - Simulator invocation: tvm379 pgsize tlbentries { g | p } quantum physpages { f | l } trace1 trace2 . . .  tracen
-- Read tracefiles incrementally 
+- Read tracefiles incrementally
 - Upon termination you should produce lines of the following format:
     + tlbhits1 pf1 pageout1 avs1
 
+* Lab Notes
+- We will be provided with some tracefiles
+    + Can do some kind of calculation to emulate tracefiles
+    + Any time you touch memory, print the address
+- It's just a simulator
+** Tracefiles
+- Each tracefile represents a process. Any time a process accesses memory, it
+  accesses the tracefile
+- Every 4 bytes is a memory address
+- It's stored as binary data, not a tracefile
+- 32 bit address
+*** Assumptions
+- Assume page size of 4096 bytes
+    + This implies that we need LOG2(4096) = 32-12 bits to represent the page
+    number
+- 2^20 pages
+** TLB
+- TLB(G)
+    + Page #, Frame #, ASID/PID, Validity bit
+- TLB(P)
+    + Page #, Frame #, Validity bit
+- TLB is strictly LRU
+- If it is in the TLB, report it as a hit and then move on
+** Page Table
+- Page #, Frame #, Validity bit
+    + Frame # points to some frame in memory. Do not implement frame number
+    directly for the purpose of this assignment
+- The page table holds up to (2^32)/pageSize bits
+- Should be dynamic in size
+** Example Data Structures for Global TLB
+- FIFO
+    + *Queue*
+    + We don't page out when memory isn't full
+    + *LRU "STACK"*
+    + Where you page in at the top of the stack, and pop off the bottom
+    + The key difference is that whenever a frame is accessed or referenced,
+    then it must be moved to the top of the stack
+    + *Doubly Linked list* is the best way to go
+- The maximum number of frames is passed in via command line
+- We must make sure whatever we are paging out is in the TLB
+    + Update TLB
+- Must track what is being paged out
+- Every process has it's own page table. And is in the global table
+- Maybe you don't need a global TLB because the frame number is kinda
+  meaningless
