@@ -37,6 +37,12 @@ int main(int argc, char *argv[]){
     uniformity = *argv[3];
     evictionPolicy = *argv[6];
 
+    // Gather Tracefile filenames
+    for(i = MIN_CLI_ARGS; i < argc; i++){
+        tracefiles[z] = argv[i];
+        printf("Trace: %s\n", tracefiles[z]);
+    }
+
     // Perform error checking on user input
     if(!isPowerOfTwo(pgsize)){
         printf("Page size is not a power of two\n");
@@ -77,11 +83,6 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
-    // Gather Tracefile filenames
-    for(i = MIN_CLI_ARGS; i < argc; i++){
-        tracefiles[z] = argv[i];
-        printf("Trace: %s\n", tracefiles[z]);
-    }
 }
 
 int isPowerOfTwo (int x){
