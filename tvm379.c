@@ -21,8 +21,8 @@ int isPowerOfTwo(int x);
 int main(int argc, char *argv[]){
     int pgsize, tlbentries, quantum, physpages = 0;
     char uniformity, evictionPolicy;
-    char *tracefiles;
-    int i;
+    char *tracefiles[argc-MIN_CLI_ARGS];
+    int i, z = 0;
 
     if(argc < MIN_CLI_ARGS){
         printf("Insufficient number of command line arguments provided\n");
@@ -77,11 +77,11 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
-    for(i = 0; i < argc; i++){
-        printf("%d: %s\n", i, argv[i]);
+    // Gather Tracefile filenames
+    for(i = MIN_CLI_ARGS; i < argc; i++){
+        tracefiles[z] = argv[i];
+        printf("Trace: %s\n", tracefiles[z]);
     }
-
-
 }
 
 int isPowerOfTwo (int x){
