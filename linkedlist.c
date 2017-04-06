@@ -97,6 +97,7 @@ void reversePrintList(doubleLL * container){
         current = current->previous;
     }
 }
+
 void policyFIFO(node* item, doubleLL* container){
     node* remove = container->tail->previous;
     node* update = remove->previous;
@@ -106,6 +107,19 @@ void policyFIFO(node* item, doubleLL* container){
     container->currentSize--;
     free(remove);
 }
+
+void policyLRU(node* item, doubleLL* container){
+/*     node* remove = container->tail->previous; */
+/*     node* update = remove->previous; */
+    
+/*     container->tail->previous = update; */
+/*     update->next = container->tail; */
+/*     container->currentSize--; */
+/*     free(remove); */
+    // How should this be done?
+}
+
+
 
 /* void moveNodeForward(linkedlist* node)} */
 /*     linkedlist* moveBack = node->next; */
