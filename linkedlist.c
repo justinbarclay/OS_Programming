@@ -34,16 +34,15 @@ int newList(doubleLL * container){
 }
 
 int addNewNode(int pageNum, int pid, int frame, doubleLL * container){
-   
-    if(container->currentSize >= container->maxSize){
-        printf("Container has reached max size, can not add anymore\n");
-        return -1;
-    }
     node * item = calloc(1, sizeof(node));
     // Any of these values may be null?
     item->pageNum = pageNum;
     item->pid = pid;
     item->frame = frame;
+    if(container->currentSize >= container->maxSize){
+        printf("Container has reached max size, executing update policy\n");
+        container->policy(item, container);
+    }
     node* head = container->head;
     node* next = head->next;
     // Put node at beginning of list
@@ -88,6 +87,24 @@ void printList(doubleLL * container){
         printf("PageNum: %i, pid: %i, frameNum: %i\n", current->pageNum, current->pid, current->frame);
         current = current->next;
     }
+}
+
+void reversePrintList(doubleLL * container){
+    int i;
+    node* current = container->tail->previous;
+    for(i=0; i< container->currentSize; i++){
+        printf("PageNum: %i, pid: %i, frameNum: %i\n", current->pageNum, current->pid, current->frame);
+        current = current->previous;
+    }
+}
+void policyFIFO(node* item, doubleLL* container){
+    node* remove = container->tail->previous;
+    node* update = remove->previous;
+    
+    container->tail->previous = update;
+    update->next = container->tail;
+    container->currentSize--;
+    free(remove);
 }
 
 /* void moveNodeForward(linkedlist* node)} */
