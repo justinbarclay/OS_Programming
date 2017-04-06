@@ -98,6 +98,20 @@ void reversePrintList(doubleLL * container){
     }
 }
 
+int nodeExists(int pageNum, int pid, doubleLL* container){
+    node* current = container->head->next;
+    int index=0;
+    while(current != NULL){
+        index++;
+        if(current->pageNum == pageNum &&
+           current->pid == pid){
+            return index;
+        }
+        current = current->next;
+    }
+    return -1;
+}
+
 void policyFIFO(node* item, doubleLL* container){
     node* remove = container->tail->previous;
     node* update = remove->previous;
