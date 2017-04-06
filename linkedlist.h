@@ -25,7 +25,7 @@ struct doubleLinkedList{
 // returns 1 if success or 0 if failed
 int newList(doubleLL * container);
 
-int addToList(int pageNum, int pid, int frame, doubleLL * container);
+int addNewNode(int pageNum, int pid, int frame, doubleLL * container);
 
 void deleteList(doubleLL * container);
 

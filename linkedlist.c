@@ -15,7 +15,6 @@
 // otherwise returns the node at the specified depth
 
 int newList(doubleLL * container){
-    container = calloc(1, sizeof(doubleLL));
     node * head = calloc(1, sizeof(node));
     node * tail = calloc(1, sizeof(node));
 
@@ -35,19 +34,27 @@ int newList(doubleLL * container){
 }
 
 int addNewNode(int pageNum, int pid, int frame, doubleLL * container){
+   
+    if(container->currentSize >= container->maxSize){
+        printf("Container has reached max size, can not add anymore\n");
+        return -1;
+    }
     node * item = calloc(1, sizeof(node));
     // Any of these values may be null?
     item->pageNum = pageNum;
     item->pid = pid;
     item->frame = frame;
-
-    struct node* head = container->head;
-    struct node* next = head->next;
-
+    node* head = container->head;
+    node* next = head->next;
     // Put node at beginning of list
-    item->next = item;
+    // Make space for item
+    head->next = item;
+    next->previous = item;
+
+    //Connect up item
     item->previous = head;
     item->next = next;
+
 
     //Increase container size count
     container->currentSize++;
@@ -76,9 +83,10 @@ void deleteNode(node* item){
 
 void printList(doubleLL * container){
     int i;
-    node* current = container->head;
+    node* current = container->head->next;
     for(i=0; i< container->currentSize; i++){
-
+        printf("PageNum: %i, pid: %i, frameNum: %i\n", current->pageNum, current->pid, current->frame);
+        current = current->next;
     }
 }
 

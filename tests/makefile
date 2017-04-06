@@ -3,14 +3,11 @@ CC=gcc
 
 linkedlist.o: ../linkedlist.h ../linkedlist.c
 	$(CC) $(CFLAGS) -c ../linkedlist.c
-testList: linkedlist.o testList.c
-	$(CC) $(CFLAGS) -o listTest listTest.c	
+listTest: linkedlist.o listTest.c
+	$(CC) $(CFLAGS) -o listTest listTest.c linkedlist.o
 test1: listTest
 	./listTest > test_results.txt
 runTests: test1
 
-
-
-
 clean:
-	rm *.o testWhiteboard testHandleMessage parsingTest
+	rm *.o listTest

@@ -1,0 +1,66 @@
+Initializing container...
+Adding node...
+PageNum: 1, pid: 1, frameNum: 1
+
+PageNum: 2, pid: 2, frameNum: 2
+PageNum: 1, pid: 1, frameNum: 1
+
+PageNum: 3, pid: 3, frameNum: 3
+PageNum: 2, pid: 2, frameNum: 2
+PageNum: 1, pid: 1, frameNum: 1
+
+PageNum: 4, pid: 4, frameNum: 4
+PageNum: 3, pid: 3, frameNum: 3
+PageNum: 2, pid: 2, frameNum: 2
+PageNum: 1, pid: 1, frameNum: 1
+
+PageNum: 5, pid: 5, frameNum: 5
+PageNum: 4, pid: 4, frameNum: 4
+PageNum: 3, pid: 3, frameNum: 3
+PageNum: 2, pid: 2, frameNum: 2
+PageNum: 1, pid: 1, frameNum: 1
+
+PageNum: 6, pid: 6, frameNum: 6
+PageNum: 5, pid: 5, frameNum: 5
+PageNum: 4, pid: 4, frameNum: 4
+PageNum: 3, pid: 3, frameNum: 3
+PageNum: 2, pid: 2, frameNum: 2
+PageNum: 1, pid: 1, frameNum: 1
+
+PageNum: 7, pid: 7, frameNum: 7
+PageNum: 6, pid: 6, frameNum: 6
+PageNum: 5, pid: 5, frameNum: 5
+PageNum: 4, pid: 4, frameNum: 4
+PageNum: 3, pid: 3, frameNum: 3
+PageNum: 2, pid: 2, frameNum: 2
+PageNum: 1, pid: 1, frameNum: 1
+
+PageNum: 8, pid: 8, frameNum: 8
+PageNum: 7, pid: 7, frameNum: 7
+PageNum: 6, pid: 6, frameNum: 6
+PageNum: 5, pid: 5, frameNum: 5
+PageNum: 4, pid: 4, frameNum: 4
+PageNum: 3, pid: 3, frameNum: 3
+PageNum: 2, pid: 2, frameNum: 2
+PageNum: 1, pid: 1, frameNum: 1
+
+PageNum: 9, pid: 9, frameNum: 9
+PageNum: 8, pid: 8, frameNum: 8
+PageNum: 7, pid: 7, frameNum: 7
+PageNum: 6, pid: 6, frameNum: 6
+PageNum: 5, pid: 5, frameNum: 5
+PageNum: 4, pid: 4, frameNum: 4
+PageNum: 3, pid: 3, frameNum: 3
+PageNum: 2, pid: 2, frameNum: 2
+PageNum: 1, pid: 1, frameNum: 1
+
+PageNum: 10, pid: 10, frameNum: 10
+PageNum: 9, pid: 9, frameNum: 9
+PageNum: 8, pid: 8, frameNum: 8
+PageNum: 7, pid: 7, frameNum: 7
+PageNum: 6, pid: 6, frameNum: 6
+PageNum: 5, pid: 5, frameNum: 5
+PageNum: 4, pid: 4, frameNum: 4
+PageNum: 3, pid: 3, frameNum: 3
+PageNum: 2, pid: 2, frameNum: 2
+PageNum: 1, pid: 1, frameNum: 1
