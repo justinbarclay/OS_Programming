@@ -21,7 +21,9 @@ int isPowerOfTwo(int x);
 int main(int argc, char *argv[]){
     int pgsize, tlbentries, quantum, physpages = 0;
     char uniformity, evictionPolicy;
-    char *tracefiles[argc-MIN_CLI_ARGS];
+    FILE *tracefiles[argc-MIN_CLI_ARGS];
+    char *tracefileNames[argc-MIN_CLI_ARGS]; //Needed for output
+
     int i, z = 0;
 
     if(argc < MIN_CLI_ARGS){
@@ -39,8 +41,9 @@ int main(int argc, char *argv[]){
 
     // Gather Tracefile filenames
     for(i = MIN_CLI_ARGS; i < argc; i++){
-        tracefiles[z] = argv[i];
-        printf("Trace: %s\n", tracefiles[z]);
+        tracefiles[z] = fopen(argv[i], "r");
+        tracefileNames[z] = argv[i];
+        z++;
     }
 
     // Perform error checking on user input
@@ -82,6 +85,11 @@ int main(int argc, char *argv[]){
         printf("Eviction policy must be f or l\n");
         exit(0);
     }
+    // Clean up open file pointers ; may be uncessary
+/*    for(i = MIN_CLI_ARGS; i < argc; i++){
+        tracefiles[z] = *fclose(argv[i], "r");
+        printf("Trace: %s\n", tracefiles[z]);
+    }*/
 
 }
 
