@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
 
     // Gather Tracefile filenames
     for(i = MIN_CLI_ARGS; i < argc; i++){
-        tracefiles[z] = fopen(argv[i], "r");
+        tracefiles[z] = fopen(argv[i], "rb");
         tracefileNames[z] = argv[i];
         z++;
     }
