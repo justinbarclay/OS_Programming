@@ -40,7 +40,13 @@ int addNewNode(int pageNum, int pid, int frame, doubleLL * container){
     item->pid = pid;
     item->frame = frame;
     if(container->currentSize >= container->maxSize){
-        container->policy(item, container);
+        node* remove = container->tail->previous;
+        node* update = remove->previous;
+    
+        container->tail->previous = update;
+        update->next = container->tail;
+        container->currentSize--;
+        free(remove);
     }
     node* head = container->head;
     node* next = head->next;

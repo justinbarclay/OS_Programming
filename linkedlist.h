@@ -1,3 +1,6 @@
+#ifndef LINKEDLIST_H
+#define LINKEDLIST_H
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,7 +19,7 @@ struct doubleLinkedList{
     node* tail;
     int currentSize;
     int maxSize;
-    void (* policy)(node*, struct doubleLinkedList*); // Funciton pointer to the update function
+    void (* policy)(node*, struct doubleLinkedList*); // Function pointer to the update function
 } typedef doubleLL;
 
 // Container needs to have maxSize and policy initialized
@@ -36,3 +39,4 @@ void printList(doubleLL * container);
 void reversePrintList(doubleLL * container);
 
 void policyFIFO(node* item, doubleLL* container);
+#endif
