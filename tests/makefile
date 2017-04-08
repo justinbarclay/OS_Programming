@@ -15,8 +15,8 @@ fifoTest: fifoTest.c linkedlist.o memory.o
 lruTest: lruTest.c linkedlist.o memory.o
 	$(CC) -o lruTest lruTest.c linkedlist.o memory.o
 
-fileIO.o: ../fileIO.c ../fileIO.h 
-	$(CC) $(CFLAGS) -c ../fileIO.c 
+fileIO.o: ../fileIO.c ../fileIO.h
+	$(CC) $(CFLAGS) -c ../fileIO.c
 IOTest: fileIO.o fileIOTest.c
 	$(CC) $(CFLAGS) -o IOTest fileIOTest.c fileIO.o
 
@@ -27,10 +27,19 @@ test2: fifoTest
 	./fifoTest >> test_results.txt
 test3: lruTest
 	./lruTest >> test_results.txt
-test4: IOTest 
+test4: IOTest
 	./IOTest heapsort-trace.bin quicksort-trace.bin > IO_test_Results.txt
+	less IO_test_Results.txt
+test5: IOTest
+	./IOTest test1.txt > IO_test_Results.txt
+	less IO_test_Results.txt
+test6: IOTest
+	./IOTest text1.txt quicksort-trace.bin > IO_test_Results.txt
+	less IO_test_Results.txt
+test7: IOTest
+	./IOTest text1.txt quicksort-trace.bin > IO_test_Results.txt
 	less IO_test_Results.txt
 
 runTests: test1 test2 test3
 clean:
-	rm *.o listTest *.txt lruTest fifoTest simul IOTest 
+	rm *.o listTest *.txt lruTest fifoTest simul IOTest

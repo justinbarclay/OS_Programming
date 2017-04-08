@@ -18,11 +18,9 @@ int main(int argc, char *argv[]){
         numTraceFiles++;
         z++;
     }
-    int shit =0;
+
     printf("Beginning test\nnumtracefiles: %d\n\n", numTraceFiles);
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, tracefileId, currentReferences)){
-        if(shit == 2) break;
-        shit++;
     }
 
 
