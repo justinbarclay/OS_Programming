@@ -40,7 +40,6 @@ int addNewNode(int pageNum, int pid, int frame, doubleLL * container){
     item->pid = pid;
     item->frame = frame;
     if(container->currentSize >= container->maxSize){
-        printf("Container has reached max size, executing update policy\n");
         container->policy(item, container);
     }
     node* head = container->head;
@@ -105,7 +104,7 @@ int nodeExists(int pageNum, int pid, doubleLL* container){
         index++;
         if(current->pageNum == pageNum &&
            current->pid == pid){
-            return index;
+            return current->frame;
         }
         current = current->next;
     }
@@ -123,38 +122,14 @@ void policyFIFO(node* item, doubleLL* container){
 }
 
 void policyLRU(node* item, doubleLL* container){
-/*     node* remove = container->tail->previous; */
-/*     node* update = remove->previous; */
-    
-/*     container->tail->previous = update; */
-/*     update->next = container->tail; */
-/*     container->currentSize--; */
-/*     free(remove); */
-    // How should this be done?
+    node* next = item->next;
+    node* previous = item->previous;
+
+    next->previous = previous;
+    previous->next = next;
+
+    node* top = container->head->next;
+    container->head->next = item;
+    item->next = top;
+    item->previous = container->head;
 }
-
-
-
-/* void moveNodeForward(linkedlist* node)} */
-/*     linkedlist* moveBack = node->next; */
-/*     linkedlist* previousNode = node->previous; */
-
-/*     node->next = moveBack->next; */
-/*     node->previous = moveBack; */
-
-/*     previousNode->next = moveBack; */
-/*     moveBack->previous = previousNode; */
-
-/*     moveBack->next = node; */
-/* } */
-
-/* void moveNodeBackward(linkedlist* node){ */
-/*     linkedlist* moveForward = node->previous; */
-/*     tlb* nextNode = node->next; */
-    
-/*     node->previous = moveForward->previous; */
-/*     node->next = moveForward; */
-
-/*     nextNode->previous = moveForward; */
-/*     moveForward->next = nextNode; */
-/* } */
