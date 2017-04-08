@@ -22,7 +22,6 @@ int main(int argc, char *argv[]){
     int pgsize, tlbentries, quantum, physpages = 0;
     char uniformity, evictionPolicy;
     FILE *tracefiles[argc-MIN_CLI_ARGS];
-    char *tracefileNames[argc-MIN_CLI_ARGS]; //Needed for output
 
     int i, z = 0;
 
@@ -42,7 +41,10 @@ int main(int argc, char *argv[]){
     // Gather Tracefile filenames
     for(i = MIN_CLI_ARGS; i < argc; i++){
         tracefiles[z] = fopen(argv[i], "rb");
-        tracefileNames[z] = argv[i];
+        if(tracefiles[z] == NULL){
+            printf("Error opening file\n");
+            exit(0);
+        }
         z++;
     }
 

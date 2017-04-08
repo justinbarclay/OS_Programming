@@ -1,12 +1,20 @@
+/*  Imports*/
 #include "fileIO.h"
-
+#include "inttypes.h"
+/*  Macros */
+#define ADDRESS_BYTES 4
 int readRefsFromFiles(int quantum, FILE *openTracefiles[], int tracefileId, \
-        unsigned int currentReferences[]){
+        uint32_t currentReferences[]){
+    static int fileIdToProcess = 0;
     int i = 0;
-    printf("FUCK");
-    for(i = 0; i < quantum; i++){
-        fread((void *)currentReferences[i], sizeof(unsigned int), 1, openTracefiles[i]);
-    }
+    int bytes = 0;
 
+    while((bytes = fread(&currentReferences[i], 4, 1, openTracefiles[0])) \
+            > 0 && i < quantum){
+            printf("%08x\n", currentReferences[i]);
+            i++;
+    };
+    
+    fileIdToProcess++;
     return 1;
 }

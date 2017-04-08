@@ -14,7 +14,7 @@ fileIO.o: ../fileIO.c ../fileIO.h
 IOTest: fileIO.o fileIOTest.c
 	$(CC) $(CFLAGS) -o IOTest fileIOTest.c fileIO.o
 test2: IOTest 
-	./IOTest > IO_test_Results.txt
+	./IOTest quicksort-trace.bin > IO_test_Results.txt
 runTests: test1
 
 clean:

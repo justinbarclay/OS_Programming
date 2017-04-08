@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include "stdint.h"
 
 /*  Public function declarations*/
 // Reads from the array of file pointers untill all files have been expended
-int readRefsFromFiles(int quantum, FILE *openTracefiles[], int traceFileId, unsigned int currentReferences[]);
+int readRefsFromFiles(int quantum, FILE *openTracefiles[], int traceFileId, uint32_t currentReferences[]);
