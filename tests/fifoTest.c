@@ -11,6 +11,7 @@
 
 
 int main(){
+    printf("Fifo Test\n");
     doubleLL* tlb = calloc(1, sizeof(doubleLL));
     doubleLL* virtualMemory = calloc(1, sizeof(doubleLL));
     doubleLL* pageTable;

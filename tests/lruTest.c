@@ -12,6 +12,7 @@
 
 // Testing how LRU works on with one page Table
 int main(){
+    printf("LRU Test\n");
     doubleLL* tlb = calloc(1, sizeof(doubleLL));
     doubleLL* virtualMemory = calloc(1, sizeof(doubleLL));
     doubleLL* pageTable;
@@ -51,6 +52,8 @@ int main(){
     printList(pageTable);
     printf("\nVirtual Memory\n");
     printList(virtualMemory);
+
+    printf("\nTesting reverse list\n");
     reversePrintList(virtualMemory);
     deleteList(tlb);
     deleteList(virtualMemory);
