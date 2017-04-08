@@ -33,4 +33,4 @@ test2: IOTest
 runTests: test1
 
 clean:
-	rm *.o listTest *.txt lruTest fifoTest simul IOTest
+	rm *.o listTest *.txt lruTest fifoTest simul IOTest 
