@@ -10,14 +10,19 @@ int main(int argc, char *argv[]){
     // Gather Tracefile filenames
     for(i = 1; i < argc; i++){
         tracefiles[z] = fopen(argv[i], "rb");
+        printf("%s\n", argv[i]);
 
         if(tracefiles[z] == NULL){
             printf("Error opening file\n");
         }
         numTraceFiles++;
+        z++;
     }
-
-    while(!readRefsFromFiles(quantum, tracefiles, numTraceFiles, tracefileId, currentReferences)){
+    int shit =0;
+    printf("Beginning test\nnumtracefiles: %d\n\n", numTraceFiles);
+    while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, tracefileId, currentReferences)){
+        if(shit == 2) break;
+        shit++;
     }
 
 

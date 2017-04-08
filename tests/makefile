@@ -28,7 +28,7 @@ test2: fifoTest
 test3: lruTest
 	./lruTest >> test_results.txt
 test4: IOTest 
-	./IOTest quicksort-trace.bin > IO_test_Results.txt
+	./IOTest heapsort-trace.bin quicksort-trace.bin > IO_test_Results.txt
 	less IO_test_Results.txt
 
 runTests: test1 test2 test3
