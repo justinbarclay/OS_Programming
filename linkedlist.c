@@ -39,9 +39,15 @@ int addNewNode(int pageNum, int pid, int frame, doubleLL * container){
     item->pageNum = pageNum;
     item->pid = pid;
     item->frame = frame;
+    item->validity = 1;
     if(container->currentSize >= container->maxSize){
-        printf("Container has reached max size, executing update policy\n");
-        container->policy(item, container);
+        node* remove = container->tail->previous;
+        node* update = remove->previous;
+    
+        container->tail->previous = update;
+        update->next = container->tail;
+        container->currentSize--;
+        free(remove);
     }
     node* head = container->head;
     node* next = head->next;
@@ -84,7 +90,7 @@ void printList(doubleLL * container){
     int i;
     node* current = container->head->next;
     for(i=0; i< container->currentSize; i++){
-        printf("PageNum: %i, pid: %i, frameNum: %i\n", current->pageNum, current->pid, current->frame);
+        printf("PageNum: %i, pid: %i, frameNum: %i, validity: %i\n", current->pageNum, current->pid, current->frame, current->validity);
         current = current->next;
     }
 }
@@ -93,10 +99,25 @@ void reversePrintList(doubleLL * container){
     int i;
     node* current = container->tail->previous;
     for(i=0; i< container->currentSize; i++){
-        printf("PageNum: %i, pid: %i, frameNum: %i\n", current->pageNum, current->pid, current->frame);
+        printf("PageNum: %i, pid: %i, frameNum: %i, validity: %i\n", current->pageNum, current->pid, current->frame, current->validity);
         current = current->previous;
     }
 }
+
+int nodeExists(int pageNum, int pid, doubleLL* container){
+    node* current = container->head->next;
+    int index=0;
+    while(current != NULL){
+        index++;
+        if(current->pageNum == pageNum &&
+           current->pid == pid){
+            return current->frame;
+        }
+        current = current->next;
+    }
+    return -1;
+}
+
 void policyFIFO(node* item, doubleLL* container){
     node* remove = container->tail->previous;
     node* update = remove->previous;
@@ -107,26 +128,16 @@ void policyFIFO(node* item, doubleLL* container){
     free(remove);
 }
 
-/* void moveNodeForward(linkedlist* node)} */
-/*     linkedlist* moveBack = node->next; */
-/*     linkedlist* previousNode = node->previous; */
+void policyLRU(node* item, doubleLL* container){
+    node* next = item->next;
+    node* previous = item->previous;
 
-/*     node->next = moveBack->next; */
-/*     node->previous = moveBack; */
+    next->previous = previous;
+    previous->next = next;
 
-/*     previousNode->next = moveBack; */
-/*     moveBack->previous = previousNode; */
-
-/*     moveBack->next = node; */
-/* } */
-
-/* void moveNodeBackward(linkedlist* node){ */
-/*     linkedlist* moveForward = node->previous; */
-/*     tlb* nextNode = node->next; */
-    
-/*     node->previous = moveForward->previous; */
-/*     node->next = moveForward; */
-
-/*     nextNode->previous = moveForward; */
-/*     moveForward->next = nextNode; */
-/* } */
+    node* top = container->head->next;
+    top->previous = item;
+    container->head->next = item;
+    item->next = top;
+    item->previous = container->head;
+}
