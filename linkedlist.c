@@ -39,6 +39,7 @@ int addNewNode(int pageNum, int pid, int frame, doubleLL * container){
     item->pageNum = pageNum;
     item->pid = pid;
     item->frame = frame;
+    item->validity = 1;
     if(container->currentSize >= container->maxSize){
         node* remove = container->tail->previous;
         node* update = remove->previous;
@@ -89,7 +90,7 @@ void printList(doubleLL * container){
     int i;
     node* current = container->head->next;
     for(i=0; i< container->currentSize; i++){
-        printf("PageNum: %i, pid: %i, frameNum: %i\n", current->pageNum, current->pid, current->frame);
+        printf("PageNum: %i, pid: %i, frameNum: %i, validity: %i\n", current->pageNum, current->pid, current->frame, current->validity);
         current = current->next;
     }
 }
@@ -98,7 +99,7 @@ void reversePrintList(doubleLL * container){
     int i;
     node* current = container->tail->previous;
     for(i=0; i< container->currentSize; i++){
-        printf("PageNum: %i, pid: %i, frameNum: %i\n", current->pageNum, current->pid, current->frame);
+        printf("PageNum: %i, pid: %i, frameNum: %i, validity: %i\n", current->pageNum, current->pid, current->frame, current->validity);
         current = current->previous;
     }
 }
@@ -135,6 +136,7 @@ void policyLRU(node* item, doubleLL* container){
     previous->next = next;
 
     node* top = container->head->next;
+    top->previous = item;
     container->head->next = item;
     item->next = top;
     item->previous = container->head;

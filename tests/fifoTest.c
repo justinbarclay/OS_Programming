@@ -1,5 +1,5 @@
-#include "linkedlist.h"
-#include "memory.h"
+#include "../linkedlist.h"
+#include "../memory.h"
 #include <stdlib.h>
 
 /*
@@ -7,21 +7,19 @@
  * Globals
  *
  */
-doubleLL* tlb;
-doubleLL* virtualMemory;
-node* frameBuffer[1000];
-doubleLL* pageTables[100];
+#define MAXFRAME 1000
 
-int POLICY = 0;
-
-int currentFrame = 0;
-int maxFrame = 1000;
 
 int main(){
-    tlb = calloc(1, sizeof(doubleLL));
-    virtualMemory = calloc(1, sizeof(doubleLL));
+    doubleLL* tlb = calloc(1, sizeof(doubleLL));
+    doubleLL* virtualMemory = calloc(1, sizeof(doubleLL));
     doubleLL* pageTable;
+    doubleLL* pageTables[100];
+    node* frameBuffer[MAXFRAME];
+    int POLICY = 0; //FIFO
+
     int i=0;
+    // Create 100 processes
     for(i=0; i< 100; i++){
         pageTable = calloc(1, sizeof(doubleLL));
         pageTable->maxSize = 100;
@@ -32,7 +30,7 @@ int main(){
     tlb->maxSize = 10;
     tlb->policy = policyFIFO;
     
-    virtualMemory->maxSize = 1000;
+    virtualMemory->maxSize = MAXFRAME;
     virtualMemory->policy = policyFIFO;
 
     newList(tlb);
@@ -44,7 +42,7 @@ int main(){
     int pid;
   
     // generate some items
-    for(i = 0; i < 500; i++){
+    for(i = 0; i < 100000; i++){
         pageNum = rand() % 100;
         pid = rand() % 100;
         addToMemory(pageNum, pid, POLICY, tlb, pageTables[pid], frameBuffer, virtualMemory);

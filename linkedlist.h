@@ -10,6 +10,7 @@ struct node{
     int pageNum;
     int pid;
     int frame;
+    int validity;
     struct node* previous;
     struct node* next;
 } typedef node;
