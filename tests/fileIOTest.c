@@ -5,7 +5,7 @@ int main(int argc, char *argv[]){
     FILE *tracefiles[argc- 1]; // Array of file descriptors
     int tracefileId = 0;
     uint32_t currentReferences[quantum];
-    int i, z = 0;
+    int i, numTraceFiles = 0, z = 0;
 
     // Gather Tracefile filenames
     for(i = 1; i < argc; i++){
@@ -14,10 +14,10 @@ int main(int argc, char *argv[]){
         if(tracefiles[z] == NULL){
             printf("Error opening file\n");
         }
-        z++;
+        numTraceFiles++;
     }
 
-    while(!readRefsFromFiles(quantum, tracefiles, tracefileId, currentReferences)){
+    while(!readRefsFromFiles(quantum, tracefiles, numTraceFiles, tracefileId, currentReferences)){
     }
 
 
