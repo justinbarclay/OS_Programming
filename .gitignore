@@ -37,5 +37,3 @@
 
 # trace files
 IO_test_Results.txt
-quicksort_dump.txt
-quicksort-trace.bin
