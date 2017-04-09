@@ -21,6 +21,8 @@ int main(int argc, char *argv[]){
 
     printf("Beginning test\nnumtracefiles: %d\n\n", numTraceFiles);
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, tracefileId, currentReferences)){
+        for(i = 0; i < quantum; i++){
+        }
     }
 
 
