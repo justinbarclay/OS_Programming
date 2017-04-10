@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
     int pgsize, tlbentries, quantum, physpages = 0;
     char uniformity, evictionPolicy;
     FILE *tracefiles[argc-MIN_CLI_ARGS];
-    int numTraceFiles = argc - MIN_CLI_ARG;
+    int numTraceFiles = argc - MIN_CLI_ARGS;
 
     int i, z = 0;
 

@@ -40,4 +40,6 @@ void printList(doubleLL * container);
 void reversePrintList(doubleLL * container);
 
 void policyFIFO(node* item, doubleLL* container);
+
+void policyLRU(node* item, doubleLL* container);
 #endif
