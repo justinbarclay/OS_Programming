@@ -11,17 +11,22 @@
 /*  Imports */
 #include <stdio.h>
 #include <stdlib.h>
+#include "fileIO.h"
+#include "linkedlist.h"
+#include "memory.h"
 
 /*  Macros*/
 #define MIN_CLI_ARGS 7
 
 /*  Function Declarations */
 int isPowerOfTwo(int x);
+int getPowerOfTwo(int number);
 
 int main(int argc, char *argv[]){
     int pgsize, tlbentries, quantum, physpages = 0;
     char uniformity, evictionPolicy;
     FILE *tracefiles[argc-MIN_CLI_ARGS];
+    int numTraceFiles = argc - MIN_CLI_ARG;
 
     int i, z = 0;
 
@@ -92,9 +97,57 @@ int main(int argc, char *argv[]){
         tracefiles[z] = *fclose(argv[i], "r");
         printf("Trace: %s\n", tracefiles[z]);
     }*/
+    /*
+     * Setup Datastructures
+     *
+     */
+    doubleLL* tlb = calloc(1, sizeof(doubleLL));
+    doubleLL* virtualMemory = calloc(1, sizeof(doubleLL));
+    doubleLL* pageTable;
+    doubleLL* pageTables[100];
+    int traceFileId =0;
+    uint32_t currentReferences[quantum];
+    node* frameBuffer[physpages];
+    
+    int POLICY = 0; //FIFO
+    int shiftBy = getPowerOfTwo(pgsize);
+    int j=0;
+    
+    // Create 100 processes
+    for(j=0; j< numTraceFiles; j++){
+        pageTable = calloc(1, sizeof(doubleLL));
+        pageTable->maxSize = pgsize;
+        pageTable->policy = policyFIFO;
+        newList(pageTable);
+        pageTables[j] = pageTable;
+    }
+    
+    tlb->maxSize = tlbentries;
+    tlb->policy = policyFIFO;
+    
+    virtualMemory->maxSize = physpages;
+    virtualMemory->policy = policyFIFO;
+
+    newList(tlb);
+    newList(virtualMemory);
+    int pageNum;
+    while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, &traceFileId, currentReferences)){
+        pageNum = (int) currentReferences[i] << shiftBy;
+         for(i = 0; i < quantum; i++){
+        addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer, virtualMemory);
+        }
+    }
 
 }
 
 int isPowerOfTwo (int x){
   return ((x != 0) && !(x & (x - 1)));
+}
+
+int getPowerOfTwo(int number){
+    int count = 0;
+    while((number = number << 1) > 1){
+        count++;
+    }
+    return count;
 }
