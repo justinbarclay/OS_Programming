@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
     doubleLL* tlb = calloc(1, sizeof(doubleLL));
     doubleLL* virtualMemory = calloc(1, sizeof(doubleLL));
     doubleLL* pageTable;
-    doubleLL* pageTables[100];
+    doubleLL* pageTables[pgsize];
     int traceFileId =0;
     uint32_t currentReferences[quantum];
     node* frameBuffer[physpages];
