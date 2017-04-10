@@ -32,12 +32,13 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
         return 1;
     }
 
-//    printf("File_id: %d\n", fileIdToProcess);
+    // printf("File_id: %d\n", fileIdToProcess); FOR DEBUGGING
+
     // Read 4 bytes into the appropriate currentReferences field, from the specified file
     // pointer
     while((bytes = fread(&currentReferences[i], 4, 1, openTracefiles[fileIdToProcess])) \
             > 0 && i < quantum){
-    //    printf("read num %d of %d: %08x\n", i, quantum,  currentReferences[i]);
+    //    printf("read num %d of %d: %08x\n", i, quantum,  currentReferences[i]); FOR DEBUGGING
         i++;
     }
 

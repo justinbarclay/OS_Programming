@@ -1,7 +1,7 @@
 #include "../fileIO.h"
 
 int main(int argc, char *argv[]){
-    int quantum = 3;
+    int quantum = 100;
     FILE *tracefiles[argc- 1]; // Array of file descriptors
     int var;
     int *tracefileId = &var;
@@ -11,7 +11,8 @@ int main(int argc, char *argv[]){
     // Gather Tracefile filenames
     for(i = 1; i < argc; i++){
         tracefiles[z] = fopen(argv[i], "rb");
-        printf("%s\n", argv[i]);
+
+        printf("File Name: %s\n", argv[i]);
 
         if(tracefiles[z] == NULL){
             printf("Error opening file\n");
@@ -20,7 +21,7 @@ int main(int argc, char *argv[]){
         z++;
     }
 
-    printf("Beginning test\nnumtracefiles: %d\n\n", numTraceFiles);
+    printf("Beginning test\nnumtracefiles: %d\nquantum %d\n\n", numTraceFiles, quantum);
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, tracefileId, currentReferences)){
         for(i = 0; i < quantum; i++){
             printf("ID %d: %04x\n", *tracefileId, currentReferences[i]);
