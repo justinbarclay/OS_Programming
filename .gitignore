@@ -38,4 +38,4 @@
 # trace files
 IO_test_Results.txt
 quicksort-trace.bin
-
+heapsort-trace.bin

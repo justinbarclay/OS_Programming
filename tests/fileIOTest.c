@@ -3,7 +3,8 @@
 int main(int argc, char *argv[]){
     int quantum = 3;
     FILE *tracefiles[argc- 1]; // Array of file descriptors
-    int tracefileId = 0;
+    int var;
+    int *tracefileId = &var;
     uint32_t currentReferences[quantum];
     int i, numTraceFiles = 0, z = 0;
 
@@ -22,6 +23,7 @@ int main(int argc, char *argv[]){
     printf("Beginning test\nnumtracefiles: %d\n\n", numTraceFiles);
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, tracefileId, currentReferences)){
         for(i = 0; i < quantum; i++){
+            printf("ID %d: %04x\n", *tracefileId, currentReferences[i]);
         }
     }
 

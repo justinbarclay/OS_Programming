@@ -34,10 +34,7 @@ test5: IOTest
 	./IOTest test1.txt > IO_test_Results.txt
 	less IO_test_Results.txt
 test6: IOTest
-	./IOTest text1.txt quicksort-trace.bin > IO_test_Results.txt
-	less IO_test_Results.txt
-test7: IOTest
-	./IOTest text1.txt quicksort-trace.bin > IO_test_Results.txt
+	./IOTest test1.txt quicksort-trace.bin > IO_test_Results.txt
 	less IO_test_Results.txt
 
 runTests: test1 test2 test3
