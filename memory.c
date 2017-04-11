@@ -10,7 +10,7 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
     // Page fault is if nodeExists & if node is valid
     // Add a valid boolean to nodeExists  so we can verify
     if((frame = nodeExists(pageNum, pid, tlb, &isValid))>0 && POLICY){
-        printf("TLB Collision"); // DEBUGGING REMOVE
+        printf("TLB Collision\n"); // DEBUGGING REMOVE
         if(isValid){
             traceFileTracker[pid].tlbHits++;
         }
@@ -19,7 +19,10 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         policyLRU(item, virtualMemory);
         return 0;
     } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid)) > 0 && POLICY){
-        printf("Page table Collision\n");
+        printf("Page table Collision\n"); //DEBUGGING REMOVE
+        if(isValid){
+            traceFileTracker[pid].pageFaults++;
+        }
         item = frameBuffer[frame];
         policyLRU(item, virtualMemory);
         return 0;
@@ -28,11 +31,15 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
 
     } else {
         int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory);
+        int evictedPage = -1;
         invalidateFrame(frame, tlb);
         invalidateFrame(frame, pageTable);
         // Page eviction occurs here, do number coding scheme for page evicted instead?
         // just need to know what tracefile it belongs to. Will be returning a number from -1 to the file ID
-        addNewNode(pageNum, pid, frame, pageTable);
+        evictedPage = addNewNode(pageNum, pid, frame, pageTable);
+        if(evictedPage > -1){
+            traceFileTracker[evictedPage].pageOuts++;
+        }
         addNewNode(pageNum, pid, frame, tlb);
         return 1;
     }
