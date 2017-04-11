@@ -33,7 +33,7 @@ int addNewNode(int pageNum, int pid, int frame, doubleLL * container);
 
 void deleteList(doubleLL * container);
 
-int nodeExists(int pageNum, int pid, doubleLL* container);
+int nodeExists(int pageNum, int pid, doubleLL* container, int *isValid);
 
 void printList(doubleLL * container);
 

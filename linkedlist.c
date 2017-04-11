@@ -33,6 +33,8 @@ int newList(doubleLL * container){
     return 1;
 }
 
+// Returns -1 if no node removed from page
+// Returns process id otherwise
 int addNewNode(int pageNum, int pid, int frame, doubleLL * container){
     node * item = calloc(1, sizeof(node));
     // Any of these values may be null?
@@ -40,10 +42,12 @@ int addNewNode(int pageNum, int pid, int frame, doubleLL * container){
     item->pid = pid;
     item->frame = frame;
     item->validity = 1;
+    int processPageOut = -1;
     if(container->currentSize >= container->maxSize){
         node* remove = container->tail->previous;
         node* update = remove->previous;
-    
+
+        processPageOut = container->tail->previous->pid;
         container->tail->previous = update;
         update->next = container->tail;
         container->currentSize--;
@@ -64,7 +68,7 @@ int addNewNode(int pageNum, int pid, int frame, doubleLL * container){
     //Increase container size count
     container->currentSize++;
 
-    return 1;
+    return processPageOut;
 }
 
 void deleteList(doubleLL* container){
@@ -104,13 +108,16 @@ void reversePrintList(doubleLL * container){
     }
 }
 
-int nodeExists(int pageNum, int pid, doubleLL* container){
+
+// sets isValid to 1 if the node is valid or 0 if invalid (tracking node->validity))
+int nodeExists(int pageNum, int pid, doubleLL* container, int *isValid){
     node* current = container->head->next;
     int index=0;
     while(current != NULL){
         index++;
         if(current->pageNum == pageNum &&
            current->pid == pid){
+            *isValid = current->validity;
             return current->frame;
         }
         current = current->next;
