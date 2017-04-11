@@ -18,6 +18,14 @@
 /*  Macros*/
 #define MIN_CLI_ARGS 7
 
+/*  Structs*/
+struct tracefileStats{
+    int tlbHits;
+    int pageFaults;
+    int pageOuts;
+    double average; //Not entirely sure how to calculate this
+};
+
 /*  Function Declarations */
 int isPowerOfTwo(int x);
 int getPowerOfTwo(int number);
@@ -27,7 +35,6 @@ int main(int argc, char *argv[]){
     char uniformity, evictionPolicy;
     FILE *tracefiles[argc-MIN_CLI_ARGS];
     int numTraceFiles = argc - MIN_CLI_ARGS;
-
     int i, z = 0;
 
     if(argc < MIN_CLI_ARGS){
@@ -52,6 +59,9 @@ int main(int argc, char *argv[]){
         }
         z++;
     }
+
+    // Create array to track tracefileStats
+    struct tracefileStats traceFileTracker[z];
 
     // Perform error checking on user input
     if(!isPowerOfTwo(pgsize)){
@@ -108,11 +118,11 @@ int main(int argc, char *argv[]){
     int traceFileId =0;
     uint32_t currentReferences[quantum];
     node* frameBuffer[physpages];
-    
+
     int POLICY = 0; //FIFO
     int shiftBy = getPowerOfTwo(pgsize);
     int j=0;
-    
+
     // Create 100 processes
     for(j=0; j< numTraceFiles; j++){
         pageTable = calloc(1, sizeof(doubleLL));
@@ -121,10 +131,10 @@ int main(int argc, char *argv[]){
         newList(pageTable);
         pageTables[j] = pageTable;
     }
-    
+
     tlb->maxSize = tlbentries;
     tlb->policy = policyFIFO;
-    
+
     virtualMemory->maxSize = physpages;
     virtualMemory->policy = policyFIFO;
 
@@ -136,6 +146,13 @@ int main(int argc, char *argv[]){
          for(i = 0; i < quantum; i++){
         addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer, virtualMemory);
         }
+    }
+
+    // Display output
+    for(i = 0; i < numTraceFiles; i++){
+        printf("%d %d %d %lf\n", traceFileTracker[z].tlbHits, traceFileTracker[i].pageFaults,\
+                    traceFileTracker[z].pageOuts);
+    
     }
 
 }
