@@ -5,12 +5,13 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
     node* item;
     int isValid;
     if((frame = nodeExists(pageNum, pid, tlb, &isValid))>0 && POLICY){
-        
+        printf("TLB Collision\n");
         item = frameBuffer[frame];
         policyLRU(item, tlb);
         policyLRU(item, virtualMemory);
         return 0;
     } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid)) > 0 && POLICY){
+        printf("Page table Collision\n");
         item = frameBuffer[frame];
         policyLRU(item, virtualMemory);
         return 0;

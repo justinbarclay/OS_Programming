@@ -7,7 +7,7 @@
 #include <unistd.h>
 // Header Files for a doubly linked list
 struct node{
-    int pageNum;
+    unsigned int pageNum;
     int pid;
     int frame;
     int validity;
@@ -29,11 +29,11 @@ struct doubleLinkedList{
 // returns 1 if success or 0 if failed
 int newList(doubleLL * container);
 
-int addNewNode(int pageNum, int pid, int frame, doubleLL * container);
+int addNewNode(unsigned int pageNum, int pid, int frame, doubleLL * container);
 
 void deleteList(doubleLL * container);
 
-int nodeExists(int pageNum, int pid, doubleLL* container, int *isValid);
+int nodeExists(unsigned int pageNum, int pid, doubleLL* container, int *isValid);
 
 void printList(doubleLL * container);
 

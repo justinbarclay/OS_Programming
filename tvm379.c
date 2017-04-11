@@ -11,6 +11,7 @@
 /*  Imports */
 #include <stdio.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
 #include "fileIO.h"
 #include "linkedlist.h"
 #include "memory.h"
@@ -101,12 +102,16 @@ int main(int argc, char *argv[]){
      * Setup Datastructures
      *
      */
+
+    // Unsigned ints
+    // Binary trees
+    // Average ??? Average time time that the table is at that size (IE if for half the time the program runs table is size 1 and the other half table is size 3, the average is 2)
     doubleLL* tlb = calloc(1, sizeof(doubleLL));
     doubleLL* virtualMemory = calloc(1, sizeof(doubleLL));
     doubleLL* pageTable;
     doubleLL* pageTables[pgsize];
     int traceFileId =0;
-    uint32_t currentReferences[quantum];
+    uint32_t currentReferences[quantum+1];
     node* frameBuffer[physpages];
     
     int POLICY = 0; //FIFO
@@ -124,7 +129,8 @@ int main(int argc, char *argv[]){
     
     tlb->maxSize = tlbentries;
     tlb->policy = policyFIFO;
-    
+
+    printf("Physical pages: %i\n", physpages);
     virtualMemory->maxSize = physpages;
     virtualMemory->policy = policyFIFO;
 
@@ -132,13 +138,16 @@ int main(int argc, char *argv[]){
     newList(virtualMemory);
     int pageNum;
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, &traceFileId, currentReferences)){
-        pageNum = (int) currentReferences[i] << shiftBy;
-         for(i = 0; i < quantum; i++){
-             addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer, virtualMemory);
+        for(i = 0; i < quantum; i++){
+            pageNum = htonl(currentReferences[i]) >> shiftBy;
+            addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer, virtualMemory);
         }
     }
 
+    printf("TLB\n");
     printList(tlb);
+    printf("Reverese TLB");
+    reversePrintList(tlb);
 }
 
 int isPowerOfTwo (int x){
@@ -147,7 +156,7 @@ int isPowerOfTwo (int x){
 
 int getPowerOfTwo(int number){
     int count = 0;
-    while((number = number << 1) > 1){
+    while((number = number >> 1) > 0){
         count++;
     }
     return count;
