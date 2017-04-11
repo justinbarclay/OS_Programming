@@ -152,7 +152,7 @@ int main(int argc, char *argv[]){
     for(i = 0; i < numTraceFiles; i++){
         printf("%d %d %d %lf\n", traceFileTracker[z].tlbHits, traceFileTracker[i].pageFaults,\
                     traceFileTracker[z].pageOuts);
-    
+
     }
 
 }

@@ -3,22 +3,30 @@
 int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageTable, node* frameBuffer[], doubleLL* virtualMemory){
     int frame;
     node* item;
-    if((frame = nodeExists(pageNum, pid, tlb))>0 && POLICY){
-        
+
+    // TLB hit occurs here
+    if((frame = nodeExists(pageNum, pid, tlb)) > 0 && POLICY){
+        // Page fault is if nodeExists & if node is valid
+        // Add a valid boolean to nodeExists  so we can verify
         item = frameBuffer[frame];
+
         policyLRU(item, tlb);
         policyLRU(item, virtualMemory);
         return 0;
+
     } else if((frame = nodeExists(pageNum, pid, pageTable)) > 0 && POLICY){
         item = frameBuffer[frame];
         policyLRU(item, virtualMemory);
         return 0;
     } else if((frame = nodeExists(pageNum, pid, pageTable)) > 0 && !POLICY) {
         return 0;
+
     } else {
         int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory);
         invalidateFrame(frame, tlb);
         invalidateFrame(frame, pageTable);
+        // Page eviction occurs here, do number coding scheme for page evicted instead?
+        // just need to know what tracefile it belongs to. Will be returning a number from -1 to the file ID
         addNewNode(pageNum, pid, frame, pageTable);
         addNewNode(pageNum, pid, frame, tlb);
         return 1;
