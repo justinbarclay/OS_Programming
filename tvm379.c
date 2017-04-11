@@ -20,12 +20,12 @@
 #define MIN_CLI_ARGS 7
 
 /*  Structs*/
-struct tracefileStats{
-    int tlbHits;
-    int pageFaults;
-    int pageOuts;
-    double average; //Not entirely sure how to calculate this
-};
+//struct tracefileStat{
+//    int tlbHits;
+//    int pageFaults;
+//    int pageOuts;
+//    double average; //Not entirely sure how to calculate this
+//};
 
 /*  Function Declarations */
 int isPowerOfTwo(int x);
@@ -37,6 +37,11 @@ int main(int argc, char *argv[]){
     FILE *tracefiles[argc-MIN_CLI_ARGS];
     int numTraceFiles = argc - MIN_CLI_ARGS;
     int i, z = 0;
+
+    // Initialization struct for collecting tracefile stats
+    const struct tracefileStat statInit = {
+        .tlbHits =0, .pageFaults = 0, .pageOuts = 0, .average = 0.0
+    };
 
     if(argc < MIN_CLI_ARGS){
         printf("Insufficient number of command line arguments provided\n");
@@ -62,7 +67,11 @@ int main(int argc, char *argv[]){
     }
 
     // Create array to track tracefileStats
-    struct tracefileStats traceFileTracker[z];
+    struct tracefileStat traceFileTracker[numTraceFiles];
+
+    for(i = 0; i < numTraceFiles; i++ ){
+        traceFileTracker[i] = statInit;
+    }
 
     // Perform error checking on user input
     if(!isPowerOfTwo(pgsize)){
@@ -115,7 +124,8 @@ int main(int argc, char *argv[]){
 
     // Unsigned ints
     // Binary trees
-    // Average ??? Average time time that the table is at that size (IE if for half the time the program runs table is size 1 and the other half table is size 3, the average is 2)
+    // Average ??? Average time time that the table is at that size
+    // (IE if for half the time the program runs table is size 1 and the other half table is size 3, the average is 2)
     doubleLL* tlb = calloc(1, sizeof(doubleLL));
     doubleLL* virtualMemory = calloc(1, sizeof(doubleLL));
     doubleLL* pageTable;
@@ -150,13 +160,14 @@ int main(int argc, char *argv[]){
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, &traceFileId, currentReferences)){
         for(i = 0; i < quantum; i++){
             pageNum = htonl(currentReferences[i]) >> shiftBy;
-            addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer, virtualMemory);
+            addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer, \
+                    virtualMemory, traceFileTracker);
         }
     }
 
     // Display output
     for(i = 0; i < numTraceFiles; i++){
-        printf("%d %d %d %lf\n", traceFileTracker[z].tlbHits, traceFileTracker[i].pageFaults,\
+        printf("%d %d %d\n", traceFileTracker[z].tlbHits, traceFileTracker[i].pageFaults,\
                     traceFileTracker[z].pageOuts);
 
     }

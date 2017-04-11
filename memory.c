@@ -1,17 +1,20 @@
 #include "memory.h"
 
-int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageTable, node* frameBuffer[], doubleLL* virtualMemory){
+int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageTable, \
+        node* frameBuffer[], doubleLL* virtualMemory, struct tracefileStat traceFileTracker[]){
     int frame;
     node* item;
     int isValid;
+
     // TLB Hit occurs here
-// Page fault is if nodeExists & if node is valid
-        // Add a valid boolean to nodeExists  so we can verify
-
+    // Page fault is if nodeExists & if node is valid
+    // Add a valid boolean to nodeExists  so we can verify
     if((frame = nodeExists(pageNum, pid, tlb, &isValid))>0 && POLICY){
-        printf("TLB Collision\n");
+        printf("TLB Collision"); // DEBUGGING REMOVE
+        if(isValid){
+            traceFileTracker[pid].tlbHits++;
+        }
         item = frameBuffer[frame];
-
         policyLRU(item, tlb);
         policyLRU(item, virtualMemory);
         return 0;
