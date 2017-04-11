@@ -15,7 +15,7 @@
 #include "linkedlist.h"
 #include "memory.h"
 
-/*  Macros*/
+/*  Macros */
 #define MIN_CLI_ARGS 7
 
 /*  Function Declarations */
@@ -138,6 +138,7 @@ int main(int argc, char *argv[]){
         }
     }
 
+    printList(tlb);
 }
 
 int isPowerOfTwo (int x){
