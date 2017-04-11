@@ -3,22 +3,24 @@
 int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageTable, node* frameBuffer[], doubleLL* virtualMemory){
     int frame;
     node* item;
-
-    // TLB hit occurs here
-    if((frame = nodeExists(pageNum, pid, tlb)) > 0 && POLICY){
-        // Page fault is if nodeExists & if node is valid
+    int isValid;
+    // TLB Hit occurs here
+// Page fault is if nodeExists & if node is valid
         // Add a valid boolean to nodeExists  so we can verify
+
+    if((frame = nodeExists(pageNum, pid, tlb, &isValid))>0 && POLICY){
+        printf("TLB Collision\n");
         item = frameBuffer[frame];
 
         policyLRU(item, tlb);
         policyLRU(item, virtualMemory);
         return 0;
-
-    } else if((frame = nodeExists(pageNum, pid, pageTable)) > 0 && POLICY){
+    } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid)) > 0 && POLICY){
+        printf("Page table Collision\n");
         item = frameBuffer[frame];
         policyLRU(item, virtualMemory);
         return 0;
-    } else if((frame = nodeExists(pageNum, pid, pageTable)) > 0 && !POLICY) {
+    } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid)) > 0 && !POLICY) {
         return 0;
 
     } else {

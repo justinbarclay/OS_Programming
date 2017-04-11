@@ -33,17 +33,21 @@ int newList(doubleLL * container){
     return 1;
 }
 
-int addNewNode(int pageNum, int pid, int frame, doubleLL * container){
+// Returns -1 if no node removed from page
+// Returns process id otherwise
+int addNewNode(unsigned int pageNum, int pid, int frame, doubleLL * container){
     node * item = calloc(1, sizeof(node));
     // Any of these values may be null?
     item->pageNum = pageNum;
     item->pid = pid;
     item->frame = frame;
     item->validity = 1;
+    int processPageOut = -1;
     if(container->currentSize >= container->maxSize){
         node* remove = container->tail->previous;
         node* update = remove->previous;
-    
+
+        processPageOut = container->tail->previous->pid;
         container->tail->previous = update;
         update->next = container->tail;
         container->currentSize--;
@@ -64,7 +68,7 @@ int addNewNode(int pageNum, int pid, int frame, doubleLL * container){
     //Increase container size count
     container->currentSize++;
 
-    return 1;
+    return processPageOut;
 }
 
 void deleteList(doubleLL* container){
@@ -90,7 +94,7 @@ void printList(doubleLL * container){
     int i;
     node* current = container->head->next;
     for(i=0; i< container->currentSize; i++){
-        printf("PageNum: %i, pid: %i, frameNum: %i, validity: %i\n", current->pageNum, current->pid, current->frame, current->validity);
+        printf("PageNum: %u, pid: %i, frameNum: %i, validity: %i\n", current->pageNum, current->pid, current->frame, current->validity);
         current = current->next;
     }
 }
@@ -99,18 +103,21 @@ void reversePrintList(doubleLL * container){
     int i;
     node* current = container->tail->previous;
     for(i=0; i< container->currentSize; i++){
-        printf("PageNum: %i, pid: %i, frameNum: %i, validity: %i\n", current->pageNum, current->pid, current->frame, current->validity);
+        printf("PageNum: %u, pid: %i, frameNum: %i, validity: %i\n", current->pageNum, current->pid, current->frame, current->validity);
         current = current->previous;
     }
 }
 
-int nodeExists(int pageNum, int pid, doubleLL* container){
+
+// sets isValid to 1 if the node is valid or 0 if invalid (tracking node->validity))
+int nodeExists(unsigned int pageNum, int pid, doubleLL* container, int *isValid){
     node* current = container->head->next;
     int index=0;
     while(current != NULL){
         index++;
         if(current->pageNum == pageNum &&
            current->pid == pid){
+            *isValid = current->validity;
             return current->frame;
         }
         current = current->next;
