@@ -35,10 +35,10 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
     // Read 4 bytes into the appropriate currentReferences field, from the specified file
     // pointer
     int i = 0;
-    while((bytes = fread(&currentReferences[i], 4, 1, openTracefiles[fileIdToProcess])) \
-            > 0 && i < quantum){
-    //    printf("read num %d of %d: %08x\n", i, quantum,  currentReferences[i]); FOR DEBUGGING
-        i++;
+    int readval = 4 * quantum;
+    while((bytes = fread(currentReferences, readval, 1, openTracefiles[fileIdToProcess])) \
+            > 0 && i < quantum *4 ){
+        i += quantum;
     }
 
     // If the entire file has been read, close the file and set it's pointer to NULL

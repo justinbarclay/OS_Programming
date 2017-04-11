@@ -166,6 +166,7 @@ int main(int argc, char *argv[]){
     }
 
     // Display output
+    printf("Tracefiles:\n");
     for(i = 0; i < numTraceFiles; i++){
         printf("%d %d %d\n", traceFileTracker[z].tlbHits, traceFileTracker[i].pageFaults,\
                     traceFileTracker[z].pageOuts);
