@@ -22,7 +22,6 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
     if(filesCompleted == numTraceFiles){
         return 0;
     }
-
     // If the file to be read is a null file,  look at the next file, and return 1 to
     // begin iterating again; Area for optimization
     if(openTracefiles[fileIdToProcess] == NULL){
