@@ -134,7 +134,7 @@ int main(int argc, char *argv[]){
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, &traceFileId, currentReferences)){
         pageNum = (int) currentReferences[i] << shiftBy;
          for(i = 0; i < quantum; i++){
-        addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer, virtualMemory);
+             addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer, virtualMemory);
         }
     }
 

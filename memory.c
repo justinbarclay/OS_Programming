@@ -3,17 +3,18 @@
 int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageTable, node* frameBuffer[], doubleLL* virtualMemory){
     int frame;
     node* item;
-    if((frame = nodeExists(pageNum, pid, tlb))>0 && POLICY){
+    int isValid;
+    if((frame = nodeExists(pageNum, pid, tlb, &isValid))>0 && POLICY){
         
         item = frameBuffer[frame];
         policyLRU(item, tlb);
         policyLRU(item, virtualMemory);
         return 0;
-    } else if((frame = nodeExists(pageNum, pid, pageTable)) > 0 && POLICY){
+    } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid)) > 0 && POLICY){
         item = frameBuffer[frame];
         policyLRU(item, virtualMemory);
         return 0;
-    } else if((frame = nodeExists(pageNum, pid, pageTable)) > 0 && !POLICY) {
+    } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid)) > 0 && !POLICY) {
         return 0;
     } else {
         int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory);
