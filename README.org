@@ -12,7 +12,7 @@ The program first reads in the flags from the command line, and verifies them fo
   1. We tried to minimize iteration as much as possible by having all arrays index on PID or some uniquely identifiable variable to ensure constant time lookup of data
   2. We wrote tests found in the /tests folder to ensure our modules were working as intended 
   3. We maintained separate .c and .h files for each major functionality that are highly independent to ensure that code was easily debuggable and optimized
-  4. TLB, all pageTables and virtualMemory are all represented as doubly linked list. This means that we can dynamically allocate all storage and only use up as much memory as we need at any given time and no more.
+  4. TLB, all pageTables, and virtualMemory are all represented as doubly linked list. This means that we can dynamically allocate all storage and only use up as much memory as we need at any given time and no more.
 
 * Testing
 ** Test Suite
