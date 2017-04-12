@@ -168,6 +168,7 @@ int main(int argc, char *argv[]){
         printf("tlbHits %d\n pageFaults %d\n pageOuts %d\n", traceFileTracker[i]->tlbHits, traceFileTracker[i]->pageFaults,\
                     traceFileTracker[i]->pageOuts);
 
+
     }
 
     printf("TLB\n");
