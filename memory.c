@@ -34,19 +34,17 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         static int totalPageOut = 0;
         int pageOut =0;
         int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory, &pageOut);
+
+        // If pageout set to one, track it
         if(pageOut){
             traceFileTracker[pid].pageOuts++;
             totalPageOut++;
         }
+        // If node existed in tlb or pagetables delete it
         invalidateFrame(frame, tlb);
         invalidateFrame(frame, pageTable);
-        // Page eviction occurs here, do number coding scheme for page evicted instead?
-        // just need to know what tracefile it belongs to. Will be returning a number from -1 to the file ID
-        /* evictedPage = addNewNode(pageNum, pid, frame, pageTable); */
-        /* if(evictedPage > -1){ */
-        /*     traceFileTracker[pid].pageOuts++; */
-        /* } */
-        
+
+        // Add new node to list
         addNewNode(pageNum, pid, frame, pageTable);
         addNewNode(pageNum, pid, frame, tlb);
         return 1;
@@ -56,10 +54,12 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
 int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtualMemory, int *pageOut){
     // Function makes the assumption that frameBuffer
     int frame = 0;
+    // Make sure pageout is set to 0
     *pageOut = 0;
+    // If we have space in the linked list add to end
     if(virtualMemory->currentSize < virtualMemory->maxSize){
-        frame = virtualMemory->currentSize; //Grab currentFrame number and increase by one;
-        addNewNode(pageNum,pid, frame, virtualMemory);
+        frame = virtualMemory->currentSize; //Grab currentFrame number
+        addNewNode(pageNum,pid, frame, virtualMemory); // add new node to virtualMemory
 
         // Grab the newest node
         node* currentAddress = virtualMemory->head->next;
@@ -74,8 +74,11 @@ int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtu
         // grab current node address and add it to memory
         node* currentAddress = virtualMemory->head->next;
         frameBuffer[frame] = currentAddress;
+        // Needed to delete/pageout a node
         *pageOut = 1;
     }
+
+    // Return frame number incase we need to invalidate another list
     return frame;
 }
 
