@@ -130,7 +130,7 @@ int main(int argc, char *argv[]){
     doubleLL* tlb = calloc(1, sizeof(doubleLL));
     doubleLL* virtualMemory = calloc(1, sizeof(doubleLL));
     doubleLL* pageTable;
-    doubleLL* pageTables[pgsize];
+    doubleLL* pageTables[numTraceFiles];
     int traceFileId =0;
     uint32_t currentReferences[quantum+1];
     node* frameBuffer[physpages];
@@ -170,8 +170,8 @@ int main(int argc, char *argv[]){
     // Display output
     printf("Tracefiles:\n");
     for(i = 0; i < numTraceFiles; i++){
-        printf("%d %d %d\n", traceFileTracker[z].tlbHits, traceFileTracker[i].pageFaults,\
-                    traceFileTracker[z].pageOuts);
+        printf("%d %d %d\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,\
+                    traceFileTracker[i].pageOuts);
 
     }
 
@@ -180,6 +180,13 @@ int main(int argc, char *argv[]){
     printf("Reverese TLB");
     reversePrintList(tlb);
     printf("Bytes read %i\n", bytesread);
+
+    deleteList(tlb);
+    deleteList(virtualMemory);
+    
+    for(i = 0; i < numTraceFiles; i++){
+        deleteList(pageTables[i]);
+    }
 }
 
 int isPowerOfTwo (int x){
