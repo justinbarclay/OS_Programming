@@ -11,18 +11,20 @@
  * the required statistics throught the use of the tracefileStat
  * struct and tracefileTracker array
  * *****************************************************************/
-#include "linkedlist.h"
 #include "memory.h"
-int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageTable, node* frameBuffer[], doubleLL* virtualMemory, struct tracefileStat traceFileTracker[]){
+int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageTables[], node* frameBuffer[], \
+        doubleLL* virtualMemory, struct tracefileStat traceFileTracker[]){
     int frame;
     node* item;
     int isValid;
+    doubleLL* pageTable = pageTables[pid];
     // Each time we loook at the pagetable update average
-    traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize, ++(traceFileTracker[pid].pageAccesses));
+    traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, \
+            pageTable->currentSize, ++(traceFileTracker[pid].pageAccesses));
     // TLB Hit occurs here
     // Page fault is if nodeExists & if node is valid
     // Add a valid boolean to nodeExists  so we can verify
-    if((frame = nodeExists(pageNum, pid, tlb, &isValid, 1))>0){
+    if((frame = nodeExists(pageNum, pid, tlb, &isValid, 1)) > 0){
         // If we have found a frame in the TLB
         // Count the stat as a tlbHit
         traceFileTracker[pid].tlbHits++;
@@ -36,10 +38,12 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
 
         return 0;
 
+    // If node exists in the pageTable
     } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid, 0)) > 0){
-
+        // If it exists in the pageTable and not the tlb, add it to the tlb
         addNewNode(pageNum, pid, frame, tlb);
 
+        // if our policy is LRU, update virtual memory
         if(POLICY){
             item = frameBuffer[frame];
             policyLRU(item, virtualMemory);
@@ -47,25 +51,33 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         return 0;
 
     } else {
+        // Page fault because we have to add to memory
         traceFileTracker[pid].pageFaults++;
-        int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory, traceFileTracker);
+        // Tracking victim incase we eject something in virtual memory
+        int victim = -1;
 
-        invalidateFrame(frame, tlb);
-        invalidateFrame(frame, pageTable);
-        traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize, ++traceFileTracker[pid].pageAccesses);
+        // grab the new frame number from adding something to memory
+        int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory, &victim);
+        // If we ejected something
+        if(victim >-1){
+            // update victim's pageout
+            traceFileTracker[victim].pageOuts++;
+            // delete the node if it exists in the TLB or the victims pagetable
+            invalidateFrame(frame, tlb);
+            invalidateFrame(frame, pageTables[victim]);
+        }
 
-        // Add new node to list
+        // Add the new node to the pageTable and TLB
         addNewNode(pageNum, pid, frame, pageTable);
-        traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize,\
-                                               ++traceFileTracker[pid].pageAccesses);
         addNewNode(pageNum, pid, frame, tlb);
         return 1;
     }
 }
 
-int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtualMemory, struct tracefileStat traceFileTracker[] ){
+int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtualMemory, int *victim ){
     // Function makes the assumption that frameBuffer
     int frame = 0;
+    *victim = -1;
     // Make sure pageout is set to 0
     // If we have space in the linked list add to end
     if(virtualMemory->currentSize < virtualMemory->maxSize){
@@ -79,7 +91,7 @@ int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtu
     } else {
         // If our framebuffer is full
         // grab the frame of the node at the tail
-        int victim = virtualMemory->tail->previous->pid;
+        *victim = virtualMemory->tail->previous->pid;
         frame =virtualMemory->tail->previous->frame;
         // and reuse it
         addNewNode(pageNum, pid, frame, virtualMemory);
@@ -87,7 +99,6 @@ int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtu
         node* currentAddress = virtualMemory->head->next;
         frameBuffer[frame] = currentAddress;
         // Needed to delete/pageout a node
-        traceFileTracker[victim].pageOuts++;
     }
 
     // Return frame number incase we need to invalidate another list
@@ -98,22 +109,22 @@ void invalidateFrame(int frame, doubleLL* container){
     // invalidate a node by removing it from page table
     node* current = container->head->next;
     int i = 0;
+    // Look for a node containing a certain frame
     for(i=0; i< container->currentSize; i++){
         if(current->frame == frame){
-            node* next = current->next;
-            node* previous = current->previous;
+            deleteNode(current);
 
-            next->previous = previous;
-            previous->next = next;
+            // Node has been deleted adjust current size accordingly
             container->currentSize--;
-            free(current);
             return;
         }
+        // If we haven't found the node move onto the next
         current = current->next;
     }
     return;
 }
 
 double incAvg(double oldAvg, int newValue, int iteration){
+    // Incremental averaging
     return oldAvg + (newValue - oldAvg)/iteration;
 }
