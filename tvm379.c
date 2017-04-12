@@ -134,8 +134,7 @@ int main(int argc, char *argv[]){
 
     tlb->maxSize = tlbentries;
     tlb->policy = policyFIFO;
-
-    printf("Physical pages: %i\n", physpages);
+    
     virtualMemory->maxSize = physpages;
     virtualMemory->policy = policyFIFO;
 

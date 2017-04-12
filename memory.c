@@ -22,7 +22,7 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
     // TLB Hit occurs here
     // Page fault is if nodeExists & if node is valid
     // Add a valid boolean to nodeExists  so we can verify
-    if((frame = nodeExists(pageNum, pid, tlb, &isValid, 1))>0){
+    if((frame = nodeExists(pageNum, pid, tlb, &isValid, 1)) > 0){
         // If we have found a frame in the TLB
         // Count the stat as a tlbHit
         traceFileTracker[pid].tlbHits++;
@@ -35,11 +35,12 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         }
         
         return 0;
-        
+    // If node exists in the pageTable    
     } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid, 0)) > 0){
-        
+        // If it exists in the pageTable and not the tlb, add it to the tlb
         addNewNode(pageNum, pid, frame, tlb);
-        
+
+        // if our policy is LRU, update virtual memory
         if(POLICY){
             item = frameBuffer[frame];
             policyLRU(item, virtualMemory);
@@ -47,20 +48,24 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         return 0;
         
     } else {
+        // Page fault because we have to add to memory
         traceFileTracker[pid].pageFaults++;
+        // Tracking victim incase we eject something in virtual memory
         int victim = -1;
+
+        // grab the new frame number from adding something to memory
         int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory, &victim);
+        // If we ejected something
         if(victim >-1){
+            // update victim's pageout
             traceFileTracker[victim].pageOuts++;
+            // delete the node if it exists in the TLB or the victims pagetable
             invalidateFrame(frame, tlb);
             invalidateFrame(frame, pageTables[victim]);
         }
-        /* traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize, ++traceFileTracker[pid].pageAccesses); */
-
-        // Add new node to list
+        
+        // Add the new node to the pageTable and TLB
         addNewNode(pageNum, pid, frame, pageTable);
-        /* traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize,\ */
-        /*                                        ++traceFileTracker[pid].pageAccesses); */
         addNewNode(pageNum, pid, frame, tlb);
         return 1;
     }
