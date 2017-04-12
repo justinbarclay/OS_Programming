@@ -23,7 +23,7 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
        // printf("Page table Collision\n"); //DEBUGGING REMOVE
         if(!isValid){
         }
-
+        addNewNode(pageNum, pid, frame, tlb);
         if(POLICY){
             item = frameBuffer[frame];
             policyLRU(item, virtualMemory);

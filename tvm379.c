@@ -157,15 +157,15 @@ int main(int argc, char *argv[]){
     newList(virtualMemory);
     int pageNum;
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, &traceFileId, currentReferences)){
+        if(uniformity == 'p'){
+            deleteList(tlb);
+            newList(tlb);
+        }
         for(i = 0; i < quantum; i++){
             pageNum = htonl(currentReferences[i]) >> shiftBy;
             addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer,
                         virtualMemory, traceFileTracker);
             bytesread += 4;
-        }
-        if(uniformity == 'p'){
-            deleteList(tlb);
-            newList(tlb);
         }
     }
 
