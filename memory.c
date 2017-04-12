@@ -10,7 +10,7 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
     // Page fault is if nodeExists & if node is valid
     // Add a valid boolean to nodeExists  so we can verify
     if((frame = nodeExists(pageNum, pid, tlb, &isValid, 1))>0){
-       // printf("TLB Collision\n"); // DEBUGGING REMOVE
+        // printf("TLB Collision\n"); // DEBUGGING REMOVE
         if(isValid){
             traceFileTracker[pid].tlbHits++;
         }
@@ -20,6 +20,8 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         }
         return 0;
     } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid, 0)) > 0){
+        traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize,\
+                                               ++traceFileTracker[pid].pageAccesses);
         addNewNode(pageNum, pid, frame, tlb);
         if(POLICY){
             item = frameBuffer[frame];
@@ -40,9 +42,13 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         // If node existed in tlb or pagetables delete it
         invalidateFrame(frame, tlb);
         invalidateFrame(frame, pageTable);
+        traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize,\
+                                               ++traceFileTracker[pid].pageAccesses);
 
         // Add new node to list
         addNewNode(pageNum, pid, frame, pageTable);
+        traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize,\
+                                               ++traceFileTracker[pid].pageAccesses);
         addNewNode(pageNum, pid, frame, tlb);
         return 1;
     }
@@ -97,4 +103,7 @@ void invalidateFrame(int frame, doubleLL* container){
         current = current->next;
     }
     return;
+}
+double incAvg(double oldAvg, int newValue, int iteration){
+    return oldAvg + (newValue - oldAvg)/iteration;
 }
