@@ -1,8 +1,8 @@
 #include "memory.h"
 
 int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageTable, node* frameBuffer[],
-                doubleLL* virtualMemory, tracefileStat *traceFileTracker[]){
-    int frame=0;
+                doubleLL* virtualMemory, struct tracefileStat traceFileTracker[]){
+    int frame;
     node* item;
     int isValid;
 
@@ -10,52 +10,47 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
     // Page fault is if nodeExists & if node is valid
     // Add a valid boolean to nodeExists  so we can verify
     if((frame = nodeExists(pageNum, pid, tlb, &isValid, 1))>0){
-        //printf("TLB Collision\n"); // DEBUGGING REMOVE
+       // printf("TLB Collision\n"); // DEBUGGING REMOVE
         if(isValid){
-            traceFileTracker[pid]->tlbHits++;
+            traceFileTracker[pid].tlbHits++;
         }
+        item = frameBuffer[frame];
         if(POLICY){
-            item = frameBuffer[frame];
             policyLRU(item, virtualMemory);
         }
         return 0;
     } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid, 0)) > 0){
-        //printf("Page table Collision\n"); //DEBUGGING REMOVE
-        if(isValid){
-            traceFileTracker[pid]->pageFaults++;
+       // printf("Page table Collision\n"); //DEBUGGING REMOVE
+        if(!isValid){
+            traceFileTracker[pid].pageFaults++;
         }
+
         if(POLICY){
             item = frameBuffer[frame];
             policyLRU(item, virtualMemory);
         }
         return 0;
     } else {
-        int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory, traceFileTracker);
+        int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory);
         int evictedPage = -1;
         invalidateFrame(frame, tlb);
-
-        // Need to rethink how we evict from pageTables
         invalidateFrame(frame, pageTable);
         // Page eviction occurs here, do number coding scheme for page evicted instead?
         // just need to know what tracefile it belongs to. Will be returning a number from -1 to the file ID
-        // Shouldn't be evicting from pageTable, but will evict from virtualMemory, need to catch TLB as well.
-        /* evictedPage = addNewNode(pageNum, pid, frame, pageTable); */
-        /* if(evictedPage > -1){ */
-        /*     traceFileTracker[evictedPage]->pageOuts++; */
-        /* } */
-        evictedPage = addNewNode(pageNum, pid, frame, tlb);
+        evictedPage = addNewNode(pageNum, pid, frame, pageTable);
         if(evictedPage > -1){
-            traceFileTracker[evictedPage]->pageOuts++;
+            traceFileTracker[evictedPage].pageOuts++;
         }
+        addNewNode(pageNum, pid, frame, tlb);
         return 1;
     }
 }
 
-int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtualMemory, tracefileStat* stats[]){
+int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtualMemory){
     // Function makes the assumption that frameBuffer
-    int frame = -1;
+    int frame = 0;
     if(virtualMemory->currentSize < virtualMemory->maxSize){
-        frame = virtualMemory->currentSize++; //Grab currentFrame number and increase by one;
+        frame = virtualMemory->currentSize; //Grab currentFrame number and increase by one;
         addNewNode(pageNum,pid, frame, virtualMemory);
 
         // Grab the newest node
@@ -65,10 +60,8 @@ int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtu
     } else {
         // If our framebuffer is full
         // grab the frame of the node at the tail
-        node* toReplace = virtualMemory->tail->previous;
-        frame = toReplace->frame;
+        frame = virtualMemory->tail->previous->frame;
         // and reuse it
-        stats[toReplace->pid]->pageOuts++;
         addNewNode(pageNum, pid, frame, virtualMemory);
         // grab current node address and add it to memory
         node* currentAddress = virtualMemory->head->next;

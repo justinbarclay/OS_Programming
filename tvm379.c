@@ -32,7 +32,6 @@ int isPowerOfTwo(int x);
 int getPowerOfTwo(int number);
 
 int main(int argc, char *argv[]){
-    static int bytesRead = 0;
     int pgsize, tlbentries, quantum, physpages = 0;
     char uniformity, evictionPolicy;
     FILE *tracefiles[argc-MIN_CLI_ARGS];
@@ -40,7 +39,9 @@ int main(int argc, char *argv[]){
     int i, z = 0;
 
     // Initialization struct for collecting tracefile stats
-    
+    const struct tracefileStat statInit = {
+        .tlbHits =0, .pageFaults = 0, .pageOuts = 0, .average = 0.0
+    };
 
     if(argc < MIN_CLI_ARGS){
         printf("Insufficient number of command line arguments provided\n");
@@ -55,21 +56,21 @@ int main(int argc, char *argv[]){
     uniformity = *argv[3];
     evictionPolicy = *argv[6];
 
-    // Create array to track tracefileStats
-    tracefileStat *traceFileTracker[numTraceFiles];
     // Gather Tracefile filenames
     for(i = MIN_CLI_ARGS; i < argc; i++){
         tracefiles[z] = fopen(argv[i], "rb");
- 
         if(tracefiles[z] == NULL){
             printf("Error opening file\n");
             exit(0);
         }
-        traceFileTracker[z] = calloc(1, sizeof(tracefileStat));
         z++;
     }
+
+    // Create array to track tracefileStats
+    struct tracefileStat traceFileTracker[numTraceFiles];
+
     for(i = 0; i < numTraceFiles; i++ ){
-        
+        traceFileTracker[i] = statInit;
     }
 
     // Perform error checking on user input
@@ -159,25 +160,23 @@ int main(int argc, char *argv[]){
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, &traceFileId, currentReferences)){
         for(i = 0; i < quantum; i++){
             pageNum = htonl(currentReferences[i]) >> shiftBy;
-            addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer, virtualMemory, traceFileTracker);
-            bytesRead += 4;
+            addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer, \
+                    virtualMemory, traceFileTracker);
         }
     }
 
     // Display output
     printf("Tracefiles:\n");
     for(i = 0; i < numTraceFiles; i++){
-        
-        printf("tlbHits %d\n pageFaults %d\n pageOuts %d\n", traceFileTracker[i]->tlbHits, traceFileTracker[i]->pageFaults,\
-                    traceFileTracker[i]->pageOuts);
+        printf("%d %d %d\n", traceFileTracker[z].tlbHits, traceFileTracker[i].pageFaults,\
+                    traceFileTracker[z].pageOuts);
+
     }
 
     printf("TLB\n");
     printList(tlb);
     printf("Reverese TLB");
     reversePrintList(tlb);
-    printf("Virtual Memory Size %i\n", virtualMemory->currentSize);
-    printf("bytesRead %i\n", bytesRead);
 }
 
 int isPowerOfTwo (int x){
