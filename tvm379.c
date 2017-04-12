@@ -167,8 +167,8 @@ int main(int argc, char *argv[]){
 
     // Display output
     for(i = 0; i < numTraceFiles; i++){
-        printf("%d\t %d\t %d\t\t %lf\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,
-                    traceFileTracker[i].pageOuts, traceFileTracker[i].average);
+        printf("%d\t%d\t%d\t%d\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,
+                    traceFileTracker[i].pageOuts,(int) traceFileTracker[i].average);
     }
     
     // Clean up after ourselves
