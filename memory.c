@@ -12,6 +12,13 @@
  * struct and tracefileTracker array
  * *****************************************************************/
 #include "memory.h"
+/*
+  * Globals
+  *
+  */
+int previousPID = -1;
+int previousPageNum = -1;
+
 int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageTables[], node* frameBuffer[], doubleLL* virtualMemory, struct tracefileStat traceFileTracker[]){
     int frame;
     node* item;
@@ -19,6 +26,21 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
     doubleLL* pageTable = pageTables[pid];
     // Each time we loook at the pagetable update average
     traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize, ++(traceFileTracker[pid].pageAccesses));
+    // TLB Hit occurs here
+    // Page fault is if nodeExists & if node is valid
+    // Add a valid boolean to nodeExists  so we can verify
+    if(pid == previousPID && pageNum == previousPageNum && !POLICY){
+        // We can't do this during POLICY because we still need to look up frame number of node
+        traceFileTracker[pid].tlbHits++;
+        previousPID = pid;
+        previousPageNum = pageNum;
+        return 0;
+ 
+    }
+
+    //If we didnt' set these in the previous if statement set them here
+    previousPID = pid;
+    previousPageNum = pageNum;
     // TLB Hit occurs here
     // Page fault is if nodeExists & if node is valid
     // Add a valid boolean to nodeExists  so we can verify
