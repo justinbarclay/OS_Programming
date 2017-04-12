@@ -33,7 +33,7 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         traceFileTracker[pid].pageFaults++;
         static int totalPageOut = 0;
         int pageOut =0;
-        int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory, &pageOut);
+        int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory, traceFileTracker);
 
         // If pageout set to one, track it
         if(pageOut){
@@ -51,11 +51,10 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
     }
 }
 
-int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtualMemory, int *pageOut){
+int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtualMemory, struct tracefileStat traceFileTracker[] ){
     // Function makes the assumption that frameBuffer
     int frame = 0;
     // Make sure pageout is set to 0
-    *pageOut = 0;
     // If we have space in the linked list add to end
     if(virtualMemory->currentSize < virtualMemory->maxSize){
         frame = virtualMemory->currentSize; //Grab currentFrame number
@@ -68,6 +67,7 @@ int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtu
     } else {
         // If our framebuffer is full
         // grab the frame of the node at the tail
+        int victim = virtualMemory->tail->previous->pid;
         frame =virtualMemory->tail->previous->frame;
         // and reuse it
         addNewNode(pageNum, pid, frame, virtualMemory);
@@ -75,7 +75,7 @@ int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtu
         node* currentAddress = virtualMemory->head->next;
         frameBuffer[frame] = currentAddress;
         // Needed to delete/pageout a node
-        *pageOut = 1;
+        traceFileTracker[victim].pageOuts++;
     }
 
     // Return frame number incase we need to invalidate another list
