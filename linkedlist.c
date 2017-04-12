@@ -94,7 +94,9 @@ void deleteNode(node* item){
 
 void printList(doubleLL * container){
     int i;
+    // Skip the head
     node* current = container->head->next;
+    // Then printf out currentSize number of nodes
     for(i=0; i< container->currentSize; i++){
         printf("PageNum: %u, pid: %i, frameNum: %i, validity: %i\n", current->pageNum, current->pid, current->frame, current->validity);
         current = current->next;
@@ -103,8 +105,10 @@ void printList(doubleLL * container){
 
 void reversePrintList(doubleLL * container){
     int i;
+    // Skip over tail
     node* current = container->tail->previous;
     for(i=0; i< container->currentSize; i++){
+        // Then print out 
         printf("PageNum: %u, pid: %i, frameNum: %i, validity: %i\n", current->pageNum, current->pid, current->frame, current->validity);
         current = current->previous;
     }
@@ -147,9 +151,11 @@ int nodeExists(unsigned int pageNum, int pid, doubleLL* container, int *isValid,
 }
 
 void policyFIFO(node* item, doubleLL* container){
+    // Doesn't use item, but needs it to fit function pointer
     node* remove = container->tail->previous;
     node* update = remove->previous;
-    
+
+    // Always delete then last node.
     container->tail->previous = update;
     update->next = container->tail;
     container->currentSize--;
@@ -157,9 +163,11 @@ void policyFIFO(node* item, doubleLL* container){
 }
 
 void policyLRU(node* item, doubleLL* container){
+    // Grab next and previous item
     node* next = item->next;
     node* previous = item->previous;
 
+    // Link them together
     next->previous = previous;
     previous->next = next;
 
