@@ -11,7 +11,6 @@
  * the required statistics throught the use of the tracefileStat
  * struct and tracefileTracker array
  * *****************************************************************/
-#include "linkedlist.h"
 #include "memory.h"
 int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageTables[], node* frameBuffer[], doubleLL* virtualMemory, struct tracefileStat traceFileTracker[]){
     int frame;
@@ -102,21 +101,21 @@ void invalidateFrame(int frame, doubleLL* container){
     // invalidate a node by removing it from page table
     node* current = container->head->next;
     int i = 0;
+    // Look for a node containing a certain frame
     for(i=0; i< container->currentSize; i++){
         if(current->frame == frame){
-            node* next = current->next;
-            node* previous = current->previous;
+            deleteNode(current);
 
-            next->previous = previous;
-            previous->next = next;
+            // Node has been deleted adjust current size accordingly
             container->currentSize--;
-            free(current);
             return;
         }
+        // If we haven't found the node move onto the next
         current = current->next;
     }
     return;
 }
 double incAvg(double oldAvg, int newValue, int iteration){
+    // Incremental averaging
     return oldAvg + (newValue - oldAvg)/iteration;
 }
