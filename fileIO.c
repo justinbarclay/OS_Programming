@@ -1,8 +1,23 @@
+/*******************************************************************
+ * CMPUT 379 Assignment 3
+ * Due: April 12th, 2017
+ *
+ * Group: Mackenzie Bligh & Justin Barclay
+ * CCIDs: bligh & jbarclay
+ * Sources:
+ * fread man page
+ * Synopsis:
+ * This file handles reading the from the supplied tracefiles
+ * *****************************************************************/
+
 /*  Imports*/
 #include "fileIO.h"
 #include "inttypes.h"
+
 /*  Macros */
 #define ADDRESS_BYTES 4
+
+/*  Function Bodies */
 
 /*  Reads the from the supplied array of file pointers quantum times, returning the result in
  *  the currentReferences array that is passed in. The function returns 1 if it can continue processing
@@ -17,12 +32,15 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
     int bytes = 0;
 
     // If the number of files completed equals the number of files required to be read
-    // do not read anymore, and exit the function
+    // do not read anymore, and exit the function returning 0 so that calls to this
+    // function don't get any garbage
     if(filesCompleted == numTraceFiles){
         return 0;
     }
+
     // If the file to be read is a null file,  look at the next file, and return 1 to
-    // begin iterating again; Area for optimization
+    // begin iterating again. Modular arithmetic is used to insure that the function
+    // never tries to look beyod the bounds of the tracefile array
     if(openTracefiles[fileIdToProcess] == NULL){
         *tracefileId = fileIdToProcess;
         fileIdToProcess++;
@@ -30,19 +48,10 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
         return 1;
     }
 
-    // printf("File_id: %d\n", fileIdToProcess); FOR DEBUGGING
-
-    // Read 4 bytes into the appropriate currentReferences field, from the specified file
-    // pointer
- //   int i = 0;
+    // Read 4 * quantum bytes into the appropriate currentReferences field, from the specified file
+    // pointer to completely fill the current refrences array
     int readval = 4 * quantum;
     bytes = fread(currentReferences, readval, 1, openTracefiles[fileIdToProcess]);
-/*    while((bytes = fread(currentReferences, readval, 1, openTracefiles[fileIdToProcess])) \
-            > 0 && i < quantum *4 ){
-            // I am fairly certain this loop doesn't work
-        i += quantum;
- //       printf("Reading %\n", *currentReferences);
-    }*/
 
     // If the entire file has been read, close the file and set it's pointer to NULL
     if(bytes == 0){
@@ -50,11 +59,9 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
         openTracefiles[fileIdToProcess] = NULL;
         filesCompleted++;
     }
-/*  //DEBUGGING
-    printf("REFS\n");
-    for(int z =0; z < quantum; z++) printf("%08x\n", currentReferences[z]);
-    printf("\n"); */
-    //Setup for next invocation
+
+   // Setup for next invocation, and returns the fileID that was processed into the tracefileId field
+   // passed in to the function for identification of the process by the caller
     *tracefileId = fileIdToProcess;
     fileIdToProcess++;
     fileIdToProcess = fileIdToProcess % numTraceFiles;

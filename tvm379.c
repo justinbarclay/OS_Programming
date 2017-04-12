@@ -1,11 +1,12 @@
 /*******************************************************************
  * CMPUT 379 Assignment 3
- * Due:
+ * Due: April 12th, 2017
  *
  * Group: Mackenzie Bligh & Justin Barclay
  * CCIDs: bligh & jbarclay
  * Sources:
  * http://www.exploringbinary.com/ten-ways-to-check-if-an-integer-is-a-power-of-two-in-c/
+ * Synopsis:
  * *****************************************************************/
 
 /*  Imports */
@@ -19,15 +20,7 @@
 /*  Macros */
 #define MIN_CLI_ARGS 7
 
-/*  Structs*/
-//struct tracefileStat{
-//    int tlbHits;
-//    int pageFaults;
-//    int pageOuts;
-//    double average; //Not entirely sure how to calculate this
-//};
-
-/*  Function Declarations */
+/*  Local Function Declarations */
 int isPowerOfTwo(int x);
 int getPowerOfTwo(int number);
 

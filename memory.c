@@ -1,4 +1,16 @@
-#include "memory.h"
+/*******************************************************************
+ * CMPUT 379 Assignment 3
+ * Due: April 12th, 2017
+ *
+ * Group: Mackenzie Bligh & Justin Barclay
+ * CCIDs: bligh & jbarclay
+ * Sources:
+ * Synopsis:
+ * This file provides the functionality to add a given node of the
+ * linked list to memory or virtual memory, as well as calculating
+ * the required statistics throught the use of the tracefileStat
+ * struct and tracefileTracker array
+ * *****************************************************************/
 
 int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageTable, node* frameBuffer[],
                 doubleLL* virtualMemory, struct tracefileStat traceFileTracker[]){
