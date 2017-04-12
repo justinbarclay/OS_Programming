@@ -108,7 +108,7 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
-    if(evictionPolicy != 'f' && uniformity != 'l'){
+    if(evictionPolicy != 'f' && evictionPolicy != 'l'){
         printf("Eviction policy must be f or l\n");
         exit(0);
     }
