@@ -30,7 +30,7 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
     // Page fault is if nodeExists & if node is valid
     // Add a valid boolean to nodeExists  so we can verify
     if(pid == previousPID && pageNum == previousPageNum && !POLICY){
-        // We can't do this during POLICY because we still need to look up frame number of node
+        // We defer updating virtualMemory in the case of LRU policy because we have the logic perfectly outlined for that below.
         traceFileTracker[pid].tlbHits++;
         previousPID = pid;
         previousPageNum = pageNum;
@@ -41,6 +41,8 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
     //If we didnt' set these in the previous if statement set them here
     previousPID = pid;
     previousPageNum = pageNum;
+    // It is important to note that we use nodeExists to find the frame number because it is most likely that tlb is smaller than virtual memory (quicker to search) and we have to do it anyways.
+    
     // TLB Hit occurs here
     // Page fault is if nodeExists & if node is valid
     // Add a valid boolean to nodeExists  so we can verify
