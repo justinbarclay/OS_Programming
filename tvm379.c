@@ -149,7 +149,7 @@ int main(int argc, char *argv[]){
         }
         for(i = 0; i < quantum; i++){
             pageNum = htonl(currentReferences[i]) >> shiftBy;
-            addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer,
+            addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables, frameBuffer,
                         virtualMemory, traceFileTracker);
             bytesread += 4;
         }

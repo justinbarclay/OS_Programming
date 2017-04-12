@@ -25,10 +25,10 @@ struct tracefileStat{
 };
 
 /*  Global Function Declarations */
-int addToMemory(int pageNum, int pid, int policy, doubleLL* tlb, doubleLL* pageTable, node* frameBuffer[],
+int addToMemory(int pageNum, int pid, int policy, doubleLL* tlb, doubleLL* pageTables[], node* frameBuffer[],
                 doubleLL* virtualMemory, struct tracefileStat tracefileTracker[]);
 
-int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtualMemory, struct tracefileStat traceFileTracker[]);
+int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtualMemory, int *victim);
 
 void policyUpdateLRU(node* current, doubleLL* container);
 
