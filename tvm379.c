@@ -170,11 +170,12 @@ int main(int argc, char *argv[]){
     // Display output
     printf("Tracefiles:\n");
     for(i = 0; i < numTraceFiles; i++){
-        printf("%d %d %d\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,\
-                    traceFileTracker[i].pageOuts);
+        printf("%d %d %d %lf\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,\
+                    traceFileTracker[i].pageOuts, traceFileTracker[i].average);
 
     }
 
+    // DEBUGGING
     printf("TLB\n");
     printList(tlb);
     printf("Reverese TLB");
@@ -183,7 +184,7 @@ int main(int argc, char *argv[]){
 
     deleteList(tlb);
     deleteList(virtualMemory);
-    
+
     for(i = 0; i < numTraceFiles; i++){
         deleteList(pageTables[i]);
     }

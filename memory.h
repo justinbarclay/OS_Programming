@@ -4,6 +4,7 @@ struct tracefileStat{
     int tlbHits;
     int pageFaults;
     int pageOuts;
+    int pageAccesses;
     double average; //Not entirely sure how to calculate this
 };
 
@@ -12,3 +13,4 @@ int addToMemory(int pageNum, int pid, int policy, doubleLL* tlb, doubleLL* pageT
 int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtualMemory, struct tracefileStat traceFileTracker[]);
 void policyUpdateLRU(node* current, doubleLL* container);
 void invalidateFrame(int frame, doubleLL* container);
+double incAvg(double oldAvg, int newValue, int iteration);

@@ -20,7 +20,8 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         }
         return 0;
     } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid, 0)) > 0){
-       // printf("Page table Collision\n"); //DEBUGGING REMOVE
+        traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize,\
+                ++traceFileTracker[pid].pageAccesses);
         if(!isValid){
         }
 
@@ -43,9 +44,13 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         // If node existed in tlb or pagetables delete it
         invalidateFrame(frame, tlb);
         invalidateFrame(frame, pageTable);
+        traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize,\
+                ++traceFileTracker[pid].pageAccesses);
 
         // Add new node to list
         addNewNode(pageNum, pid, frame, pageTable);
+        traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize,\
+                ++traceFileTracker[pid].pageAccesses);
         addNewNode(pageNum, pid, frame, tlb);
         return 1;
     }
@@ -100,4 +105,7 @@ void invalidateFrame(int frame, doubleLL* container){
         current = current->next;
     }
     return;
+}
+double incAvg(double oldAvg, int newValue, int iteration){
+  return oldAvg + (newValue - oldAvg)/iteration;
 }
