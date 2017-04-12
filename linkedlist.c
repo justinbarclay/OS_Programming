@@ -121,7 +121,7 @@ int nodeExists(unsigned int pageNum, int pid, doubleLL* container, int *isValid,
             // but if policy == 1(LRU) and we've found a node with a matching
             // pageNumber and pid, we update it's position to the top of the
             // LinkedList
-            if(policy && current->validity){
+            if(policy){
                 node* next = current->next;
                 node* previous = current->previous;
                 
