@@ -32,6 +32,7 @@ int isPowerOfTwo(int x);
 int getPowerOfTwo(int number);
 
 int main(int argc, char *argv[]){
+    static int bytesRead = 0;
     int pgsize, tlbentries, quantum, physpages = 0;
     char uniformity, evictionPolicy;
     FILE *tracefiles[argc-MIN_CLI_ARGS];
@@ -159,16 +160,16 @@ int main(int argc, char *argv[]){
         for(i = 0; i < quantum; i++){
             pageNum = htonl(currentReferences[i]) >> shiftBy;
             addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer, virtualMemory, traceFileTracker);
+            bytesRead += 4;
         }
     }
 
     // Display output
     printf("Tracefiles:\n");
     for(i = 0; i < numTraceFiles; i++){
+        
         printf("tlbHits %d\n pageFaults %d\n pageOuts %d\n", traceFileTracker[i]->tlbHits, traceFileTracker[i]->pageFaults,\
                     traceFileTracker[i]->pageOuts);
-
-
     }
 
     printf("TLB\n");
@@ -176,6 +177,7 @@ int main(int argc, char *argv[]){
     printf("Reverese TLB");
     reversePrintList(tlb);
     printf("Virtual Memory Size %i\n", virtualMemory->currentSize);
+    printf("bytesRead %i\n", bytesRead);
 }
 
 int isPowerOfTwo (int x){
