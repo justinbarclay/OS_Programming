@@ -171,8 +171,9 @@ int main(int argc, char *argv[]){
 
     // Display output
     printf("Tracefiles:\n");
+    printf("TLB\tPageFaults\tPageOuts\tAverage:\n");
     for(i = 0; i < numTraceFiles; i++){
-        printf("%d %d %d %lf\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,\
+        printf("%d\t%d\t%d\t%lf\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,\
                     traceFileTracker[i].pageOuts, traceFileTracker[i].average);
 
     }

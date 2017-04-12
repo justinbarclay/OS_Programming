@@ -75,6 +75,7 @@ void deleteList(doubleLL* container){
     node* current = container->head;
     node* next;
     while(current != NULL){
+        // Until we hit null, free that node
         next = current->next;
         free(current);
         current = next;
@@ -82,6 +83,7 @@ void deleteList(doubleLL* container){
 }
 
 void deleteNode(node* item){
+    // Cut out one node.
     node* next = item->next;
     node* previous = item->previous;
 
