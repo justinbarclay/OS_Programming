@@ -24,7 +24,7 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
                 ++traceFileTracker[pid].pageAccesses);
         if(!isValid){
         }
-
+        addNewNode(pageNum, pid, frame, tlb);
         if(POLICY){
             item = frameBuffer[frame];
             policyLRU(item, virtualMemory);
