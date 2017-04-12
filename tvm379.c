@@ -165,6 +165,14 @@ int main(int argc, char *argv[]){
                         virtualMemory, traceFileTracker);
             bytesread += 4;
         }
+        if(uniformity == 'p'){
+            node* delete = tlb->head->next;
+            tlb->tail->previous->next = NULL;
+            tlb->tail->previous = tlb->head;
+
+            deleteList(tlb);
+            tlb->head->next = tlb->tail;
+        }
     }
 
     // Display output
