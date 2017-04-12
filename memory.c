@@ -26,30 +26,30 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         // If we have found a frame in the TLB
         // Count the stat as a tlbHit
         traceFileTracker[pid].tlbHits++;
-        
-        
+
+
         // If Policy is 1(LRU) updateVirtual memory;
         if(POLICY){
             item = frameBuffer[frame];
             policyLRU(item, virtualMemory);
         }
-        
+
         return 0;
-        
+
     } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid, 0)) > 0){
-        
+
         addNewNode(pageNum, pid, frame, tlb);
-        
+
         if(POLICY){
             item = frameBuffer[frame];
             policyLRU(item, virtualMemory);
         }
         return 0;
-        
+
     } else {
         traceFileTracker[pid].pageFaults++;
         int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory, traceFileTracker);
-        
+
         invalidateFrame(frame, tlb);
         invalidateFrame(frame, pageTable);
         traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize, ++traceFileTracker[pid].pageAccesses);
@@ -113,6 +113,7 @@ void invalidateFrame(int frame, doubleLL* container){
     }
     return;
 }
+
 double incAvg(double oldAvg, int newValue, int iteration){
     return oldAvg + (newValue - oldAvg)/iteration;
 }

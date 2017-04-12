@@ -106,7 +106,7 @@ int main(int argc, char *argv[]){
         printf("Eviction policy must be f or l\n");
         exit(0);
     }
-    
+
     // Setup Datastructures
     int POLICY = evictionPolicy == 'l';
     // Unsigned ints
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]){
     int shiftBy = getPowerOfTwo(pgsize);
     int j=0;
 
-    // 
+    // Allocate a Page table
     for(j=0; j< numTraceFiles; j++){
         pageTable = calloc(1, sizeof(doubleLL));
         pageTable->maxSize = pgsize;
