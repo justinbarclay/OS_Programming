@@ -31,24 +31,32 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         }
         return 0;
     } else {
-        int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory);
+        static int totalPageOut = 0;
+        int pageOut =0;
+        int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory, &pageOut);
+        if(pageOut){
+
+            traceFileTracker[pid].pageOuts++;
+            totalPageOut++;
+        }
         int evictedPage = -1;
         invalidateFrame(frame, tlb);
         invalidateFrame(frame, pageTable);
         // Page eviction occurs here, do number coding scheme for page evicted instead?
         // just need to know what tracefile it belongs to. Will be returning a number from -1 to the file ID
         evictedPage = addNewNode(pageNum, pid, frame, pageTable);
-        if(evictedPage > -1){
-            traceFileTracker[evictedPage].pageOuts++;
-        }
+        /* if(evictedPage > -1){ */
+        /*     traceFileTracker[pid].pageOuts++; */
+        /* } */
         addNewNode(pageNum, pid, frame, tlb);
         return 1;
     }
 }
 
-int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtualMemory){
+int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtualMemory, int *pageOut){
     // Function makes the assumption that frameBuffer
     int frame = 0;
+    *pageOut = 0;
     if(virtualMemory->currentSize < virtualMemory->maxSize){
         frame = virtualMemory->currentSize; //Grab currentFrame number and increase by one;
         addNewNode(pageNum,pid, frame, virtualMemory);
@@ -60,12 +68,13 @@ int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtu
     } else {
         // If our framebuffer is full
         // grab the frame of the node at the tail
-        frame = virtualMemory->tail->previous->frame;
+        frame =virtualMemory->tail->previous->frame;
         // and reuse it
         addNewNode(pageNum, pid, frame, virtualMemory);
         // grab current node address and add it to memory
         node* currentAddress = virtualMemory->head->next;
         frameBuffer[frame] = currentAddress;
+        *pageOut = 1;
     }
     return frame;
 }
