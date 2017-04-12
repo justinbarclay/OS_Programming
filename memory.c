@@ -17,7 +17,8 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
     int frame;
     node* item;
     int isValid;
-
+    // Each time we loook at the pagetable update average
+    traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize, ++(traceFileTracker[pid].pageAccesses));
     // TLB Hit occurs here
     // Page fault is if nodeExists & if node is valid
     // Add a valid boolean to nodeExists  so we can verify
@@ -36,10 +37,7 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         return 0;
         
     } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid, 0)) > 0){
-        // Each time we loook at the pagetable update average
-        traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize, \
-                                               ++traceFileTracker[pid].pageAccesses);
-        // 
+        
         addNewNode(pageNum, pid, frame, tlb);
         
         if(POLICY){
