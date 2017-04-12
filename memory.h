@@ -14,7 +14,6 @@
 
 /*  Required Header Files */
 #include "linkedlist.h"
-#include "memory.h"
 
 /*  Structs */
 struct tracefileStat{

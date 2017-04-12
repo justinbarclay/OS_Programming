@@ -11,9 +11,9 @@
  * the required statistics throught the use of the tracefileStat
  * struct and tracefileTracker array
  * *****************************************************************/
-
-int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageTable, node* frameBuffer[],
-                doubleLL* virtualMemory, struct tracefileStat traceFileTracker[]){
+#include "linkedlist.h"
+#include "memory.h"
+int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageTable, node* frameBuffer[], doubleLL* virtualMemory, struct tracefileStat traceFileTracker[]){
     int frame;
     node* item;
     int isValid;
