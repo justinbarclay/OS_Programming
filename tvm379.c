@@ -19,17 +19,30 @@
 /*  Macros */
 #define MIN_CLI_ARGS 7
 
+/*  Structs*/
+//struct tracefileStat{
+//    int tlbHits;
+//    int pageFaults;
+//    int pageOuts;
+//    double average; //Not entirely sure how to calculate this
+//};
+
 /*  Function Declarations */
 int isPowerOfTwo(int x);
 int getPowerOfTwo(int number);
 
 int main(int argc, char *argv[]){
+    static int bytesread = 0;
     int pgsize, tlbentries, quantum, physpages = 0;
     char uniformity, evictionPolicy;
     FILE *tracefiles[argc-MIN_CLI_ARGS];
     int numTraceFiles = argc - MIN_CLI_ARGS;
-
     int i, z = 0;
+
+    // Initialization struct for collecting tracefile stats
+    const struct tracefileStat statInit = {
+        .tlbHits =0, .pageFaults = 0, .pageOuts = 0, .average = 0.0
+    };
 
     if(argc < MIN_CLI_ARGS){
         printf("Insufficient number of command line arguments provided\n");
@@ -52,6 +65,13 @@ int main(int argc, char *argv[]){
             exit(0);
         }
         z++;
+    }
+
+    // Create array to track tracefileStats
+    struct tracefileStat traceFileTracker[numTraceFiles];
+
+    for(i = 0; i < numTraceFiles; i++ ){
+        traceFileTracker[i] = statInit;
     }
 
     // Perform error checking on user input
@@ -89,7 +109,7 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
-    if(evictionPolicy != 'f' && uniformity != 'l'){
+    if(evictionPolicy != 'f' && evictionPolicy != 'l'){
         printf("Eviction policy must be f or l\n");
         exit(0);
     }
@@ -105,19 +125,20 @@ int main(int argc, char *argv[]){
 
     // Unsigned ints
     // Binary trees
-    // Average ??? Average time time that the table is at that size (IE if for half the time the program runs table is size 1 and the other half table is size 3, the average is 2)
+    // Average ??? Average time time that the table is at that size
+    // (IE if for half the time the program runs table is size 1 and the other half table is size 3, the average is 2)
     doubleLL* tlb = calloc(1, sizeof(doubleLL));
     doubleLL* virtualMemory = calloc(1, sizeof(doubleLL));
     doubleLL* pageTable;
-    doubleLL* pageTables[pgsize];
+    doubleLL* pageTables[numTraceFiles];
     int traceFileId =0;
     uint32_t currentReferences[quantum+1];
     node* frameBuffer[physpages];
-    
+
     int POLICY = 0; //FIFO
     int shiftBy = getPowerOfTwo(pgsize);
     int j=0;
-    
+
     // Create 100 processes
     for(j=0; j< numTraceFiles; j++){
         pageTable = calloc(1, sizeof(doubleLL));
@@ -126,7 +147,7 @@ int main(int argc, char *argv[]){
         newList(pageTable);
         pageTables[j] = pageTable;
     }
-    
+
     tlb->maxSize = tlbentries;
     tlb->policy = policyFIFO;
 
@@ -140,14 +161,32 @@ int main(int argc, char *argv[]){
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, &traceFileId, currentReferences)){
         for(i = 0; i < quantum; i++){
             pageNum = htonl(currentReferences[i]) >> shiftBy;
-            addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer, virtualMemory);
+            addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer,
+                        virtualMemory, traceFileTracker);
+            bytesread += 4;
         }
+    }
+
+    // Display output
+    printf("Tracefiles:\n");
+    for(i = 0; i < numTraceFiles; i++){
+        printf("%d %d %d\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,\
+                    traceFileTracker[i].pageOuts);
+
     }
 
     printf("TLB\n");
     printList(tlb);
     printf("Reverese TLB");
     reversePrintList(tlb);
+    printf("Bytes read %i\n", bytesread);
+
+    deleteList(tlb);
+    deleteList(virtualMemory);
+    
+    for(i = 0; i < numTraceFiles; i++){
+        deleteList(pageTables[i]);
+    }
 }
 
 int isPowerOfTwo (int x){

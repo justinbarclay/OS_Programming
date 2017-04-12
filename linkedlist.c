@@ -110,14 +110,33 @@ void reversePrintList(doubleLL * container){
 
 
 // sets isValid to 1 if the node is valid or 0 if invalid (tracking node->validity))
-int nodeExists(unsigned int pageNum, int pid, doubleLL* container, int *isValid){
+int nodeExists(unsigned int pageNum, int pid, doubleLL* container, int *isValid, int policy){
     node* current = container->head->next;
-    int index=0;
-    while(current != NULL){
-        index++;
+    int i=0;
+    for(i=0; i<container->currentSize; i++){
+       
         if(current->pageNum == pageNum &&
            current->pid == pid){
+            // node Table Update idea, this is primarily to be used with TLB
+            // but if policy == 1(LRU) and we've found a node with a matching
+            // pageNumber and pid, we update it's position to the top of the
+            // LinkedList
+            if(policy && current->validity){
+                node* next = current->next;
+                node* previous = current->previous;
+                
+                next->previous = previous;
+                previous->next = next;
+               
+                node* top = container->head->next;
+                top->previous = current;
+                container->head->next = current;
+                current->next = top;
+                current->previous = container->head;
+            }
             *isValid = current->validity;
+
+            // Need to make sure we break or we cause problems;
             return current->frame;
         }
         current = current->next;

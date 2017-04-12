@@ -33,7 +33,7 @@ int addNewNode(unsigned int pageNum, int pid, int frame, doubleLL * container);
 
 void deleteList(doubleLL * container);
 
-int nodeExists(unsigned int pageNum, int pid, doubleLL* container, int *isValid);
+int nodeExists(unsigned int pageNum, int pid, doubleLL* container, int *isValid, int policy); // overloading nodeExists in the sake of time efficiency. If node exists and we're LRU, update item to top of the stack.
 
 void printList(doubleLL * container);
 
