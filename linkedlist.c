@@ -1,14 +1,16 @@
+/*******************************************************************
+ * CMPUT 379 Assignment 3
+ * Due: April 12th, 2017
+ *
+ * Group: Mackenzie Bligh & Justin Barclay
+ * CCIDs: bligh & jbarclay
+ * Sources:
+ * Synopsis:
+ * Provides a linked list and associated helpers for the purpose of
+ * implementing more advanced data stores (binary tree) and hash table
+ * *****************************************************************/
+
 #include "linkedlist.h"
-
-/*
- * Globals
- */
-
-/*
- *
- * Helper functions
- *
- */
 
 // findNode, takes in whiteboard node, and the depth being looked for
 // If the depth is out of the scale of the board it returns null
@@ -21,7 +23,7 @@ int newList(doubleLL * container){
     // Init the nodes
     head->previous = NULL;
     head->next = tail;
-    
+
     tail->previous = head;
     tail->next = NULL;
 
@@ -98,7 +100,8 @@ void printList(doubleLL * container){
     node* current = container->head->next;
     // Then printf out currentSize number of nodes
     for(i=0; i< container->currentSize; i++){
-        printf("PageNum: %u, pid: %i, frameNum: %i, validity: %i\n", current->pageNum, current->pid, current->frame, current->validity);
+        printf("PageNum: %u, pid: %i, frameNum: %i, validity: %i\n", \
+                current->pageNum, current->pid, current->frame, current->validity);
         current = current->next;
     }
 }
@@ -108,8 +111,9 @@ void reversePrintList(doubleLL * container){
     // Skip over tail
     node* current = container->tail->previous;
     for(i=0; i< container->currentSize; i++){
-        // Then print out 
-        printf("PageNum: %u, pid: %i, frameNum: %i, validity: %i\n", current->pageNum, current->pid, current->frame, current->validity);
+        // Then print out
+        printf("PageNum: %u, pid: %i, frameNum: %i, validity: %i\n", \
+                current->pageNum, current->pid, current->frame, current->validity);
         current = current->previous;
     }
 }
@@ -120,9 +124,9 @@ int nodeExists(unsigned int pageNum, int pid, doubleLL* container, int *isValid,
     node* current = container->head->next;
     int i=0;
     for(i=0; i<container->currentSize; i++){
-       
+
         if(current->pageNum == pageNum &&
-           current->pid == pid){
+                current->pid == pid){
             // node Table Update idea, this is primarily to be used with TLB
             // but if policy == 1(LRU) and we've found a node with a matching
             // pageNumber and pid, we update it's position to the top of the
@@ -130,10 +134,10 @@ int nodeExists(unsigned int pageNum, int pid, doubleLL* container, int *isValid,
             if(policy){
                 node* next = current->next;
                 node* previous = current->previous;
-                
+
                 next->previous = previous;
                 previous->next = next;
-               
+
                 node* top = container->head->next;
                 top->previous = current;
                 container->head->next = current;

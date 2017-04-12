@@ -1,12 +1,26 @@
-#ifndef LINKEDLIST_H
-#define LINKEDLIST_H
+/*******************************************************************
+ * CMPUT 379 Assignment 3
+ * Due: April 12th, 2017
+ *
+ * Group: Mackenzie Bligh & Justin Barclay
+ * CCIDs: bligh & jbarclay
+ * Sources:
+ * Synopsis:
+ * Provides a linked list and associated helpers for the purpose of
+ * implementing more advanced data stores (binary tree) and hash table
+ * *****************************************************************/
 
+/*  Imports */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-// Header Files for a doubly linked list
+/*  Macros */
+#ifndef LINKEDLIST_H
+#define LINKEDLIST_H
+
+/*  Structs for a linked list */
 struct node{
     unsigned int pageNum;
     int pid;
@@ -34,7 +48,8 @@ int addNewNode(unsigned int pageNum, int pid, int frame, doubleLL * container);
 
 void deleteList(doubleLL * container);
 
-int nodeExists(unsigned int pageNum, int pid, doubleLL* container, int *isValid, int policy); // overloading nodeExists in the sake of time efficiency. If node exists and we're LRU, update item to top of the stack.
+// overloading nodeExists in the sake of time efficiency. If node exists and we're LRU, update item to top of the stack.
+int nodeExists(unsigned int pageNum, int pid, doubleLL* container, int *isValid, int policy);
 
 void printList(doubleLL * container);
 

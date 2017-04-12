@@ -21,13 +21,17 @@ struct tracefileStat{
     int pageFaults;
     int pageOuts;
     int pageAccesses;
-    double average; 
+    double average;
 };
 
 /*  Global Function Declarations */
 int addToMemory(int pageNum, int pid, int policy, doubleLL* tlb, doubleLL* pageTable, node* frameBuffer[],
                 doubleLL* virtualMemory, struct tracefileStat tracefileTracker[]);
+
 int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtualMemory, struct tracefileStat traceFileTracker[]);
+
 void policyUpdateLRU(node* current, doubleLL* container);
+
 void invalidateFrame(int frame, doubleLL* container);
+
 double incAvg(double oldAvg, int newValue, int iteration);

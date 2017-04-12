@@ -106,15 +106,8 @@ int main(int argc, char *argv[]){
         printf("Eviction policy must be f or l\n");
         exit(0);
     }
-    // Clean up open file pointers ; may be uncessary
-/*    for(i = MIN_CLI_ARGS; i < argc; i++){
-        tracefiles[z] = *fclose(argv[i], "r");
-        printf("Trace: %s\n", tracefiles[z]);
-    }*/
-    /*
-     * Setup Datastructures
-     *
-     */
+    
+    // Setup Datastructures
     int POLICY = evictionPolicy == 'l';
     // Unsigned ints
     // Binary trees
@@ -169,13 +162,6 @@ int main(int argc, char *argv[]){
         printf("%d\t %d\t %d\t\t %lf\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,
                     traceFileTracker[i].pageOuts, traceFileTracker[i].average);
     }
-
-    // DEBUGGING
-    /* printf("TLB\n"); */
-    /* printList(tlb); */
-    /* printf("Reverese TLB"); */
-    /* reversePrintList(tlb); */
-    /* printf("Bytes read %i\n", bytesread); */
 
     deleteList(tlb);
     deleteList(virtualMemory);
