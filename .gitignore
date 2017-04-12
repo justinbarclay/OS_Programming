@@ -19,7 +19,8 @@
 *.so
 *.so.*
 *.dylib
-
+#main program file
+tvm379
 # Executables
 *.exe
 *.out
