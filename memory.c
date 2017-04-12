@@ -25,16 +25,15 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
     int isValid;
     doubleLL* pageTable = pageTables[pid];
     // Each time we loook at the pagetable update average
-    traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, \
+    traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average,
             pageTable->currentSize, ++(traceFileTracker[pid].pageAccesses));
     // TLB Hit occurs here
     // Page fault is if nodeExists & if node is valid
     // Add a valid boolean to nodeExists  so we can verify
     if(pid == previousPID && pageNum == previousPageNum && !POLICY){
         // We defer updating virtualMemory in the case of LRU policy because we have the logic perfectly outlined for that below.
+        // We also don't need to worry about updating them TLB through LRU because this means this was the last item and should allready be at the top of the list.
         traceFileTracker[pid].tlbHits++;
-        previousPID = pid;
-        previousPageNum = pageNum;
         return 0;
  
     }

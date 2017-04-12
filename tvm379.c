@@ -35,7 +35,6 @@ int isPowerOfTwo(int x);
 int getPowerOfTwo(int number);
 
 int main(int argc, char *argv[]){
-    static int bytesread = 0;
     int pgsize, tlbentries, quantum, physpages = 0;
     char uniformity, evictionPolicy;
     FILE *tracefiles[argc-MIN_CLI_ARGS];
@@ -117,12 +116,9 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
-    // Setup Datastructures
-    int POLICY = evictionPolicy == 'l';
-    // Unsigned ints
-    // Binary trees
-    // Average ??? Average time time that the table is at that size
-    // (IE if for half the time the program runs table is size 1 and the other half table is size 3, the average is 2)
+    // Setup Data structures
+    int POLICY = evictionPolicy == 'l'; // LRU = 1, FIFO = 0
+   
     doubleLL* tlb = calloc(1, sizeof(doubleLL));
     doubleLL* virtualMemory = calloc(1, sizeof(doubleLL));
     doubleLL* pageTable;
@@ -133,7 +129,7 @@ int main(int argc, char *argv[]){
     int shiftBy = getPowerOfTwo(pgsize);
     int j=0;
 
-    // Allocate a Page table
+    // Allocate pageTables
     for(j=0; j< numTraceFiles; j++){
         pageTable = calloc(1, sizeof(doubleLL));
         pageTable->maxSize = pgsize;
@@ -142,25 +138,30 @@ int main(int argc, char *argv[]){
         pageTables[j] = pageTable;
     }
 
+    
     tlb->maxSize = tlbentries;
     tlb->policy = policyFIFO;
     
     virtualMemory->maxSize = physpages;
     virtualMemory->policy = policyFIFO;
-
+    
     newList(tlb);
     newList(virtualMemory);
+    
     int pageNum;
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, &traceFileId, currentReferences)){
+        // If tlb is process specific clear it every quantum
         if(uniformity == 'p'){
             deleteList(tlb);
             newList(tlb);
         }
+        // Iterate through current references
         for(i = 0; i < quantum; i++){
+            //convert endianess
             pageNum = htonl(currentReferences[i]) >> shiftBy;
+            // Try adding to memory
             addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables, frameBuffer,
                         virtualMemory, traceFileTracker);
-            bytesread += 4;
         }
     }
 
@@ -169,10 +170,10 @@ int main(int argc, char *argv[]){
         printf("%d\t %d\t %d\t\t %lf\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,
                     traceFileTracker[i].pageOuts, traceFileTracker[i].average);
     }
-
+    
+    // Clean up after ourselves
     deleteList(tlb);
     deleteList(virtualMemory);
-
     for(i = 0; i < numTraceFiles; i++){
         deleteList(pageTables[i]);
     }
@@ -183,6 +184,7 @@ int isPowerOfTwo (int x){
 }
 
 int getPowerOfTwo(int number){
+    // Assumed we allready checked that number is a power of two
     int count = 0;
     while((number = number >> 1) > 0){
         count++;
