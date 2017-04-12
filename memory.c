@@ -25,7 +25,8 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
     int isValid;
     doubleLL* pageTable = pageTables[pid];
     // Each time we loook at the pagetable update average
-    traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, pageTable->currentSize, ++(traceFileTracker[pid].pageAccesses));
+    traceFileTracker[pid].average = incAvg(traceFileTracker[pid].average, \
+            pageTable->currentSize, ++(traceFileTracker[pid].pageAccesses));
     // TLB Hit occurs here
     // Page fault is if nodeExists & if node is valid
     // Add a valid boolean to nodeExists  so we can verify
@@ -50,16 +51,17 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         // If we have found a frame in the TLB
         // Count the stat as a tlbHit
         traceFileTracker[pid].tlbHits++;
-        
-        
+
+
         // If Policy is 1(LRU) updateVirtual memory;
         if(POLICY){
             item = frameBuffer[frame];
             policyLRU(item, virtualMemory);
         }
-        
+
         return 0;
-    // If node exists in the pageTable    
+
+    // If node exists in the pageTable
     } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid, 0)) > 0){
         // If it exists in the pageTable and not the tlb, add it to the tlb
         addNewNode(pageNum, pid, frame, tlb);
@@ -70,7 +72,7 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
             policyLRU(item, virtualMemory);
         }
         return 0;
-        
+
     } else {
         // Page fault because we have to add to memory
         traceFileTracker[pid].pageFaults++;
@@ -87,7 +89,7 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
             invalidateFrame(frame, tlb);
             invalidateFrame(frame, pageTables[victim]);
         }
-        
+
         // Add the new node to the pageTable and TLB
         addNewNode(pageNum, pid, frame, pageTable);
         addNewNode(pageNum, pid, frame, tlb);
@@ -144,6 +146,7 @@ void invalidateFrame(int frame, doubleLL* container){
     }
     return;
 }
+
 double incAvg(double oldAvg, int newValue, int iteration){
     // Incremental averaging
     return oldAvg + (newValue - oldAvg)/iteration;

@@ -1,0 +1,32 @@
+* General Overview
+The program first reads in the flags from the command line, and verifies them
+for correctness. Then it creates an array of structs to track the statistics
+of each inputted tracefile. Next, it creates a hash table for use as the page
+table, allocate memory for virtual memory. Then it reads all the references
+from files by calling readRefsFromFiles. It flushes the TLB if necessary, and
+then performs the necessary additions/lookups by calling addToMemory. Once
+computation has been completed, it displays it and performs cleanup for
+termination of the program.
+
+* How Simulator is Efficient and Scalable
+** fileIO.c
+1. In line 54 it reads in the entire (4 * Quantum) bytes, rather than
+reading in 4 bytes quantum times. This removed a significant bottle neck in
+our code
+** memory.c
+1. traceFileTracker is a "poor man's hash table" indexed by PID, that allows
+statistics to be tracked for each tracefile in constant time
+2. On line 122 frameBuffer is a hash table used to store pointers to the nodes that you
+want to update
+3. We are tracking the last PID and last page number to determine
+automatically if the page is already in the TLB, and therefore do not need to
+search the TLB linearly. These are checked for before any searching is done
+** In General
+1. We tried to minimize iteration as much as possible by having all arrays
+index on PID or some uniquely identifiable variable to ensure constant time
+lookup of data
+2. We wrote tests found in the /tests folder to ensure our modules were
+working as intended
+3. We maintained separate .c and .h files for each major functionality that
+are highly independent to ensure that code was easily debuggable and
+optimized

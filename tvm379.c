@@ -7,7 +7,17 @@
  * Sources:
  * http://www.exploringbinary.com/ten-ways-to-check-if-an-integer-is-a-power-of-two-in-c/
  * Synopsis:
+ * The program first reads in the flags from the command line, and verifies them
+ * for correctness. Then it creates an array of structs to track the statistics
+ * of each inputted tracefile. Next, it creates a hash table for use as the page
+ * table, allocate memory for virtual memory. Then it reads all the references
+ * from files by calling readRefsFromFiles. It flushes the TLB if necessary, and
+ * then performs the necessary additions/lookups by calling addToMemory. Once
+ * computation has been completed, it displays it and performs cleanup for
+ * termination of the program.
+ *
  * *****************************************************************/
+
 
 /*  Imports */
 #include <stdio.h>
@@ -106,7 +116,7 @@ int main(int argc, char *argv[]){
         printf("Eviction policy must be f or l\n");
         exit(0);
     }
-    
+
     // Setup Datastructures
     int POLICY = evictionPolicy == 'l';
     // Unsigned ints
@@ -123,7 +133,7 @@ int main(int argc, char *argv[]){
     int shiftBy = getPowerOfTwo(pgsize);
     int j=0;
 
-    // 
+    // Allocate a Page table
     for(j=0; j< numTraceFiles; j++){
         pageTable = calloc(1, sizeof(doubleLL));
         pageTable->maxSize = pgsize;
