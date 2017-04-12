@@ -35,7 +35,6 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         int pageOut =0;
         int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory, &pageOut);
         if(pageOut){
-
             traceFileTracker[pid].pageOuts++;
             totalPageOut++;
         }
@@ -44,10 +43,11 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         invalidateFrame(frame, pageTable);
         // Page eviction occurs here, do number coding scheme for page evicted instead?
         // just need to know what tracefile it belongs to. Will be returning a number from -1 to the file ID
-        evictedPage = addNewNode(pageNum, pid, frame, pageTable);
+        /* evictedPage = addNewNode(pageNum, pid, frame, pageTable); */
         /* if(evictedPage > -1){ */
         /*     traceFileTracker[pid].pageOuts++; */
         /* } */
+        addNewNode(pageNum, pid, frame, pageTable);
         addNewNode(pageNum, pid, frame, tlb);
         return 1;
     }
