@@ -22,7 +22,6 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
     } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid, 0)) > 0){
        // printf("Page table Collision\n"); //DEBUGGING REMOVE
         if(!isValid){
-            traceFileTracker[pid].pageFaults++;
         }
 
         if(POLICY){
@@ -31,6 +30,7 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         }
         return 0;
     } else {
+        traceFileTracker[pid].pageFaults++;
         static int totalPageOut = 0;
         int pageOut =0;
         int frame = addToVirtualMemory(pageNum, pid, frameBuffer, virtualMemory, &pageOut);
@@ -38,7 +38,6 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
             traceFileTracker[pid].pageOuts++;
             totalPageOut++;
         }
-        int evictedPage = -1;
         invalidateFrame(frame, tlb);
         invalidateFrame(frame, pageTable);
         // Page eviction occurs here, do number coding scheme for page evicted instead?
@@ -47,6 +46,7 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         /* if(evictedPage > -1){ */
         /*     traceFileTracker[pid].pageOuts++; */
         /* } */
+        
         addNewNode(pageNum, pid, frame, pageTable);
         addNewNode(pageNum, pid, frame, tlb);
         return 1;
@@ -80,12 +80,18 @@ int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtu
 }
 
 void invalidateFrame(int frame, doubleLL* container){
+    // invalidate a node by removing it from page table
     node* current = container->head->next;
-    int index = 0;
-    while(current != NULL){
-        index++;
+    int i = 0;
+    for(i=0; i< container->currentSize; i++){
         if(current->frame == frame){
-            current->validity = 0;
+            node* next = current->next;
+            node* previous = current->previous;
+
+            next->previous = previous;
+            previous->next = next;
+            container->currentSize--;
+            free(current);
             return;
         }
         current = current->next;
