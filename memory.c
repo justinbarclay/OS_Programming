@@ -20,9 +20,6 @@ int addToMemory(int pageNum, int pid, int POLICY, doubleLL* tlb, doubleLL* pageT
         }
         return 0;
     } else if((frame = nodeExists(pageNum, pid, pageTable, &isValid, 0)) > 0){
-       // printf("Page table Collision\n"); //DEBUGGING REMOVE
-        if(!isValid){
-        }
         addNewNode(pageNum, pid, frame, tlb);
         if(POLICY){
             item = frameBuffer[frame];
