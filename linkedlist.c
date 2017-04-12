@@ -21,7 +21,7 @@ int newList(doubleLL * container){
     // Init the nodes
     head->previous = NULL;
     head->next = tail;
-
+    
     tail->previous = head;
     tail->next = NULL;
 

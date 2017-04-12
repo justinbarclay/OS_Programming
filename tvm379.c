@@ -137,7 +137,7 @@ int main(int argc, char *argv[]){
     int shiftBy = getPowerOfTwo(pgsize);
     int j=0;
 
-    // Create 100 processes
+    // 
     for(j=0; j< numTraceFiles; j++){
         pageTable = calloc(1, sizeof(doubleLL));
         pageTable->maxSize = pgsize;
@@ -172,10 +172,9 @@ int main(int argc, char *argv[]){
     // Display output
     printf("Tracefiles:\n");
     printf("TLB\t PageFaults\t PageOut:\t Average\n");
-    for(i = 0; i < numTraceFiles; i++){
-        printf("%d\t %d\t %d\t\t %lf\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,\
+    for(i = 0; i < numTraceFiles; i++
+        printf("%d\t %d\t %d\t\t %lf\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,
                     traceFileTracker[i].pageOuts, traceFileTracker[i].average);
-
     }
 
     // DEBUGGING
