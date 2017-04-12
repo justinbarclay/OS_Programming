@@ -122,7 +122,7 @@ int main(int argc, char *argv[]){
      * Setup Datastructures
      *
      */
-
+    int POLICY = evictionPolicy == 'l';
     // Unsigned ints
     // Binary trees
     // Average ??? Average time time that the table is at that size
@@ -134,8 +134,6 @@ int main(int argc, char *argv[]){
     int traceFileId =0;
     uint32_t currentReferences[quantum+1];
     node* frameBuffer[physpages];
-
-    int POLICY = 0; //FIFO
     int shiftBy = getPowerOfTwo(pgsize);
     int j=0;
 
@@ -164,6 +162,10 @@ int main(int argc, char *argv[]){
             addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables[traceFileId], frameBuffer,
                         virtualMemory, traceFileTracker);
             bytesread += 4;
+        }
+        if(uniformity == 'p'){
+            deleteList(tlb);
+            newList(tlb);
         }
     }
 
