@@ -42,10 +42,8 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
     // begin iterating again. Modular arithmetic is used to insure that the function
     // never tries to look beyod the bounds of the tracefile array
     while(openTracefiles[fileIdToProcess] == NULL){
-        *tracefileId = fileIdToProcess;
         fileIdToProcess++;
         fileIdToProcess = fileIdToProcess % numTraceFiles;
-        return 1;
     }
 
     // Read 4 * quantum bytes into the appropriate currentReferences field, from the specified file
