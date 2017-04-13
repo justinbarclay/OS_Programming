@@ -22,7 +22,9 @@ static int mostRecentlyClosed = -1;
 
 /*  Reads the from the supplied array of file pointers quantum times, returning the result in
  *  the currentReferences array that is passed in. The function returns 1 if it can continue processing
- *  the file arrays, and 0 if it has completely read all the files in the openTraceFiles array */
+ *  the file arrays, and 0 if it has completely read all the files in the openTraceFiles array. It
+ *  places the references into the currentReferences array, and the tracefile PID into the tracefileId
+ *  field. If the tracefile has been completely read, tracefileId will be set to -1*/
 int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, int *tracefileId, \
         uint32_t currentReferences[]){
     // Tracks what file (by index number) should be read. Maintains this value across calls
@@ -38,8 +40,8 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
         return 0;
     }
 
-    // If the file to be read is a null file,  look at the next file, and return 1 to
-    // begin iterating again. Modular arithmetic is used to insure that the function
+    // If the file to be read is a null file,  look at the next file,
+    // Modular arithmetic is used to insure that the function
     // never tries to look beyod the bounds of the tracefile array
     while(openTracefiles[fileIdToProcess] == NULL){
         fileIdToProcess++;
@@ -54,23 +56,24 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
     // If the entire file has been read, close the file and set it's pointer to NULL
     *tracefileId = fileIdToProcess;
     if(bytes == 0){
-        fclose(openTracefiles[fileIdToProcess]);
-        openTracefiles[fileIdToProcess] = NULL;
-        mostRecentlyClosed = fileIdToProcess;
+        fclose(openTracefiles[fileIdToProcess]); // Close empty file
+        openTracefiles[fileIdToProcess] = NULL;  // Set empty pointer to null
+        mostRecentlyClosed = fileIdToProcess;    // Save recently closed file
         filesCompleted++;
-        *tracefileId = -1;
+        *tracefileId = -1; // give invalid tracefile ID as file couldn't be opened
+        // Setup for next invocation
         fileIdToProcess++;
         fileIdToProcess = fileIdToProcess % numTraceFiles;
     }else{
+        // Setup for next invocation
         fileIdToProcess++;
         fileIdToProcess = fileIdToProcess % numTraceFiles;
     }
 
-   // Setup for next invocation, and returns the fileID that was processed into the tracefileId field
-   // passed in to the function for identification of the process by the caller
-   
     return 1;
 }
+
+/*  Returns the most recently closed file for efficiency purposes */
 int getRecentlyClosed(){
     return mostRecentlyClosed;
 }
