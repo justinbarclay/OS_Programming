@@ -146,7 +146,6 @@ int main(int argc, char *argv[]){
     newList(virtualMemory);
 
     int pageNum;
-    int toDelete;
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, &pid, currentReferences)){
         // If tlb is process specific clear it every quantum
         if(pid > -1){
@@ -156,7 +155,7 @@ int main(int argc, char *argv[]){
             }
             // check to see if table has been made yet
             if(pageTables[pid] == NULL){
-                printf("pid %i", pid);
+                printf("Create pid %i\n", pid);
                 pageTable = calloc(1, sizeof(doubleLL));
                 pageTable->maxSize = pgsize;
                 pageTable->policy = policyFIFO;
@@ -174,12 +173,15 @@ int main(int argc, char *argv[]){
                             virtualMemory, traceFileTracker);
             }
         } else{
-            printf("PID %d\n", getRecentlyClosed());
+            printf("Delete PID %d\n", getRecentlyClosed());
             pid = getRecentlyClosed();
-            printf("pid %i", pid);
-            deleteList(pageTables[pid]);
-            free(pageTables[pid]);
-            pageTables[pid] = NULL;
+            if(pageTables[pid] != NULL){
+                deleteList(pageTables[pid]);
+                free(pageTables[pid]);
+                pageTables[pid] = NULL;
+            } else{
+                printf("we shouldn't get here\n");
+            }
         }
     }
 
