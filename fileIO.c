@@ -41,7 +41,7 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
     // If the file to be read is a null file,  look at the next file, and return 1 to
     // begin iterating again. Modular arithmetic is used to insure that the function
     // never tries to look beyod the bounds of the tracefile array
-    if(openTracefiles[fileIdToProcess] == NULL){
+    while(openTracefiles[fileIdToProcess] == NULL){
         *tracefileId = fileIdToProcess;
         fileIdToProcess++;
         fileIdToProcess = fileIdToProcess % numTraceFiles;
@@ -62,15 +62,15 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
     *tracefileId = -1;
     fileIdToProcess++;
     fileIdToProcess = fileIdToProcess % numTraceFiles;
-    return 1;
+    }else{
+    *tracefileId = fileIdToProcess;
+    fileIdToProcess++;
+    fileIdToProcess = fileIdToProcess % numTraceFiles;
     }
 
    // Setup for next invocation, and returns the fileID that was processed into the tracefileId field
    // passed in to the function for identification of the process by the caller
-    *tracefileId = fileIdToProcess;
-    fileIdToProcess++;
-    fileIdToProcess = fileIdToProcess % numTraceFiles;
-
+   
     return 1;
 }
 int getRecentlyClosed(){

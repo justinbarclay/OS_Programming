@@ -173,6 +173,7 @@ int main(int argc, char *argv[]){
                             virtualMemory, traceFileTracker);
             }
         } else{
+            printf("PID %d\n", getRecentlyClosed());
             pid = getRecentlyClosed();
             deleteList(pageTables[pid]);
             free(pageTables[pid]);
