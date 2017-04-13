@@ -197,7 +197,7 @@ int main(int argc, char *argv[]){
                 printf("%d\t%d\t%d\t%d\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,
                     traceFileTracker[i].pageOuts,(int) traceFileTracker[i].average);
     }
-
+    
     // Clean up after ourselves
     deleteList(tlb);
     deleteList(virtualMemory);

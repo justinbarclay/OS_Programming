@@ -84,147 +84,105 @@ The program first reads in the flags from the command line, and verifies them fo
 
 #+BEGIN_SRC bash
 time ./tvm379 1024 128 g 100 800 f heapsort-trace.bin quicksort-trace.bin
-
-39823095	 93244	 92593		 711.398810
-41154468	 6872	 6723		 84.640971
-        7.25 real         7.09 user         0.13 sys
-
+39749506	93234	92583	711
+41154368	6872	6723	84
+        6.86 real         6.70 user         0.12 sys
 time ./tvm379 1024 128 g 100 800 l heapsort-trace.bin quicksort-trace.bin
-
-39824870	 56404	 55726		 718.726178
-41154596	 7205	 7083		 77.313509
-       11.68 real        10.86 user         0.36 sys
-
+39751281	56394	55723	718
+41154496	7205	7076	77
+       10.05 real         9.89 user         0.13 sys
 time ./tvm379 1024 128 g 100 80 f heapsort-trace.bin quicksort-trace.bin
-
-39190505	 1978395	 1978325		 73.814592
-41108915	 59985	 59975		 6.188825
-        6.01 real         5.55 user         0.24 sys
-
+39116916	1978384	1978314	73
+41108815	59985	59975	6
+        5.14 real         4.99 user         0.11 sys
 time ./tvm379 1024 128 g 100 80 l heapsort-trace.bin quicksort-trace.bin
-
-39458465	 1710435	 1710365		 73.555660
-41152298	 16602	 16592		 6.406009
-        7.37 real         7.01 user         0.20 sys
-
+39384876	1710424	1710354	73
+41152198	16602	16592	6
+        6.72 real         6.52 user         0.15 sys
 time ./tvm379 1024 128 g 100 800 f heapsort-trace.bin
-
-39766376	 58011	 57211		 792.036306
-        6.27 real         6.06 user         0.11 sys
-
+39766277	58011	57211	792
+        5.84 real         5.72 user         0.08 sys
 time ./tvm379 1024 128 g 100 800 l heapsort-trace.bin
-
-39767413	 45821	 45021		 792.056215
-        8.27 real         8.16 user         0.08 sys
-
+39767314	45821	45021	792
+        8.00 real         7.92 user         0.06 sys
 time ./tvm379 1024 128 g 100 80 f heapsort-trace.bin
-
-39138944	 1956456	 1956376		 79.921258
-        4.09 real         4.00 user         0.07 sys
-
+39138845	1956455	1956375	79
+        3.91 real         3.84 user         0.06 sys
 time ./tvm379 1024 128 g 100 80 l heapsort-trace.bin
-
-39407989	 1687411	 1687331		 79.923227
-        5.20 real         4.87 user         0.13 sys
-
+39407890	1687410	1687330	79
+        4.53 real         4.45 user         0.06 sys
 time ./tvm379 1024 128 g 100 800 f quicksort-trace.bin
-
-41163636	 1798	 998		 792.050524
-        1.18 real         1.08 user         0.07 sys
-
+41163536	1798	998	792
+        1.05 real         1.00 user         0.04 sys
 time ./tvm379 1024 128 g 100 800 l quicksort-trace.bin
-
-41163635	 1792	 992		 792.070397
-        2.70 real         2.19 user         0.16 sys
-
+41163535	1792	992	792
+        2.04 real         1.96 user         0.06 sys
 time ./tvm379 1024 128 g 100 80 f quicksort-trace.bin
-
-41162782	 6118	 6038		 79.921399
-        1.37 real         1.15 user         0.10 sys
-
+41162682	6118	6038	79
+        1.07 real         1.01 user         0.05 sys
 time ./tvm379 1024 128 g 100 80 l quicksort-trace.bin
-
-41162832	 6068	 5988		 79.923364
-        3.39 real         2.46 user         0.18 sys
-
-time ./tvm379 65536 256 g 100 1000000 l heapsort-trace.bin quicksort-trace.bin
-quicksort-trace.bin heapsort-trace.bin quicksort-trace.bin
-
-41168883	 17	 0		 16.808974
-41168884	 16	 0		 15.808974
-41168884	 16	 0		 15.808974
-41168884	 16	 0		 15.808974
-41168884	 16	 0		 15.808974
-       11.40 real        10.67 user         0.38 sys
-
-time ./tvm379 16 8 g 10 1 l heapsort-trace.bin quicksort-trace.bin quicksort-trace.bin
-heapsort-trace.bin quicksort-trace.bin
-
-0	 41168890	 41168890		 0.900000
-0	 41168890	 41168890		 0.900000
-0	 41168890	 41168890		 0.900000
-0	 41168890	 41168890		 0.900000
-0	 41168890	 41168889		 0.900000
-       94.20 real        91.14 user         1.01 sys
-
-time ./tvm379 65536 256 g 100 1000000 f heapsort-trace.bin quicksort-trace.bin
-quicksort-trace.bin heapsort-trace.bin quicksort-trace.bin
-
-
-41168883	 17	 0		 16.808971
-41168884	 16	 0		 15.808974
-41168884	 16	 0		 15.808974
-41168884	 16	 0		 15.808974
-41168884	 16	 0		 15.808974
-        6.77 real         5.62 user         0.44 sys
-
-time ./tvm379 16 8 g 10 1 f heapsort-trace.bin quicksort-trace.bin quicksort-trace.bin
- heapsort-trace.bin quicksort-trace.bin
-
-21874890	 19294000	 19294000		 0.900000
-17247294	 23921596	 23921596		 0.900000
-17247294	 23921596	 23921596		 0.900000
-21874887	 19294003	 19294003		 0.900000
-17247294	 23921596	 23921595		 0.900000
-       53.28 real        51.84 user         0.70 sys
-
-time ./tvm379 65536 256 p 100 1000000 l heapsort-trace.bin quicksort-trace.bin
-quicksort-trace.bin heapsort-trace.bin quicksort-trace.bin
-
-38996139	 17	 0		 16.808974
-40511616	 16	 0		 15.808974
-40511616	 16	 0		 15.808974
-38996141	 16	 0		 15.808974
-40511616	 16	 0		 15.808974
-       12.81 real        12.31 user         0.33 sys
-
-time ./tvm379 16 8 p 10 1 l heapsort-trace.bin quicksort-trace.bin quicksort-trace.bin
-heapsort-trace.bin quicksort-trace.bin
-
-0	 41168890	 41168890		 0.900000
-0	 41168890	 41168890		 0.900000
-0	 41168890	 41168890		 0.900000
-0	 41168890	 41168890		 0.900000
-0	 41168890	 41168889		 0.900000
-      104.13 real        99.27 user         1.31 sys
-
-time ./tvm379 65536 256 p 100 1000000 f heapsort-trace.bin quicksort-trace.bin
-quicksort-trace.bin heapsort-trace.bin quicksort-trace.bin
-
-38996140	 17	 0		 16.808971
-40511616	 16	 0		 15.808974
-40511616	 16	 0		 15.808974
-38996141	 16	 0		 15.808974
-40511616	 16	 0		 15.808974
-        6.92 real         6.65 user         0.24 sys
-
-time ./tvm379 16 8 p 10 1 f heapsort-trace.bin quicksort-trace.bin quicksort-trace.bin
-heapsort-trace.bin quicksort-trace.bin
-
-21874890	 19294000	 19294000		 0.900000
-17247294	 23921596	 23921596		 0.900000
-17247294	 23921596	 23921596		 0.900000
-21874887	 19294003	 19294003		 0.900000
-17247294	 23921596	 23921595		 0.900000
-       56.96 real        56.09 user         0.50 sys
+41162732	6068	5988	79
+        2.01 real         1.93 user         0.05 sys
+time ./tvm379 65536 256 g 100 1000000 l heapsort-trace.bin quicksort-trace.bin quicksort-trace.bin heapsort-trace.bin quicksort-trace.bin
+	41095283	17	0	16
+41168784	16	0	15
+41168784	16	0	15
+41095284	16	0	15
+41168784	16	0	15
+       10.31 real         9.96 user         0.25 sys
+time ./tvm379 16 8 g 10 1 l heapsort-trace.bin quicksort-trace.bin quicksort-trace.bin heapsort-trace.bin quicksort-trace.bin
+0       41095320	41095320	0
+0	41168880	41168880	0
+0	41168880	41168880	0
+0	41095320	41095320	0
+0	41168880	41168879	0
+       85.95 real        85.09 user         0.48 sys
+time ./tvm379 65536 256 g 100 1000000 f heapsort-trace.bin quicksort-trace.bin quicksort-trace.bin heapsort-trace.bin quicksort-trace.bin
+41095283	17	0	16
+41168784	16	0	15
+41168784	16	0	15
+41095284	16	0	15
+41168784	16	0	15
+currentSize 81
+        4.93 real         4.71 user         0.20 sys
+time ./tvm379 16 8 g 10 1 f heapsort-trace.bin quicksort-trace.bin quicksort-trace.bin heapsort-trace.bin quicksort-trace.bin
+21846743	19248577	19248577	0
+17247291	23921589	23921589	0
+17247291	23921589	23921589	0
+21846743	19248577	19248577	0
+17247291	23921589	23921588	0
+currentSize 1
+       49.88 real        48.12 user         0.61 sys
+time ./tvm379 65536 256 p 100 1000000 l heapsort-trace.bin quicksort-trace.bin quicksort-trace.bin heapsort-trace.bin quicksort-trace.bin
+38923571	17	0	16
+40511517	16	0	15
+40511517	16	0	15
+38923572	16	0	15
+40511517	16	0	15
+currentSize 81
+       11.27 real        10.97 user         0.25 sys
+time ./tvm379 16 8 p 10 1 l heapsort-trace.bin quicksort-trace.bin quicksort-trace.bin heapsort-trace.bin quicksort-trace.bin
+0	41095320	41095320	0
+0	41168880	41168880	0
+0	41168880	41168880	0
+0	41095320	41095320	0
+0	41168880	41168879	0
+currentSize 1
+       91.16 real        90.21 user         0.54 sys
+time ./tvm379 65536 256 p 100 1000000 f heapsort-trace.bin quicksort-trace.bin quicksort-trace.bin heapsort-trace.bin quicksort-trace.bin
+38923572	17	0	16
+40511517	16	0	15
+40511517	16	0	15
+38923572	16	0	15
+40511517	16	0	15
+currentSize 81
+        6.10 real         5.87 user         0.21 sys
+time ./tvm379 16 8 p 10 1 f heapsort-trace.bin quicksort-trace.bin quicksort-trace.bin heapsort-trace.bin quicksort-trace.bin
+21846743	19248577	19248577	0
+17247291	23921589	23921589	0
+17247291	23921589	23921589	0
+21846743	19248577	19248577	0
+17247291	23921589	23921588	0
+currentSize 1
+       52.90 real        52.24 user         0.40 sys
 #+END_SRC
