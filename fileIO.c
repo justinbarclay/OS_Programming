@@ -59,6 +59,10 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
         openTracefiles[fileIdToProcess] = NULL;
         mostRecentlyClosed = fileIdToProcess;
         filesCompleted++;
+    *tracefileId = -1;
+    fileIdToProcess++;
+    fileIdToProcess = fileIdToProcess % numTraceFiles;
+    return 1;
     }
 
    // Setup for next invocation, and returns the fileID that was processed into the tracefileId field
