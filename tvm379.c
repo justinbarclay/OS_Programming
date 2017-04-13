@@ -174,6 +174,7 @@ int main(int argc, char *argv[]){
             }
         } else{
             pid = getRecentlyClosed();
+            printf("pid %i", pid);
             deleteList(pageTables[pid]);
             free(pageTables[pid]);
             pageTables[pid] = NULL;
