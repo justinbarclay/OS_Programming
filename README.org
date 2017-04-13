@@ -11,7 +11,7 @@ The program first reads in the flags from the command line, and verifies them fo
 
    g. Counters sprinkled through addToMemory:22
 
-   h.
+   h. Dynamically grow lists into fixed size(tvm379.c:161) array and remove lists from array(tvm379.c:184) 
 
    i. See 'How Simulator is Efficient and Scalable'
 
