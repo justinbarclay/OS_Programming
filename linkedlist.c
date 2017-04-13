@@ -175,6 +175,8 @@ void policyLRU(node* item, doubleLL* container){
     next->previous = previous;
     previous->next = next;
 
+    // Move node to head of doubly linked list.
+    // If anything needs to be removed proceed as normal through addNewNode
     node* top = container->head->next;
     top->previous = item;
     container->head->next = item;
