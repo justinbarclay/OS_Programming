@@ -129,15 +129,12 @@ int main(int argc, char *argv[]){
     int shiftBy = getPowerOfTwo(pgsize);
     int j=0;
 
+
+    
     // Allocate pageTables
     for(j=0; j< numTraceFiles; j++){
-        pageTable = calloc(1, sizeof(doubleLL));
-        pageTable->maxSize = pgsize;
-        pageTable->policy = policyFIFO;
-        newList(pageTable);
-        pageTables[j] = pageTable;
+        pageTables[j] = NULL;
     }
-
     
     tlb->maxSize = tlbentries;
     tlb->policy = policyFIFO;
@@ -155,6 +152,15 @@ int main(int argc, char *argv[]){
             deleteList(tlb);
             newList(tlb);
         }
+        // check to see if table has been made yet
+        if(pageTables[traceFileId] == NULL){
+            pageTable = calloc(1, sizeof(doubleLL));
+            pageTable->maxSize = pgsize;
+            pageTable->policy = policyFIFO;
+            newList(pageTable);
+            pageTables[traceFileId] = pageTable;
+        }
+        
         // Iterate through current references
         for(i = 0; i < quantum; i++){
             //convert endianess
