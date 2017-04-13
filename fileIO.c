@@ -54,23 +54,20 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
     bytes = fread(currentReferences, readval, 1, openTracefiles[fileIdToProcess]);
 
     // If the entire file has been read, close the file and set it's pointer to NULL
+    *tracefileId = fileIdToProcess;
     if(bytes == 0){
         fclose(openTracefiles[fileIdToProcess]);
         openTracefiles[fileIdToProcess] = NULL;
         mostRecentlyClosed = fileIdToProcess;
         filesCompleted++;
     *tracefileId = -1;
-    fileIdToProcess++;
-    fileIdToProcess = fileIdToProcess % numTraceFiles;
-    return 1;
     }
 
    // Setup for next invocation, and returns the fileID that was processed into the tracefileId field
    // passed in to the function for identification of the process by the caller
-    *tracefileId = fileIdToProcess;
+
     fileIdToProcess++;
     fileIdToProcess = fileIdToProcess % numTraceFiles;
-
     return 1;
 }
 int getRecentlyClosed(){
