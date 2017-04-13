@@ -18,6 +18,7 @@
 #define ADDRESS_BYTES 4
 
 /*  Function Bodies */
+static int mostRecentlyClosed = -1;
 
 /*  Reads the from the supplied array of file pointers quantum times, returning the result in
  *  the currentReferences array that is passed in. The function returns 1 if it can continue processing
@@ -30,7 +31,6 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
     static int filesCompleted = 0;
     // Tracks number of bytes read by fread
     int bytes = 0;
-
     // If the number of files completed equals the number of files required to be read
     // do not read anymore, and exit the function returning 0 so that calls to this
     // function don't get any garbage
@@ -57,6 +57,7 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
     if(bytes == 0){
         fclose(openTracefiles[fileIdToProcess]);
         openTracefiles[fileIdToProcess] = NULL;
+        mostRecentlyClosed = fileIdToProcess;
         filesCompleted++;
     }
 
@@ -67,4 +68,7 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
     fileIdToProcess = fileIdToProcess % numTraceFiles;
 
     return 1;
+}
+int getRecentlyClosed(){
+    return mostRecentlyClosed;
 }

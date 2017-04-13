@@ -118,7 +118,7 @@ int main(int argc, char *argv[]){
 
     // Setup Data structures
     int POLICY = evictionPolicy == 'l'; // LRU = 1, FIFO = 0
-   
+
     doubleLL* tlb = calloc(1, sizeof(doubleLL));
     doubleLL* virtualMemory = calloc(1, sizeof(doubleLL));
     doubleLL* pageTable;
@@ -130,24 +130,25 @@ int main(int argc, char *argv[]){
     int j=0;
 
 
-    
+
     // Allocate pageTables
     for(j=0; j< numTraceFiles; j++){
         pageTables[j] = NULL;
     }
-    
+
     tlb->maxSize = tlbentries;
     tlb->policy = policyFIFO;
-    
+
     virtualMemory->maxSize = physpages;
     virtualMemory->policy = policyFIFO;
-    
+
     newList(tlb);
     newList(virtualMemory);
-    
+
     int pageNum;
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, &traceFileId, currentReferences)){
         // If tlb is process specific clear it every quantum
+
         if(uniformity == 'p'){
             deleteList(tlb);
             newList(tlb);
@@ -160,7 +161,7 @@ int main(int argc, char *argv[]){
             newList(pageTable);
             pageTables[traceFileId] = pageTable;
         }
-        
+
         // Iterate through current references
         for(i = 0; i < quantum; i++){
             //convert endianess
@@ -173,10 +174,10 @@ int main(int argc, char *argv[]){
 
     // Display output
     for(i = 0; i < numTraceFiles; i++){
-        printf("%d\t%d\t%d\t%d\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,
+                printf("%d\t%d\t%d\t%d\n", traceFileTracker[i].tlbHits, traceFileTracker[i].pageFaults,
                     traceFileTracker[i].pageOuts,(int) traceFileTracker[i].average);
     }
-    
+
     // Clean up after ourselves
     deleteList(tlb);
     deleteList(virtualMemory);
