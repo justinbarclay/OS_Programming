@@ -131,7 +131,8 @@ int main(int argc, char *argv[]){
 
 
 
-    // Allocate pageTables
+    // Allocate pageTables as null
+    // add to them as we reach the tables
     for(j=0; j< numTraceFiles; j++){
         pageTables[j] = NULL;
     }
@@ -147,15 +148,17 @@ int main(int argc, char *argv[]){
 
     int pageNum;
     while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, &pid, currentReferences)){
-        // If tlb is process specific clear it every quantum
+        // pid = -1 then we have a table we can delete
         if(pid > -1){
+            // If tlb is process specific clear it every quantum
             if(uniformity == 'p'){
                 deleteList(tlb);
                 newList(tlb);
             }
+            // Dynamically allocating tables
             // check to see if table has been made yet
+            // If table is null make a new one
             if(pageTables[pid] == NULL){
-                printf("Create pid %i\n", pid);
                 pageTable = calloc(1, sizeof(doubleLL));
                 pageTable->maxSize = pgsize;
                 pageTable->policy = policyFIFO;
@@ -173,14 +176,18 @@ int main(int argc, char *argv[]){
                             virtualMemory, traceFileTracker);
             }
         } else{
-            printf("Delete PID %d\n", getRecentlyClosed());
+
+            // As a note if a we abandon memory in virtualMemory(we don't go in to clean it up
+            // but it easily gets cleaned up in FIFO or LRU
+            // and we look for NULL containers in invalidate Frame
+            // Get pid of table to delete
             pid = getRecentlyClosed();
+            // safety measure
             if(pageTables[pid] != NULL){
+                // delete table
                 deleteList(pageTables[pid]);
                 free(pageTables[pid]);
                 pageTables[pid] = NULL;
-            } else{
-                printf("we shouldn't get here\n");
             }
         }
     }
@@ -194,6 +201,7 @@ int main(int argc, char *argv[]){
     // Clean up after ourselves
     deleteList(tlb);
     deleteList(virtualMemory);
+    // Clean up any remaining tables
     for(i = 0; i < numTraceFiles; i++){
         if(pageTables[i] != NULL){
             deleteList(pageTables[i]);

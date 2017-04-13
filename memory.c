@@ -128,10 +128,12 @@ int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtu
 }
 
 void invalidateFrame(int frame, doubleLL* container){
-    // invalidate a node by removing it from page table
+    // If container is allready deleted no need to try to delete node from table
+    // This happens when one process ends early
     if(container == NULL){
         return;
     }
+    // invalidate a node by removing it from page table
     node* current = container->head->next;
     int i = 0;
     // Look for a node containing a certain frame
