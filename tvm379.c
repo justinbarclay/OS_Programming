@@ -156,6 +156,7 @@ int main(int argc, char *argv[]){
             }
             // check to see if table has been made yet
             if(pageTables[pid] == NULL){
+                printf("pid %i", pid);
                 pageTable = calloc(1, sizeof(doubleLL));
                 pageTable->maxSize = pgsize;
                 pageTable->policy = policyFIFO;
@@ -175,6 +176,7 @@ int main(int argc, char *argv[]){
         } else{
             printf("PID %d\n", getRecentlyClosed());
             pid = getRecentlyClosed();
+            printf("pid %i", pid);
             deleteList(pageTables[pid]);
             free(pageTables[pid]);
             pageTables[pid] = NULL;

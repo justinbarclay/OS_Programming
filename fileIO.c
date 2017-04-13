@@ -54,6 +54,7 @@ int readRefsFromFiles(int quantum, FILE *openTracefiles[], int numTraceFiles, in
     bytes = fread(currentReferences, readval, 1, openTracefiles[fileIdToProcess]);
 
     // If the entire file has been read, close the file and set it's pointer to NULL
+    *tracefileId = fileIdToProcess;
     if(bytes == 0){
         fclose(openTracefiles[fileIdToProcess]);
         openTracefiles[fileIdToProcess] = NULL;
