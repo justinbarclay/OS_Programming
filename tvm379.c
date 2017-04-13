@@ -123,7 +123,7 @@ int main(int argc, char *argv[]){
     doubleLL* virtualMemory = calloc(1, sizeof(doubleLL));
     doubleLL* pageTable;
     doubleLL* pageTables[numTraceFiles];
-    int traceFileId =0;
+    int pid =0;
     uint32_t currentReferences[quantum+1];
     node* frameBuffer[physpages];
     int shiftBy = getPowerOfTwo(pgsize);
@@ -146,28 +146,37 @@ int main(int argc, char *argv[]){
     newList(virtualMemory);
     
     int pageNum;
-    while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, &traceFileId, currentReferences)){
+    int toDelete;
+    while(readRefsFromFiles(quantum, tracefiles, numTraceFiles, &pid, currentReferences)){
         // If tlb is process specific clear it every quantum
-        if(uniformity == 'p'){
-            deleteList(tlb);
-            newList(tlb);
-        }
-        // check to see if table has been made yet
-        if(pageTables[traceFileId] == NULL){
-            pageTable = calloc(1, sizeof(doubleLL));
-            pageTable->maxSize = pgsize;
-            pageTable->policy = policyFIFO;
-            newList(pageTable);
-            pageTables[traceFileId] = pageTable;
-        }
-        
-        // Iterate through current references
-        for(i = 0; i < quantum; i++){
-            //convert endianess
-            pageNum = htonl(currentReferences[i]) >> shiftBy;
-            // Try adding to memory
-            addToMemory(pageNum, traceFileId, POLICY, tlb, pageTables, frameBuffer,
-                        virtualMemory, traceFileTracker);
+        if(pid > -1){
+            if(uniformity == 'p'){
+                deleteList(tlb);
+                newList(tlb);
+            }
+            // check to see if table has been made yet
+            if(pageTables[pid] == NULL){
+                pageTable = calloc(1, sizeof(doubleLL));
+                pageTable->maxSize = pgsize;
+                pageTable->policy = policyFIFO;
+                newList(pageTable);
+                pageTables[pid] = pageTable;
+            }
+
+
+            // Iterate through current references
+            for(i = 0; i < quantum; i++){
+                //convert endianess
+                pageNum = htonl(currentReferences[i]) >> shiftBy;
+                // Try adding to memory
+                addToMemory(pageNum, pid, POLICY, tlb, pageTables, frameBuffer,
+                            virtualMemory, traceFileTracker);
+            }
+        } else{
+            pid = getRecentlyClosed();
+            deleteList(pageTables[pid]);
+            free(pageTables[pid]);
+            pageTables[pid] = NULL;
         }
     }
 
@@ -181,7 +190,9 @@ int main(int argc, char *argv[]){
     deleteList(tlb);
     deleteList(virtualMemory);
     for(i = 0; i < numTraceFiles; i++){
-        deleteList(pageTables[i]);
+        if(pageTables[i] != NULL){
+            deleteList(pageTables[i]);
+        }
     }
 }
 
