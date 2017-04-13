@@ -10,6 +10,9 @@ memory.o: linkedlist.o memory.c memory.h
 fileIO.o: fileIO.c fileIO.h
 	$(CC) $(CFLAGS) -c fileIO.c
 
+mergesort:
+	gcc mergesorttrace.c -m32 -o mergesorttrace	
+
 test: simulator
 	time ./tvm379 1024 128 g 100 800 f heapsort-trace.bin quicksort-trace.bin	
 	time ./tvm379 1024 128 g 100 800 l heapsort-trace.bin quicksort-trace.bin
