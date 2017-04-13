@@ -129,6 +129,9 @@ int addToVirtualMemory(int pageNum,int pid, node* frameBuffer[], doubleLL* virtu
 
 void invalidateFrame(int frame, doubleLL* container){
     // invalidate a node by removing it from page table
+    if(container == NULL){
+        return;
+    }
     node* current = container->head->next;
     int i = 0;
     // Look for a node containing a certain frame
