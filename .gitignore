@@ -19,7 +19,12 @@
 *.so
 *.so.*
 *.dylib
+<<<<<<< HEAD
 
+=======
+#main program file
+tvm379
+>>>>>>> 9bde36761b981b1fb13987c3d0d70441f737125f
 # Executables
 *.exe
 *.out
@@ -27,7 +32,6 @@
 *.i*86
 *.x86_64
 *.hex
-
 # Debug files
 *.dSYM/
 *.su
@@ -35,3 +39,11 @@
 # Open files
 *.swo
 *.swp
+# swap files
+*.swp
+
+# trace files
+IO_test_Results.txt
+quicksort-trace.bin
+heapsort-trace.bin
+>>>>>>> 9bde36761b981b1fb13987c3d0d70441f737125f
