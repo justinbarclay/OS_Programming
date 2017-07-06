@@ -26,6 +26,7 @@
         sigemptyset(&act.sa_mask);                      \
         act.sa_flags = 0;                               \
         sigaction(SIGSEGV, &act, NULL);}
+
 /*  Globals*/
 jmp_buf env;
 

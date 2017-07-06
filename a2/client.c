@@ -177,13 +177,13 @@ int readFromSocket(int s){
     return 0;
 }
 
-// Our initial handshake function 
+// Our initial handshake function
 int connectToServer(){
     int s;
     int sent;
     int success;
     success = getSocket(&s); // Get new socket
-    
+
     if(success){
         // Send a one to ensure we're communicating
         sent =  send(s, "1\0", 2, 0);
@@ -250,7 +250,7 @@ int handleNetworkCalls(){
     if (newQuery->messageLength > -1){
         // build a string
         message = buildStringFromQuery(newQuery, &size);
-        
+
 
         getSocket(&s); // Get new socket
 

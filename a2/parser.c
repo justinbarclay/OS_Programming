@@ -8,7 +8,7 @@
 // c = 1
 // e = -1(or other)
 //
-// 
+//
 /*
  * Helper functions
  */
@@ -83,10 +83,10 @@ query* parseMessage(char *input, int inputSize){
     // Non destructively go through the first 20 chars of input
     // Assumption that type, row, enc, and size will be less than 20 chars long
     char* copiedInput = malloc(sizeof(char) * 20); // Copying the first 20 chars from our message the important
-    
+
     newMessage->type = getMessageType(input[0]); // We know query type
     totalBytesRead++;
-    
+
     // Find column type
     // Don't need to parse all of input
     memcpy(copiedInput, input+1, 20);
@@ -94,7 +94,7 @@ query* parseMessage(char *input, int inputSize){
     newMessage->column = getNumberFromMessage(copiedInput, &bytesRead);
     // Get new index fork inputs
     totalBytesRead += bytesRead;
-    
+
     // Set encryption to error as default
     newMessage->encryption = -1; //Default value
     if(newMessage->type == -1 || newMessage->column == -1){
@@ -114,7 +114,7 @@ query* parseMessage(char *input, int inputSize){
         //Parse through for second set of numbers
         memcpy(copiedInput, input+totalBytesRead, 20);
         newMessage->messageLength = getNumberFromMessage(copiedInput, &bytesRead);
-        
+
         //Get new index again
         totalBytesRead += bytesRead;
         // We have constant plus two here because of the encasing '\n'
@@ -152,17 +152,17 @@ int getNumberFromMessage(char* input,int* bytesRead){
         //Could do this while input[i] is greater than 47 and less than 58
         charAsNumber[i] = input[i];
         i++;
-       
+
         if(i > 20){
             // perror("Parsing number failed, larger than 20 bytes");
             return -1;
         }
     }
-    
+
     charAsNumber[i] = '\0';
     // Convert numbers to int
     sscanf(charAsNumber, "%d", &number);
-    
+
     *bytesRead = i; // Remember 0 based index
     return number;
 }
@@ -208,12 +208,12 @@ char* buildStringFromQuery(query * newQuery, int* size){
         // Copy message over to char arrays
         if(newQuery->type > 0){
             // Add seperating newline character
-    
+
             for(i = 0; i < newQuery->messageLength; ++i){
                 message[index+i] = newQuery->message[i];
             }
             index += newQuery->messageLength;
-            //message[index++] = '\n'; // This might be one too many 
+            //message[index++] = '\n'; // This might be one too many
         }
     }
     //Always null terminate!

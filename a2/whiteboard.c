@@ -35,7 +35,7 @@ whiteboard * findNode(whiteboard* head, int depth){
 
 // Homegrown blocker of linked list any access to list must call lockWhiteboard() and unlockWhiteboard();
 int lockWhiteboard(){
-    
+
     while(readWriteState){
         sleep(1);
     }
@@ -68,7 +68,7 @@ whiteboard * newWhiteboard(int size){
             addMessageToWhiteboard(NULL, 0, 0, tail);
         }
     }
-    
+
     return tail;
 }
 
@@ -94,10 +94,10 @@ void addMessageToWhiteboard(char* message, int encryption, int size, whiteboard*
 
     lockWhiteboard();
     boardSize++;
-    
+
     char* newMessage = malloc(sizeof(char) * size + 1);
     memcpy(newMessage, message, size);
-    
+
     whiteboard* currentNode = head;
     whiteboard* newNode = malloc(sizeof(whiteboard));
 
@@ -111,7 +111,7 @@ void addMessageToWhiteboard(char* message, int encryption, int size, whiteboard*
     while(currentNode->next != NULL){
         currentNode = currentNode->next;
     }
-    
+
     currentNode->next = newNode;
     unlockWhiteboard();
 }
